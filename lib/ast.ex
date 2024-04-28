@@ -41,6 +41,17 @@ defmodule Monkex.AST do
     end
   end
 
+  defmodule ReturnStatement do
+    @enforce_keys [:token, :return_value]
+    defstruct [:token, :return_value]
+  end
+
+  defimpl Statement, for: ReturnStatement do
+    def token_literal(%ReturnStatement{token: token}) do
+      token.literal
+    end
+  end
+
   defmodule Identifier do
     @enforce_keys [:token, :symbol_name]
     defstruct [:token, :symbol_name]

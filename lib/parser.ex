@@ -62,6 +62,20 @@ defmodule Monkex.Parser do
     end
   end
 
+  defp skip_until_semicolon(parser) do
+    parser
+    |> Stream.unfold(fn p ->
+      if current_token_is?(p, :semicolon) do
+        nil
+      else
+        next = p |> next_token
+        {next, next}
+      end
+    end)
+    |> Enum.reverse()
+    |> hd
+  end
+
   @spec parse_program(t) :: {t, AST.Program.t()}
   def parse_program(parser) do
     parsers_and_statements =
@@ -91,8 +105,23 @@ defmodule Monkex.Parser do
   def parse_statement(parser) do
     case parser.current_token.type do
       :let -> parse_let_statement(parser)
+      :return -> parse_return_statement(parser)
       _ -> {parser, nil}
     end
+  end
+
+  @spec parse_return_statement(t) :: {t, AST.ReturnStatement.t()} | {t, nil}
+  def parse_return_statement(parser) do
+    parser
+    |> next_token
+    # TODO: parse expression
+    |> skip_until_semicolon()
+
+    {parser,
+     %AST.ReturnStatement{
+       token: parser.current_token,
+       return_value: nil
+     }}
   end
 
   @spec parse_let_statement(t) :: {t, AST.LetStatement.t()} | {t, nil}
@@ -101,18 +130,8 @@ defmodule Monkex.Parser do
          {:ok, assign_parser} <- expect_and_peek(ident_parser, :assign) do
       stmt_parser =
         assign_parser
-        |> Stream.unfold(fn p ->
-          # TODO: parse expressions, but for now, skip until semicolon
-          if current_token_is?(p, :semicolon) do
-            nil
-          else
-            next = p |> next_token
-            {next, next}
-          end
-        end)
-        # get the last parser
-        |> Enum.to_list()
-        |> Enum.at(-1)
+        # TODO: parse expression
+        |> skip_until_semicolon
 
       {stmt_parser,
        %AST.LetStatement{

@@ -14,10 +14,12 @@ defmodule ParserTest do
 
     parser = input |> Lexer.new() |> Parser.new()
 
-    {final, program}= Parser.parse_program(parser)
+    {final, program} = Parser.parse_program(parser)
+
     if length(final.errors) != 0 do
       assert length(final.errors |> IO.inspect()) == 0
     end
+
     assert program != nil
     assert length(program.statements) == 3
 
@@ -25,6 +27,30 @@ defmodule ParserTest do
     |> Stream.with_index()
     |> Enum.map(fn {item, index} ->
       test_let_statement(Enum.at(program.statements, index), item)
+    end)
+  end
+
+  test "parse return statements" do
+    input = """
+    return 5;
+    return 10;
+    return 838383;
+    """
+
+    parser = input |> Lexer.new() |> Parser.new()
+
+    {final, program} = Parser.parse_program(parser)
+
+    if length(final.errors) != 0 do
+      assert length(final.errors |> IO.inspect()) == 0
+    end
+
+    assert program != nil
+    assert length(program.statements) == 3
+
+    program.statements
+    |> Enum.map(fn s ->
+      assert Statement.token_literal(s) == "return"
     end)
   end
 
