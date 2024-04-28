@@ -27,6 +27,25 @@ defmodule MonkexTest do
     assert Token.is_letter("!") == false
   end
 
+  test "lex simple number expr with eof" do
+    input = "1 + 2"
+
+    expected = [
+      {:int, "1"},
+      {:plus, "+"},
+      {:int, "2"},
+      {:eof, ""},
+    ]
+
+    expected
+    |> Enum.reduce(Lexer.new(input), fn {type, literal}, next_lexer ->
+      {l, token} = Lexer.next_token(next_lexer)
+      assert token.type == type
+      assert token.literal == literal
+      l
+    end)
+  end
+
   test "next token with single char" do
     input = "=+(){},;"
 

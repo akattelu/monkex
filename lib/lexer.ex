@@ -34,12 +34,15 @@ defmodule Monkex.Token do
   def from_ch(nil), do: %Monkex.Token{type: :eof, literal: ""}
   def from_ch(illegal), do: %Monkex.Token{type: :illegal, literal: illegal}
 
+
+  def is_letter(char) when char == "" or char == nil, do: false
   def is_letter(char) do
     # convert to ascii val
     ch = char |> String.to_charlist() |> hd
     (?a <= ch and ch <= ?z) or (?A <= ch and ch <= ?Z) or ch == ?_
   end
 
+  def is_digit(char) when char == "" or char == nil, do: false
   def is_digit(char) do
     # convert to ascii val
     ch = char |> String.to_charlist() |> hd
