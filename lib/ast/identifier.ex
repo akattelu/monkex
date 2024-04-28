@@ -8,3 +8,9 @@ defimpl Monkex.AST.Expression, for: Monkex.AST.Identifier do
     token.literal
   end
 end
+
+defimpl String.Chars, for: Monkex.AST.Identifier do
+  def to_string(%Monkex.AST.Identifier{symbol_name: symbol_name}) do
+    symbol_name
+  end
+end

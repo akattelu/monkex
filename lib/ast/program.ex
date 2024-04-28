@@ -20,3 +20,9 @@ defmodule Monkex.AST.Program do
     }
   end
 end
+
+defimpl String.Chars, for: Monkex.AST.Program do
+  def to_string(%Monkex.AST.Program{statements: statements}) do
+    statements |> Enum.map(fn s -> "#{s}" end) |> Enum.join("\n")
+  end
+end

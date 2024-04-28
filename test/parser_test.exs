@@ -1,9 +1,27 @@
 defmodule ParserTest do
   use ExUnit.Case
   alias Monkex.AST.Expression
+  alias Monkex.AST.Statement
+  alias Monkex.AST.LetStatement
+  alias Monkex.AST.Identifier
+  alias Monkex.AST.Program
   alias Monkex.Lexer
   alias Monkex.Parser
-  alias Monkex.AST.Statement
+  alias Monkex.Token
+
+  test "ast string" do
+    program = %Program{
+      statements: [
+        %LetStatement{
+          token: %Token{type: :let, literal: "let"},
+          name: %Identifier{token: %Token{type: :ident, literal: "myVar"}, symbol_name: "myVar"},
+          value: %Identifier{token: %Token{type: :ident, literal: "anotherVar"}, symbol_name: "anotherVar"}
+        }
+      ]
+    }
+
+    assert "#{program}" == "let myVar = anotherVar;"
+  end
 
   test "parse let statements" do
     input = """

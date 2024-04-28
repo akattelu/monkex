@@ -8,3 +8,9 @@ defimpl Monkex.AST.Statement, for: Monkex.AST.LetStatement do
     token.literal
   end
 end
+
+defimpl String.Chars, for: Monkex.AST.LetStatement do
+  def to_string(%Monkex.AST.LetStatement{name: name, value: value}) do
+    "let #{name} = #{value};"
+  end
+end
