@@ -20,6 +20,14 @@ defmodule Monkex.AST do
         first -> Statement.token_literal(first)
       end
     end
+
+
+    @spec new([Statement.t()]) :: t
+    def new(statements) do
+      %Program{
+        statements: statements
+      }
+    end
   end
 
   defmodule LetStatement do

@@ -14,14 +14,14 @@ defmodule ParserTest do
 
     parser = input |> Lexer.new() |> Parser.new()
 
-    program = Parser.parse_program(parser)
+    {_, program}= Parser.parse_program(parser)
     assert program != nil
     assert length(program.statements) == 3
 
     ["x", "y", "foobar"]
     |> Stream.with_index()
     |> Enum.map(fn {item, index} ->
-      test_let_statement(program.statements[index], item)
+      test_let_statement(Enum.at(program.statements, index), item)
     end)
   end
 
