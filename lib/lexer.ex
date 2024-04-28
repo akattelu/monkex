@@ -12,11 +12,13 @@ defmodule Monkex.Token do
     "return" => :return
   }
 
+  @spec lookup_ident(String.t) :: atom
   def lookup_ident(ident) do
     # default to :ident type
     Map.get(@keywords, ident, :ident)
   end
 
+  @spec from_ch(String.t) :: %Monkex.Token{}
   def from_ch("="), do: %Monkex.Token{type: :assign, literal: "="}
   def from_ch("+"), do: %Monkex.Token{type: :plus, literal: "+"}
   def from_ch("("), do: %Monkex.Token{type: :lparen, literal: "("}
@@ -35,6 +37,7 @@ defmodule Monkex.Token do
   def from_ch(illegal), do: %Monkex.Token{type: :illegal, literal: illegal}
 
 
+  @spec is_letter(String.t) :: boolean
   def is_letter(char) when char == "" or char == nil, do: false
   def is_letter(char) do
     # convert to ascii val
@@ -42,6 +45,7 @@ defmodule Monkex.Token do
     (?a <= ch and ch <= ?z) or (?A <= ch and ch <= ?Z) or ch == ?_
   end
 
+  @spec is_digit(String.t) :: boolean
   def is_digit(char) when char == "" or char == nil, do: false
   def is_digit(char) do
     # convert to ascii val
@@ -55,11 +59,13 @@ defmodule Monkex.Lexer do
   @enforce_keys [:input, :position, :read_position, :ch]
   defstruct [:input, :position, :read_position, :ch]
 
+  @spec new(String.t) :: %Monkex.Lexer{}
   def new(input_string) do
     l = %Monkex.Lexer{input: input_string, position: 0, read_position: 0, ch: nil}
     read_char(l)
   end
 
+  @spec next_token(%Monkex.Lexer{}) :: { %Monkex.Lexer{}, %Monkex.Token{} }
   def next_token(lex) do
     l = skip_whitespace(lex)
 
@@ -101,6 +107,7 @@ defmodule Monkex.Lexer do
     end
   end
 
+  @spec skip_whitespace(%Monkex.Lexer{}) :: %Monkex.Lexer{}
   defp skip_whitespace(l) do
     if l.ch == " " or l.ch == "\t" or l.ch == "\n" or l.ch == "\r" do
       next_ch_lexer = read_char(l)
@@ -110,6 +117,7 @@ defmodule Monkex.Lexer do
     end
   end
 
+  @spec read_identifier(%Monkex.Lexer{}) :: { %Monkex.Lexer{}, String.t }
   defp read_identifier(l) do
     start = l.position
 
@@ -129,6 +137,7 @@ defmodule Monkex.Lexer do
     {final, String.slice(final.input, start, final.position - start)}
   end
 
+  @spec read_digit(%Monkex.Lexer{}) :: { %Monkex.Lexer{}, String.t }
   defp read_digit(l) do
     start = l.position
 
@@ -148,6 +157,7 @@ defmodule Monkex.Lexer do
     {final, String.slice(final.input, start, final.position - start)}
   end
 
+  @spec read_char(%Monkex.Lexer{}) :: %Monkex.Lexer{}
   defp read_char(l) do
     %Monkex.Lexer{
       l
@@ -163,6 +173,7 @@ defmodule Monkex.Lexer do
     }
   end
 
+  @spec peek_char(%Monkex.Lexer{}) :: String.t
   defp peek_char(l) do
     if l.read_position >= String.length(l.input) do
       nil
