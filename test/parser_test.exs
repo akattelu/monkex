@@ -14,7 +14,10 @@ defmodule ParserTest do
 
     parser = input |> Lexer.new() |> Parser.new()
 
-    {_, program}= Parser.parse_program(parser)
+    {final, program}= Parser.parse_program(parser)
+    if length(final.errors) != 0 do
+      assert length(final.errors |> IO.inspect()) == 0
+    end
     assert program != nil
     assert length(program.statements) == 3
 

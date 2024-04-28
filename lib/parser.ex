@@ -1,13 +1,14 @@
 defmodule Monkex.Parser do
   alias Monkex.Lexer
   alias Monkex.AST
-  @enforce_keys [:lexer, :current_token, :next_token]
-  defstruct [:lexer, :current_token, :next_token]
+  @enforce_keys [:lexer, :current_token, :next_token, :errors]
+  defstruct [:lexer, :current_token, :next_token, :errors]
 
   @type t :: %__MODULE__{
           lexer: Monkex.Lexer.t(),
           current_token: Monkex.Token.t() | nil,
-          next_token: Monkex.Token.t() | nil
+          next_token: Monkex.Token.t() | nil,
+          errors: list(String.t())
         }
 
   @spec new(Monkex.Lexer.t()) :: t
@@ -15,10 +16,19 @@ defmodule Monkex.Parser do
     %Monkex.Parser{
       lexer: lexer,
       current_token: nil,
-      next_token: nil
+      next_token: nil,
+      errors: []
     }
     |> next_token
     |> next_token
+  end
+
+  @spec with_error(t, String.t()) :: t
+  def with_error(parser, err) do
+    %Monkex.Parser{
+      parser
+      | errors: [err | parser.errors]
+    }
   end
 
   @spec next_token(t) :: t
@@ -28,7 +38,8 @@ defmodule Monkex.Parser do
     %Monkex.Parser{
       lexer: lex,
       current_token: parser.next_token,
-      next_token: tok
+      next_token: tok,
+      errors: parser.errors
     }
   end
 
@@ -42,12 +53,12 @@ defmodule Monkex.Parser do
     current_token_is?(parser, :eof)
   end
 
-  @spec expect_and_peek(t, atom) :: {:ok, t} | nil
+  @spec expect_and_peek(t, atom) :: {:ok, t} | {:error, String.t()}
   def expect_and_peek(parser, type) do
     if parser.next_token.type == type do
       {:ok, parser |> next_token}
     else
-      nil
+      {:error, parser, "expected #{type}, got #{parser.next_token.type}"}
     end
   end
 
@@ -61,14 +72,16 @@ defmodule Monkex.Parser do
         else
           # parse a statement, then return parser pointed to next token
           case parse_statement(p) do
-            {_, nil} -> nil
+            {next, nil} -> {{next |> next_token, nil}, next |> next_token}
             {next, stmt} -> {{next |> next_token, stmt}, next |> next_token}
           end
         end
       end)
       |> Enum.to_list()
 
-    statements = parsers_and_statements |> Enum.map(fn {_, stmt} -> stmt end)
+    statements =
+      parsers_and_statements |> Enum.map(fn {_, stmt} -> stmt end) |> Enum.filter(&(&1 != nil))
+
     program_parser = parsers_and_statements |> Enum.at(-1) |> elem(0)
 
     {program_parser, %AST.Program{statements: statements}}
@@ -112,7 +125,7 @@ defmodule Monkex.Parser do
          value: nil
        }}
     else
-      nil -> {parser, nil}
+      {:error, p, err} -> {p |> with_error(err), nil}
     end
   end
 end
