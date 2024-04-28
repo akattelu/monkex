@@ -2,6 +2,8 @@ defmodule Monkex.Token do
   @enforce_keys [:type, :literal]
   defstruct [:type, :literal]
 
+  @type t :: %Monkex.Token{type: atom, literal: String.t}
+
   @keywords %{
     "fn" => :function,
     "let" => :let,
@@ -12,13 +14,14 @@ defmodule Monkex.Token do
     "return" => :return
   }
 
+
   @spec lookup_ident(String.t) :: atom
   def lookup_ident(ident) do
     # default to :ident type
     Map.get(@keywords, ident, :ident)
   end
 
-  @spec from_ch(String.t) :: %Monkex.Token{}
+  @spec from_ch(String.t) :: Monkex.Token.t()
   def from_ch("="), do: %Monkex.Token{type: :assign, literal: "="}
   def from_ch("+"), do: %Monkex.Token{type: :plus, literal: "+"}
   def from_ch("("), do: %Monkex.Token{type: :lparen, literal: "("}
@@ -44,7 +47,7 @@ defmodule Monkex.Token do
     ch = char |> String.to_charlist() |> hd
     (?a <= ch and ch <= ?z) or (?A <= ch and ch <= ?Z) or ch == ?_
   end
-
+  
   @spec is_digit(String.t) :: boolean
   def is_digit(char) when char == "" or char == nil, do: false
   def is_digit(char) do

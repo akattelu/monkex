@@ -3,13 +3,15 @@ defmodule Monkex.Lexer do
   @enforce_keys [:input, :position, :read_position, :ch]
   defstruct [:input, :position, :read_position, :ch]
 
-  @spec new(String.t) :: %Monkex.Lexer{}
+  @type t :: %Monkex.Lexer{}
+
+  @spec new(String.t) :: Monkex.Lexer.t()
   def new(input_string) do
     l = %Monkex.Lexer{input: input_string, position: 0, read_position: 0, ch: nil}
     read_char(l)
   end
 
-  @spec next_token(%Monkex.Lexer{}) :: { %Monkex.Lexer{}, %Monkex.Token{} }
+  @spec next_token(Monkex.Lexer.t()) :: { Monkex.Lexer.t(), Monkex.Token.t() }
   def next_token(lex) do
     l = skip_whitespace(lex)
 
@@ -51,7 +53,7 @@ defmodule Monkex.Lexer do
     end
   end
 
-  @spec skip_whitespace(%Monkex.Lexer{}) :: %Monkex.Lexer{}
+  @spec skip_whitespace(Monkex.Lexer.t()) :: Monkex.Lexer.t()
   defp skip_whitespace(l) do
     if l.ch == " " or l.ch == "\t" or l.ch == "\n" or l.ch == "\r" do
       next_ch_lexer = read_char(l)
@@ -61,7 +63,7 @@ defmodule Monkex.Lexer do
     end
   end
 
-  @spec read_identifier(%Monkex.Lexer{}) :: { %Monkex.Lexer{}, String.t }
+  @spec read_identifier(Monkex.Lexer.t()) :: { Monkex.Lexer.t(), String.t }
   defp read_identifier(l) do
     start = l.position
 
@@ -81,7 +83,7 @@ defmodule Monkex.Lexer do
     {final, String.slice(final.input, start, final.position - start)}
   end
 
-  @spec read_digit(%Monkex.Lexer{}) :: { %Monkex.Lexer{}, String.t }
+  @spec read_digit(Monkex.Lexer.t()) :: { Monkex.Lexer.t(), String.t }
   defp read_digit(l) do
     start = l.position
 
@@ -101,7 +103,7 @@ defmodule Monkex.Lexer do
     {final, String.slice(final.input, start, final.position - start)}
   end
 
-  @spec read_char(%Monkex.Lexer{}) :: %Monkex.Lexer{}
+  @spec read_char(Monkex.Lexer.t()) :: Monkex.Lexer.t()
   defp read_char(l) do
     %Monkex.Lexer{
       l
@@ -117,7 +119,7 @@ defmodule Monkex.Lexer do
     }
   end
 
-  @spec peek_char(%Monkex.Lexer{}) :: String.t
+  @spec peek_char(Monkex.Lexer.t()) :: String.t
   defp peek_char(l) do
     if l.read_position >= String.length(l.input) do
       nil
