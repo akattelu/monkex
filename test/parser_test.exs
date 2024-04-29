@@ -98,7 +98,6 @@ defmodule ParserTest do
   end
 
   test "parse integer literal" do
-
     {parser, program} =
       "99;"
       |> Lexer.new()
@@ -116,7 +115,35 @@ defmodule ParserTest do
                }
              }
            ]
+  end
 
+  test "parse prefix and integer literal expressions" do
+    inputs = [
+      "!5",
+      "-15"
+    ]
+
+    expected = [
+      {"!", 5},
+      {"-", 15}
+    ]
+
+    Enum.zip(inputs, expected) |> Enum.each(fn {input, {op, val}} ->
+      {parser, program} =
+        input
+        |> Lexer.new()
+        |> Parser.new()
+        |> Parser.parse_program()
+
+        assert parser.errors == []
+        assert length(program.statements) == 1
+        program.statements |> hd() |> then(fn s ->
+          assert Expression.token_literal(s.expression) == op
+          assert s.expression.operator == op
+          assert s.expression.right.value == val
+        end)
+      end)
+   
   end
 
   def test_let_statement(statement, name) do

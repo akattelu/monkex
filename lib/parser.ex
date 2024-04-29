@@ -28,7 +28,9 @@ defmodule Monkex.Parser do
       errors: [],
       prefix_parse_fns: %{
         :ident => &parse_identifier/1,
-        :int => &parse_integer_literal/1
+        :int => &parse_integer_literal/1,
+        :bang => &parse_prefix_expression/1,
+        :minus => &parse_prefix_expression/1
       },
       infix_parse_fns: %{}
     }
@@ -167,6 +169,20 @@ defmodule Monkex.Parser do
     {final, %AST.ExpressionStatement{token: parser.current_token, expression: expr}}
   end
 
+  def parse_prefix_expression(parser) do
+    {next, expression} =
+      parser
+      |> next_token # skip prefix token
+      |> parse_expression(:prefix)
+
+    {next,
+     %AST.PrefixExpression{
+       token: parser.current_token,
+       operator: parser.current_token.literal,
+       right: expression
+     }}
+  end
+
   def parse_identifier(parser) do
     {parser,
      %AST.Identifier{
@@ -177,17 +193,17 @@ defmodule Monkex.Parser do
 
   def parse_integer_literal(parser) do
     {parser,
-    %AST.IntegerLiteral{
-      token: parser.current_token,
-      value: parser.current_token.literal |> String.to_integer()
-    }}
+     %AST.IntegerLiteral{
+       token: parser.current_token,
+       value: parser.current_token.literal |> String.to_integer()
+     }}
   end
 
   def parse_expression(parser, _precedence) do
     with {:ok, prefix_fn} <- Map.fetch(parser.prefix_parse_fns, parser.current_token.type) do
       prefix_fn.(parser)
     else
-      :error -> {parser, nil}
+      :error -> {parser |> with_error("no prefix function found"), nil}
     end
   end
 end
