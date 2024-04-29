@@ -1,6 +1,7 @@
 defmodule Monkex.Parser do
   alias Monkex.Lexer
   alias Monkex.AST
+  alias Monkex.Parser.Precedence
 
   @enforce_keys [
     :lexer,
@@ -32,7 +33,16 @@ defmodule Monkex.Parser do
         :bang => &parse_prefix_expression/1,
         :minus => &parse_prefix_expression/1
       },
-      infix_parse_fns: %{}
+      infix_parse_fns: %{
+        :plus => &parse_infix_expression/2,
+        :minus => &parse_infix_expression/2,
+        :slash => &parse_infix_expression/2,
+        :asterisk => &parse_infix_expression/2,
+        :eq => &parse_infix_expression/2,
+        :not_eq => &parse_infix_expression/2,
+        :lt => &parse_infix_expression/2,
+        :gt => &parse_infix_expression/2
+      }
     }
     |> next_token
     |> next_token
@@ -58,9 +68,24 @@ defmodule Monkex.Parser do
     }
   end
 
+  @spec current_precedence(t) :: atom
+  def current_precedence(parser) do
+    parser.current_token.type |> Precedence.of_token()
+  end
+
+  @spec next_precedence(t) :: atom
+  def next_precedence(parser) do
+    parser.next_token.type |> Precedence.of_token()
+  end
+
   @spec current_token_is?(t, atom) :: boolean
   def current_token_is?(parser, type) do
     parser.current_token.type == type
+  end
+
+  @spec next_token_is?(t, atom) :: boolean
+  def next_token_is?(parser, type) do
+    parser.next_token.type == type
   end
 
   @spec current_is_eof?(t) :: boolean
@@ -172,7 +197,8 @@ defmodule Monkex.Parser do
   def parse_prefix_expression(parser) do
     {next, expression} =
       parser
-      |> next_token # skip prefix token
+      # skip prefix token
+      |> next_token
       |> parse_expression(:prefix)
 
     {next,
@@ -181,6 +207,20 @@ defmodule Monkex.Parser do
        operator: parser.current_token.literal,
        right: expression
      }}
+  end
+
+  def parse_infix_expression(parser, left) do
+    {next, right} = parser |> next_token |> parse_expression(parser |> current_precedence)
+
+    {
+      next,
+      %AST.InfixExpression{
+        token: parser.current_token,
+        left: left,
+        operator: parser.current_token.literal,
+        right: right
+      }
+    }
   end
 
   def parse_identifier(parser) do
@@ -199,15 +239,39 @@ defmodule Monkex.Parser do
      }}
   end
 
-  def parse_expression(parser, _precedence) do
+  def parse_expression(parser, precedence) do
     with {:ok, prefix_fn} <- Map.fetch(parser.prefix_parse_fns, parser.current_token.type) do
-      prefix_fn.(parser)
+      {next, left} = prefix_fn.(parser)
+
+      # send in left expression and the last parser pos
+      acc =
+        prefix_fn.(parser)
+        |> Stream.unfold(fn {p, left} ->
+          infix_fn = Map.get(p.infix_parse_fns, p.next_token.type)
+
+          cond do
+            next_token_is?(p, :semicolon) ->
+              nil
+
+            Precedence.compare(precedence, next_precedence(p)) >= 0 ->
+              nil
+
+            infix_fn == nil ->
+              nil
+
+            true ->
+              {next, l} = next |> next_token |> infix_fn.(left)
+              {{next, l}, {next, l}}
+          end
+        end)
+        |> Enum.reverse()
+
+      case acc do
+        [] -> {next, left}
+        [head | _] -> head
+      end
     else
       :error -> {parser |> with_error("no prefix function found"), nil}
     end
   end
-end
-
-defmodule Monkex.Parser.Precedence do
-  @precedence [:lowest, :equals, :lessgreater, :sum, :product, :prefix, :call]
 end

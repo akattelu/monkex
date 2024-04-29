@@ -128,22 +128,69 @@ defmodule ParserTest do
       {"-", 15}
     ]
 
-    Enum.zip(inputs, expected) |> Enum.each(fn {input, {op, val}} ->
+    Enum.zip(inputs, expected)
+    |> Enum.each(fn {input, {op, val}} ->
       {parser, program} =
         input
         |> Lexer.new()
         |> Parser.new()
         |> Parser.parse_program()
 
-        assert parser.errors == []
-        assert length(program.statements) == 1
-        program.statements |> hd() |> then(fn s ->
-          assert Expression.token_literal(s.expression) == op
-          assert s.expression.operator == op
-          assert s.expression.right.value == val
-        end)
+      assert parser.errors == []
+      assert length(program.statements) == 1
+
+      program.statements
+      |> hd()
+      |> then(fn s ->
+        assert Expression.token_literal(s.expression) == op
+        assert s.expression.operator == op
+        assert s.expression.right.value == val
       end)
-   
+    end)
+  end
+
+  test "parse infix literal expressions" do
+    inputs = [
+      "5 + 5;",
+      "5 - 5;",
+      "5 * 5;",
+      "5 / 5;",
+      "5 > 5;",
+      "5 < 5;",
+      "5 == 5;",
+      "5 != 5;"
+    ]
+
+    expected = [
+      {5, "+", 5},
+      {5, "-", 5},
+      {5, "*", 5},
+      {5, "/", 5},
+      {5, ">", 5},
+      {5, "<", 5},
+      {5, "==", 5},
+      {5, "!=", 5}
+    ]
+
+    Enum.zip(inputs, expected)
+    |> Enum.each(fn {input, {left, op, right}} ->
+      {parser, program} =
+        input
+        |> Lexer.new()
+        |> Parser.new()
+        |> Parser.parse_program()
+
+      assert parser.errors == []
+      assert length(program.statements) == 1
+
+      program.statements
+      |> hd()
+      |> then(fn s ->
+        assert s.expression.left.value == left
+        assert s.expression.operator == op
+        assert s.expression.right.value == right
+      end)
+    end)
   end
 
   def test_let_statement(statement, name) do
