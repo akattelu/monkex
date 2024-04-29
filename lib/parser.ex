@@ -1,8 +1,16 @@
 defmodule Monkex.Parser do
   alias Monkex.Lexer
   alias Monkex.AST
-  @enforce_keys [:lexer, :current_token, :next_token, :errors]
-  defstruct [:lexer, :current_token, :next_token, :errors]
+
+  @enforce_keys [
+    :lexer,
+    :current_token,
+    :next_token,
+    :errors,
+    :prefix_parse_fns,
+    :infix_parse_fns
+  ]
+  defstruct [:lexer, :current_token, :next_token, :errors, :prefix_parse_fns, :infix_parse_fns]
 
   @type t :: %__MODULE__{
           lexer: Monkex.Lexer.t(),
@@ -17,7 +25,11 @@ defmodule Monkex.Parser do
       lexer: lexer,
       current_token: nil,
       next_token: nil,
-      errors: []
+      errors: [],
+      prefix_parse_fns: %{
+        :ident => &parse_identifier/1
+      },
+      infix_parse_fns: %{}
     }
     |> next_token
     |> next_token
@@ -36,10 +48,10 @@ defmodule Monkex.Parser do
     {lex, tok} = Lexer.next_token(parser.lexer)
 
     %Monkex.Parser{
-      lexer: lex,
-      current_token: parser.next_token,
-      next_token: tok,
-      errors: parser.errors
+      parser
+      | lexer: lex,
+        current_token: parser.next_token,
+        next_token: tok
     }
   end
 
@@ -53,7 +65,7 @@ defmodule Monkex.Parser do
     current_token_is?(parser, :eof)
   end
 
-  @spec expect_and_peek(t, atom) :: {:ok, t} | {:error, String.t()}
+  @spec expect_and_peek(t, atom) :: {:ok, t} | {:error, t, String.t()}
   def expect_and_peek(parser, type) do
     if parser.next_token.type == type do
       {:ok, parser |> next_token}
@@ -106,18 +118,16 @@ defmodule Monkex.Parser do
     case parser.current_token.type do
       :let -> parse_let_statement(parser)
       :return -> parse_return_statement(parser)
-      _ -> {parser, nil}
+      _ -> parse_expression_statement(parser)
     end
   end
 
   @spec parse_return_statement(t) :: {t, AST.ReturnStatement.t()} | {t, nil}
   def parse_return_statement(parser) do
-    parser
-    |> next_token
-    # TODO: parse expression
-    |> skip_until_semicolon()
-
-    {parser,
+    {parser
+     |> next_token
+     # TODO: parse expression
+     |> skip_until_semicolon(),
      %AST.ReturnStatement{
        token: parser.current_token,
        return_value: nil
@@ -147,4 +157,32 @@ defmodule Monkex.Parser do
       {:error, p, err} -> {p |> with_error(err), nil}
     end
   end
+
+  @spec parse_expression_statement(t) :: {t, AST.ExpressionStatement.t()} | {t, nil}
+  def parse_expression_statement(parser) do
+    {next, expr} = parse_expression(parser, :lowest)
+    # skip semicolon
+    final = expect_and_peek(next, :semicolon) |> elem(1)
+    {final, %AST.ExpressionStatement{token: parser.current_token, expression: expr}}
+  end
+
+  def parse_identifier(parser) do
+    {parser,
+     %AST.Identifier{
+       token: parser.current_token,
+       symbol_name: parser.current_token.literal
+     }}
+  end
+
+  def parse_expression(parser, _precedence) do
+    with {:ok, prefix_fn} <- Map.fetch(parser.prefix_parse_fns, parser.current_token.type) do
+      prefix_fn.(parser)
+    else
+      :error -> {parser, nil}
+    end
+  end
+end
+
+defmodule Monkex.Parser.Precedence do
+  @precedence [:lowest, :equals, :lessgreater, :sum, :product, :prefix, :call]
 end

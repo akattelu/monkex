@@ -3,6 +3,7 @@ defmodule ParserTest do
   alias Monkex.AST.Expression
   alias Monkex.AST.Statement
   alias Monkex.AST.LetStatement
+  alias Monkex.AST.ExpressionStatement
   alias Monkex.AST.Identifier
   alias Monkex.AST.Program
   alias Monkex.Lexer
@@ -15,7 +16,10 @@ defmodule ParserTest do
         %LetStatement{
           token: %Token{type: :let, literal: "let"},
           name: %Identifier{token: %Token{type: :ident, literal: "myVar"}, symbol_name: "myVar"},
-          value: %Identifier{token: %Token{type: :ident, literal: "anotherVar"}, symbol_name: "anotherVar"}
+          value: %Identifier{
+            token: %Token{type: :ident, literal: "anotherVar"},
+            symbol_name: "anotherVar"
+          }
         }
       ]
     }
@@ -70,6 +74,26 @@ defmodule ParserTest do
     |> Enum.map(fn s ->
       assert Statement.token_literal(s) == "return"
     end)
+  end
+
+  test "test expression statements" do
+    {parser, program} =
+      "foobar;"
+      |> Lexer.new()
+      |> Parser.new()
+      |> Parser.parse_program()
+
+    assert parser.errors == []
+
+    assert program.statements == [
+             %ExpressionStatement{
+               token: %Token{type: :ident, literal: "foobar"},
+               expression: %Identifier{
+                 token: %Token{type: :ident, literal: "foobar"},
+                 symbol_name: "foobar"
+               }
+             }
+           ]
   end
 
   def test_let_statement(statement, name) do
