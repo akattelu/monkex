@@ -27,7 +27,8 @@ defmodule Monkex.Parser do
       next_token: nil,
       errors: [],
       prefix_parse_fns: %{
-        :ident => &parse_identifier/1
+        :ident => &parse_identifier/1,
+        :int => &parse_integer_literal/1
       },
       infix_parse_fns: %{}
     }
@@ -172,6 +173,14 @@ defmodule Monkex.Parser do
        token: parser.current_token,
        symbol_name: parser.current_token.literal
      }}
+  end
+
+  def parse_integer_literal(parser) do
+    {parser,
+    %AST.IntegerLiteral{
+      token: parser.current_token,
+      value: parser.current_token.literal |> String.to_integer()
+    }}
   end
 
   def parse_expression(parser, _precedence) do

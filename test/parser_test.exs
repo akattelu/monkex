@@ -4,6 +4,7 @@ defmodule ParserTest do
   alias Monkex.AST.Statement
   alias Monkex.AST.LetStatement
   alias Monkex.AST.ExpressionStatement
+  alias Monkex.AST.IntegerLiteral
   alias Monkex.AST.Identifier
   alias Monkex.AST.Program
   alias Monkex.Lexer
@@ -94,6 +95,28 @@ defmodule ParserTest do
                }
              }
            ]
+  end
+
+  test "parse integer literal" do
+
+    {parser, program} =
+      "99;"
+      |> Lexer.new()
+      |> Parser.new()
+      |> Parser.parse_program()
+
+    assert parser.errors == []
+
+    assert program.statements == [
+             %ExpressionStatement{
+               token: %Token{type: :int, literal: "99"},
+               expression: %IntegerLiteral{
+                 token: %Token{type: :int, literal: "99"},
+                 value: 99
+               }
+             }
+           ]
+
   end
 
   def test_let_statement(statement, name) do
