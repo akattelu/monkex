@@ -343,6 +343,55 @@ defmodule ParserTest do
     end)
   end
 
+  test "parse if else expressions" do
+    input = "if (x < y) { x } else { y }"
+
+    expected = %IfExpression{
+      token: %Token{type: :if, literal: "if"},
+      condition: %InfixExpression{
+        token: %Token{type: :lt, literal: "<"},
+        left: %Identifier{token: %Token{type: :ident, literal: "x"}, symbol_name: "x"},
+        operator: "<",
+        right: %Identifier{token: %Token{type: :ident, literal: "y"}, symbol_name: "y"}
+      },
+      then_block: %BlockStatement{
+        token: %Token{type: :lbrace, literal: "{"},
+        statements: [
+          %ExpressionStatement{
+            token: %Token{type: :ident, literal: "x"},
+            expression: %Identifier{
+              token: %Token{type: :ident, literal: "x"},
+              symbol_name: "x"
+            }
+          }
+        ]
+      },
+      else_block: %BlockStatement{
+        token: %Token{type: :lbrace, literal: "{"},
+        statements: [
+          %ExpressionStatement{
+            token: %Token{type: :ident, literal: "y"},
+            expression: %Identifier{
+              token: %Token{type: :ident, literal: "y"},
+              symbol_name: "y"
+            }
+          }
+        ]
+      }
+    }
+
+    {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+    assert parser.errors == []
+
+    assert length(program.statements) == 1
+
+    program.statements
+    |> hd
+    |> then(fn s ->
+      assert s.expression == expected
+    end)
+  end
+
   def test_let_statement(statement, name, value) do
     assert Statement.token_literal(statement) == "let"
     assert statement.name.symbol_name == name

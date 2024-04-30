@@ -269,13 +269,34 @@ defmodule Monkex.Parser do
          {:ok, after_rparen} <- after_cond |> expect_and_peek(:rparen),
          {:ok, at_lb} <- after_rparen |> expect_and_peek(:lbrace),
          {final, then_block} <- at_lb |> parse_block_statement() do
-      {final,
-       %AST.IfExpression{
-         token: parser.current_token,
-         condition: condition,
-         then_block: then_block,
-         else_block: nil
-       }}
+      case final |> expect_and_peek(:else) do
+        # no else clause, proceed
+        {:error, _, _} ->
+          {final,
+           %AST.IfExpression{
+             token: parser.current_token,
+             condition: condition,
+             then_block: then_block,
+             else_block: nil
+           }}
+
+        {:ok, on_else} ->
+          case on_else |> expect_and_peek(:lbrace) do
+            {:error, p, err} ->
+              {p |> with_error(err), nil}
+
+            {:ok, at_else_lb} ->
+              {after_else, else_block} = at_else_lb|> parse_block_statement()
+
+              {after_else,
+               %AST.IfExpression{
+                 token: parser.current_token,
+                 condition: condition,
+                 then_block: then_block,
+                 else_block: else_block
+               }}
+          end
+      end
     else
       {:error, p, err} -> {p |> with_error(err), nil}
     end
