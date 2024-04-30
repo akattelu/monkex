@@ -45,6 +45,7 @@ defmodule Monkex.Parser do
         :not_eq => &parse_infix_expression/2,
         :lt => &parse_infix_expression/2,
         :gt => &parse_infix_expression/2
+        # :if => &parse_if_expression/2
       }
     }
     |> next_token
@@ -149,19 +150,47 @@ defmodule Monkex.Parser do
     case parser.current_token.type do
       :let -> parse_let_statement(parser)
       :return -> parse_return_statement(parser)
+      :lbrace -> parse_block_statement(parser)
       _ -> parse_expression_statement(parser)
     end
   end
 
   @spec parse_return_statement(t) :: {t, AST.ReturnStatement.t()} | {t, nil}
   def parse_return_statement(parser) do
-    {parser
-     |> next_token
-     # TODO: parse expression
+    {next, expr} = parser |> next_token |> parse_expression(:lowest)
+    {next
      |> skip_until_semicolon(),
      %AST.ReturnStatement{
        token: parser.current_token,
-       return_value: nil
+       return_value: expr
+     }}
+  end
+
+  @spec parse_block_statement(t) :: {t, AST.BlockStatement.t()} | {t, nil}
+  def parse_block_statement(parser) do
+    {final, statements} =
+      {parser |> next_token, []}
+      |> Stream.unfold(fn {p, statements} ->
+        if current_token_is?(p, :rbrace) or current_token_is?(p, :eof) do
+          nil
+        else
+          case parse_statement(p)  do
+            {next, nil} -> 
+              acc = {next |> next_token, statements}
+              {acc, acc}
+            {next, stmt} -> 
+               acc = {next |> next_token, [stmt | statements]}
+               {acc, acc}
+          end
+        end
+      end)
+      |> Enum.reverse()
+      |> hd
+
+    {final,
+     %AST.BlockStatement{
+       token: parser.current_token,
+       statements: statements |> Enum.reverse()
      }}
   end
 
@@ -169,12 +198,9 @@ defmodule Monkex.Parser do
   def parse_let_statement(parser) do
     with {:ok, ident_parser} <- expect_and_peek(parser, :ident),
          {:ok, assign_parser} <- expect_and_peek(ident_parser, :assign) do
-      stmt_parser =
-        assign_parser
-        # TODO: parse expression
-        |> skip_until_semicolon
+      {final, expr} = assign_parser |> next_token |> parse_expression(:lowest)
 
-      {stmt_parser,
+      {final |> skip_until_semicolon,
        %AST.LetStatement{
          # first parser token
          token: parser.current_token,
@@ -182,7 +208,7 @@ defmodule Monkex.Parser do
            token: ident_parser.current_token,
            symbol_name: ident_parser.current_token.literal
          },
-         value: nil
+         value: expr
        }}
     else
       {:error, p, err} -> {p |> with_error(err), nil}
@@ -233,6 +259,10 @@ defmodule Monkex.Parser do
       {:ok, p} -> {p, expr}
       {:error, p, err} -> {p |> with_error(err), nil}
     end
+  end
+
+  def parse_if_expression(parser) do
+    # start at if
   end
 
   def parse_identifier(parser) do

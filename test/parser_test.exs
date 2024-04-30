@@ -1,8 +1,11 @@
 defmodule ParserTest do
   use ExUnit.Case
+  alias Monkex.AST.BlockStatement
+  alias Monkex.AST.ReturnStatement
   alias Monkex.AST.Expression
   alias Monkex.AST.Statement
   alias Monkex.AST.LetStatement
+  alias Monkex.AST.InfixExpression
   alias Monkex.AST.ExpressionStatement
   alias Monkex.AST.IntegerLiteral
   alias Monkex.AST.BooleanLiteral
@@ -35,7 +38,6 @@ defmodule ParserTest do
     let y = 10;
     let foobar = 838383;
     """
-
     parser = input |> Lexer.new() |> Parser.new()
 
     {final, program} = Parser.parse_program(parser)
@@ -47,10 +49,10 @@ defmodule ParserTest do
     assert program != nil
     assert length(program.statements) == 3
 
-    ["x", "y", "foobar"]
+    [{"x", 5}, {"y", 10}, {"foobar", 838383}]
     |> Stream.with_index()
-    |> Enum.map(fn {item, index} ->
-      test_let_statement(Enum.at(program.statements, index), item)
+    |> Enum.map(fn {{input, output}, index} ->
+      test_let_statement(Enum.at(program.statements, index), input, output)
     end)
   end
 
@@ -61,6 +63,8 @@ defmodule ParserTest do
     return 838383;
     """
 
+    expected = [5, 10, 838383]
+
     parser = input |> Lexer.new() |> Parser.new()
 
     {final, program} = Parser.parse_program(parser)
@@ -72,10 +76,53 @@ defmodule ParserTest do
     assert program != nil
     assert length(program.statements) == 3
 
-    program.statements
-    |> Enum.map(fn s ->
+  Enum.zip(program.statements, expected)
+    |> Enum.map(fn {s, out}->
       assert Statement.token_literal(s) == "return"
+      assert s.return_value.value == out
     end)
+  end
+
+  test "parse block statements" do
+    input = """
+    {
+    let x = 3;
+    let y = 5 + x;
+    return y;
+    }
+    """
+
+    expected = %BlockStatement{
+      token: %Token{type: :lbrace, literal: "{"},
+      statements: [
+        %LetStatement{
+          token: %Token{type: :let, literal: "let"},
+          name: %Identifier{token: %Token{type: :ident, literal: "x"}, symbol_name: "x"},
+          value: %IntegerLiteral{token: %Token{type: :int, literal: "3"}, value: 3}
+        },
+        %LetStatement{
+          token: %Token{type: :let, literal: "let"},
+          name: %Identifier{token: %Token{type: :ident, literal: "y"}, symbol_name: "y"},
+          value: %InfixExpression{
+            token: %Token{type: :plus, literal: "+"},
+            left: %IntegerLiteral{token: %Token{type: :int, literal: "5"}, value: 5},
+            operator: "+",
+            right: %Identifier{token: %Token{type: :ident, literal: "x"}, symbol_name: "x"}
+          }
+        },
+        %ReturnStatement{
+          token: %Token{type: :return, literal: "return"},
+          return_value: %Identifier{token: %Token{type: :ident, literal: "y"}, symbol_name: "y"}
+        }
+      ]
+    }
+
+    {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+    assert parser.errors == []
+
+    assert length(program.statements) == 1
+
+    assert program.statements |> hd == expected
   end
 
   test "test expression statements" do
@@ -256,9 +303,10 @@ defmodule ParserTest do
     end)
   end
 
-  def test_let_statement(statement, name) do
+  def test_let_statement(statement, name, value) do
     assert Statement.token_literal(statement) == "let"
     assert statement.name.symbol_name == name
+    assert statement.value.value == value
     assert Expression.token_literal(statement.name) == name
   end
 end
