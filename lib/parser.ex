@@ -34,7 +34,8 @@ defmodule Monkex.Parser do
         false => &parse_boolean_literal/1,
         :bang => &parse_prefix_expression/1,
         :minus => &parse_prefix_expression/1,
-        :lparen => &parse_grouped_expression/1
+        :lparen => &parse_grouped_expression/1,
+        :if => &parse_if_expression/1
       },
       infix_parse_fns: %{
         :plus => &parse_infix_expression/2,
@@ -45,7 +46,6 @@ defmodule Monkex.Parser do
         :not_eq => &parse_infix_expression/2,
         :lt => &parse_infix_expression/2,
         :gt => &parse_infix_expression/2
-        # :if => &parse_if_expression/2
       }
     }
     |> next_token
@@ -158,6 +158,7 @@ defmodule Monkex.Parser do
   @spec parse_return_statement(t) :: {t, AST.ReturnStatement.t()} | {t, nil}
   def parse_return_statement(parser) do
     {next, expr} = parser |> next_token |> parse_expression(:lowest)
+
     {next
      |> skip_until_semicolon(),
      %AST.ReturnStatement{
@@ -174,13 +175,14 @@ defmodule Monkex.Parser do
         if current_token_is?(p, :rbrace) or current_token_is?(p, :eof) do
           nil
         else
-          case parse_statement(p)  do
-            {next, nil} -> 
+          case parse_statement(p) do
+            {next, nil} ->
               acc = {next |> next_token, statements}
               {acc, acc}
-            {next, stmt} -> 
-               acc = {next |> next_token, [stmt | statements]}
-               {acc, acc}
+
+            {next, stmt} ->
+              acc = {next |> next_token, [stmt | statements]}
+              {acc, acc}
           end
         end
       end)
@@ -262,7 +264,21 @@ defmodule Monkex.Parser do
   end
 
   def parse_if_expression(parser) do
-    # start at if
+    with {:ok, after_if} <- parser |> expect_and_peek(:lparen),
+         {after_cond, condition} <- after_if |> next_token |> parse_expression(:lowest),
+         {:ok, after_rparen} <- after_cond |> expect_and_peek(:rparen),
+         {:ok, at_lb} <- after_rparen |> expect_and_peek(:lbrace),
+         {final, then_block} <- at_lb |> parse_block_statement() do
+      {final,
+       %AST.IfExpression{
+         token: parser.current_token,
+         condition: condition,
+         then_block: then_block,
+         else_block: nil
+       }}
+    else
+      {:error, p, err} -> {p |> with_error(err), nil}
+    end
   end
 
   def parse_identifier(parser) do

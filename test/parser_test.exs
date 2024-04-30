@@ -4,6 +4,7 @@ defmodule ParserTest do
   alias Monkex.AST.ReturnStatement
   alias Monkex.AST.Expression
   alias Monkex.AST.Statement
+  alias Monkex.AST.IfExpression
   alias Monkex.AST.LetStatement
   alias Monkex.AST.InfixExpression
   alias Monkex.AST.ExpressionStatement
@@ -38,6 +39,7 @@ defmodule ParserTest do
     let y = 10;
     let foobar = 838383;
     """
+
     parser = input |> Lexer.new() |> Parser.new()
 
     {final, program} = Parser.parse_program(parser)
@@ -49,7 +51,7 @@ defmodule ParserTest do
     assert program != nil
     assert length(program.statements) == 3
 
-    [{"x", 5}, {"y", 10}, {"foobar", 838383}]
+    [{"x", 5}, {"y", 10}, {"foobar", 838_383}]
     |> Stream.with_index()
     |> Enum.map(fn {{input, output}, index} ->
       test_let_statement(Enum.at(program.statements, index), input, output)
@@ -63,7 +65,7 @@ defmodule ParserTest do
     return 838383;
     """
 
-    expected = [5, 10, 838383]
+    expected = [5, 10, 838_383]
 
     parser = input |> Lexer.new() |> Parser.new()
 
@@ -76,8 +78,8 @@ defmodule ParserTest do
     assert program != nil
     assert length(program.statements) == 3
 
-  Enum.zip(program.statements, expected)
-    |> Enum.map(fn {s, out}->
+    Enum.zip(program.statements, expected)
+    |> Enum.map(fn {s, out} ->
       assert Statement.token_literal(s) == "return"
       assert s.return_value.value == out
     end)
@@ -300,6 +302,44 @@ defmodule ParserTest do
       |> then(fn s ->
         assert "#{s.expression}" == output
       end)
+    end)
+  end
+
+  test "parse if expressions" do
+    input = "if (x < y) { x }"
+
+    expected = %IfExpression{
+      token: %Token{type: :if, literal: "if"},
+      condition: %InfixExpression{
+        token: %Token{type: :lt, literal: "<"},
+        left: %Identifier{token: %Token{type: :ident, literal: "x"}, symbol_name: "x"},
+        operator: "<",
+        right: %Identifier{token: %Token{type: :ident, literal: "y"}, symbol_name: "y"}
+      },
+      then_block: %BlockStatement{
+        token: %Token{type: :lbrace, literal: "{"},
+        statements: [
+          %ExpressionStatement{
+            token: %Token{type: :ident, literal: "x"},
+            expression: %Identifier{
+              token: %Token{type: :ident, literal: "x"},
+              symbol_name: "x"
+            }
+          }
+        ]
+      },
+      else_block: nil
+    }
+
+    {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+    assert parser.errors == []
+
+    assert length(program.statements) == 1
+
+    program.statements
+    |> hd
+    |> then(fn s ->
+      assert s.expression == expected
     end)
   end
 
