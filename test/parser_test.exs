@@ -130,16 +130,16 @@ defmodule ParserTest do
 
     assert program.statements == [
              %ExpressionStatement{
-               token: %Token{type: :true, literal: "true"},
+               token: %Token{type: true, literal: "true"},
                expression: %BooleanLiteral{
-                 token: %Token{type: :true, literal: "true"},
+                 token: %Token{type: true, literal: "true"},
                  value: true
                }
              },
              %ExpressionStatement{
-               token: %Token{type: :false, literal: "false"},
+               token: %Token{type: false, literal: "false"},
                expression: %BooleanLiteral{
-                 token: %Token{type: :false, literal: "false"},
+                 token: %Token{type: false, literal: "false"},
                  value: false
                }
              }
@@ -218,6 +218,40 @@ defmodule ParserTest do
         assert s.expression.left.value == left
         assert s.expression.operator == op
         assert s.expression.right.value == right
+      end)
+    end)
+  end
+
+  test "parses grouped expressions" do
+    inputs = [
+      "(5 + 5)",
+      "(1 + 2) * 3",
+      "-(5 + 5)",
+      "!(true == true)"
+    ]
+
+    expected = [
+      "(5 + 5)",
+      "((1 + 2) * 3)",
+      "(-(5 + 5))",
+      "(!(true == true))"
+    ]
+
+    Enum.zip(inputs, expected)
+    |> Enum.each(fn {input, output} ->
+      {parser, program} =
+        input
+        |> Lexer.new()
+        |> Parser.new()
+        |> Parser.parse_program()
+
+      assert parser.errors == []
+      assert length(program.statements) == 1
+
+      program.statements
+      |> hd()
+      |> then(fn s ->
+        assert "#{s.expression}" == output
       end)
     end)
   end

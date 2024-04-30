@@ -11,6 +11,6 @@ end
 
 defimpl String.Chars, for: Monkex.AST.PrefixExpression do
   def to_string(%Monkex.AST.PrefixExpression{operator: op, right: right}) do
-    "(#{op} #{right})"
+    "(#{op}#{right})"
   end
 end

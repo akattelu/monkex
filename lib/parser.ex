@@ -30,10 +30,11 @@ defmodule Monkex.Parser do
       prefix_parse_fns: %{
         :ident => &parse_identifier/1,
         :int => &parse_integer_literal/1,
-        :true => &parse_boolean_literal/1,
-        :false => &parse_boolean_literal/1,
+        true => &parse_boolean_literal/1,
+        false => &parse_boolean_literal/1,
         :bang => &parse_prefix_expression/1,
-        :minus => &parse_prefix_expression/1
+        :minus => &parse_prefix_expression/1,
+        :lparen => &parse_grouped_expression/1
       },
       infix_parse_fns: %{
         :plus => &parse_infix_expression/2,
@@ -225,6 +226,15 @@ defmodule Monkex.Parser do
     }
   end
 
+  def parse_grouped_expression(parser) do
+    {next, expr} = parser |> next_token |> parse_expression(:lowest)
+
+    case expect_and_peek(next, :rparen) do
+      {:ok, p} -> {p, expr}
+      {:error, p, err} -> {p |> with_error(err), nil}
+    end
+  end
+
   def parse_identifier(parser) do
     {parser,
      %AST.Identifier{
@@ -240,11 +250,17 @@ defmodule Monkex.Parser do
        value: parser.current_token.literal |> String.to_integer()
      }}
   end
+
   def parse_boolean_literal(parser) do
     {parser,
      %AST.BooleanLiteral{
        token: parser.current_token,
-       value: parser.current_token.literal |> then(fn "true" -> true; "false" -> false end)
+       value:
+         parser.current_token.literal
+         |> then(fn
+           "true" -> true
+           "false" -> false
+         end)
      }}
   end
 
@@ -280,7 +296,9 @@ defmodule Monkex.Parser do
         [head | _] -> head
       end
     else
-      :error -> {parser |> with_error("no prefix function found"), nil}
+      :error ->
+        {parser |> with_error("no prefix function found for #{parser.current_token.literal}"),
+         nil}
     end
   end
 end
