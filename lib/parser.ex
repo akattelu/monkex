@@ -30,6 +30,8 @@ defmodule Monkex.Parser do
       prefix_parse_fns: %{
         :ident => &parse_identifier/1,
         :int => &parse_integer_literal/1,
+        :true => &parse_boolean_literal/1,
+        :false => &parse_boolean_literal/1,
         :bang => &parse_prefix_expression/1,
         :minus => &parse_prefix_expression/1
       },
@@ -236,6 +238,13 @@ defmodule Monkex.Parser do
      %AST.IntegerLiteral{
        token: parser.current_token,
        value: parser.current_token.literal |> String.to_integer()
+     }}
+  end
+  def parse_boolean_literal(parser) do
+    {parser,
+     %AST.BooleanLiteral{
+       token: parser.current_token,
+       value: parser.current_token.literal |> then(fn "true" -> true; "false" -> false end)
      }}
   end
 
