@@ -28,5 +28,11 @@ defmodule Monkex.AST.PrefixExpression do
         _ -> Boolean.no()
       end
     end
+    def eval(%PrefixExpression{operator: "-", right: right}) do
+      case Node.eval(right) do
+        %Integer{value: value} -> Integer.from(value * -1) 
+        _ -> Null.object()
+      end
+    end
   end
 end

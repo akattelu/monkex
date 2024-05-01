@@ -9,6 +9,7 @@ defmodule EvaluatorTest do
     assert parser.errors == []
     program |> Node.eval()
   end
+
   def eval_input({input, output}), do: {input |> eval, output}
 
   defp test_integer({obj, expected}), do: assert(obj.value == expected)
@@ -33,7 +34,18 @@ defmodule EvaluatorTest do
       {"!!true", true},
       {"!!false", false},
       {"!5", false}
-    ] 
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_boolean/1)
+  end
+
+  test "minus operator" do
+    [
+      {"-5", -5},
+      {"-10", -10},
+      {"5", 5},
+      {"10", 10}
+    ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_boolean/1)
   end

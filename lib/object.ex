@@ -1,6 +1,6 @@
 defprotocol Monkex.Object do
   # Type of the object
-  def type(obj) 
+  def type(obj)
 end
 
 defprotocol Monkex.Object.Node do
@@ -8,7 +8,10 @@ defprotocol Monkex.Object.Node do
 end
 
 defmodule Monkex.Object.Integer do
+  alias __MODULE__
   defstruct [:value]
+
+  def from(value), do: %Integer{value: value}
 end
 
 defimpl Monkex.Object, for: Monkex.Object.Integer do
