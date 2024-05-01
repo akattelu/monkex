@@ -16,6 +16,6 @@ defimpl String.Chars, for: Monkex.AST.IfExpression do
         then_block: then_block,
         else_block: else_block
       }) do
-    "#{token.literal} (#{condition}) { #{then_block} } else { #{else_block} }"
+    "#{token.literal} (#{condition}) #{then_block} else #{else_block}"
   end
 end

@@ -106,18 +106,8 @@ defmodule Monkex.Parser do
     end
   end
 
-  defp skip_until_semicolon(parser) do
-    parser
-    |> Stream.unfold(fn p ->
-      if current_token_is?(p, :semicolon) do
-        nil
-      else
-        next = p |> next_token
-        {next, next}
-      end
-    end)
-    |> Enum.reverse()
-    |> hd
+  defp skip_optional_semicolon(parser) do
+    parser |> expect_and_peek(:semicolon) |> elem(1)
   end
 
   @spec parse_program(t) :: {t, AST.Program.t()}
@@ -159,8 +149,7 @@ defmodule Monkex.Parser do
   def parse_return_statement(parser) do
     {next, expr} = parser |> next_token |> parse_expression(:lowest)
 
-    {next
-     |> skip_until_semicolon(),
+    {next |> skip_optional_semicolon,
      %AST.ReturnStatement{
        token: parser.current_token,
        return_value: expr
@@ -202,7 +191,7 @@ defmodule Monkex.Parser do
          {:ok, assign_parser} <- expect_and_peek(ident_parser, :assign) do
       {final, expr} = assign_parser |> next_token |> parse_expression(:lowest)
 
-      {final |> skip_until_semicolon,
+      {final |> skip_optional_semicolon,
        %AST.LetStatement{
          # first parser token
          token: parser.current_token,
@@ -219,10 +208,10 @@ defmodule Monkex.Parser do
 
   @spec parse_expression_statement(t) :: {t, AST.ExpressionStatement.t()} | {t, nil}
   def parse_expression_statement(parser) do
-    {next, expr} = parse_expression(parser, :lowest)
-    # skip semicolon
-    final = expect_and_peek(next, :semicolon) |> elem(1)
-    {final, %AST.ExpressionStatement{token: parser.current_token, expression: expr}}
+    with {next, expr} <- parse_expression(parser, :lowest) do
+      # skip semicolon if it exists, otherwise keep parsing
+      {next |> skip_optional_semicolon, %AST.ExpressionStatement{token: parser.current_token, expression: expr}}
+    end
   end
 
   def parse_prefix_expression(parser) do
