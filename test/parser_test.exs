@@ -308,6 +308,18 @@ defmodule ParserTest do
       {
         "3 + 4; -5 * 5",
         "(3 + 4)((-5) * 5)"
+      },
+      {
+        "a + add(b * c) + d",
+        "((a + add((b * c))) + d)"
+      },
+      {
+        "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+        "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"
+      },
+      {
+        "add(a + b + c * d / f + g)",
+        "add((((a + b) + ((c * d) / f)) + g))"
       }
     ]
 
@@ -457,7 +469,7 @@ defmodule ParserTest do
       first_statement = program.statements |> hd()
       expression = first_statement.expression
 
-      assert expression.params |> Enum.map(&(&1.symbol_name)) == expected
+      assert expression.params |> Enum.map(& &1.symbol_name) == expected
     end)
   end
 
@@ -482,6 +494,22 @@ defmodule ParserTest do
     end)
   end
 
+  test "parses call expressions" do
+    input = "add(1, 2 + 3, 4 * 5);"
+
+    {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+    assert parser.errors == []
+    assert program.statements |> length == 1
+    call_expr = program.statements |> hd |> then(& &1.expression)
+
+    assert call_expr.function.symbol_name == "add"
+
+    assert call_expr.arguments |> Enum.map(&String.Chars.to_string/1) == [
+             "1",
+             "(2 + 3)",
+             "(4 * 5)"
+           ]
+  end
 
   def test_let_statement(statement, name, value) do
     assert Statement.token_literal(statement) == "let"

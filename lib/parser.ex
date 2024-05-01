@@ -46,7 +46,8 @@ defmodule Monkex.Parser do
         :eq => &parse_infix_expression/2,
         :not_eq => &parse_infix_expression/2,
         :lt => &parse_infix_expression/2,
-        :gt => &parse_infix_expression/2
+        :gt => &parse_infix_expression/2,
+        :lparen => &parse_call_expression/2,
       }
     }
     |> next_token
@@ -245,6 +246,45 @@ defmodule Monkex.Parser do
         right: right
       }
     }
+  end
+
+  def parse_call_expression(parser, function) do
+    {next, args} = parser |> parse_call_arguments 
+
+    {next, %AST.CallExpression{
+      token: parser.current_token,
+      function: function,
+      arguments: args
+    }}
+
+  end
+
+  def parse_call_arguments(parser) do
+    if next_token_is?(parser, :rparen) do
+      # empty params
+      {parser |> next_token, []}
+    else
+      {next, ident} = parser |> next_token |> parse_expression(:lowest)
+
+      {final, params} =
+        {next, [ident]}
+        |> Stream.unfold(fn {p, params} ->
+          if p |> next_token_is?(:comma) do
+            {on_next_ident, next_ident} = p |> next_token |> next_token |> parse_expression(:lowest)
+            acc = {on_next_ident, [next_ident | params]}
+            {acc, acc}
+          else
+            nil
+          end
+        end)
+        |> Enum.reverse()
+        |> head_or({next, [ident]})
+
+      case final |> expect_and_peek(:rparen) do
+        {:error, p, err} -> {p |> with_error(err), []}
+        {:ok, p} -> {p, params |> Enum.reverse()}
+      end
+    end
   end
 
   def parse_grouped_expression(parser) do

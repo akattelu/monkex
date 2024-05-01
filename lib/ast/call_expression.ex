@@ -15,6 +15,6 @@ defimpl String.Chars, for: Monkex.AST.CallExpression do
         function: function,
         arguments: arguments
       }) do
-        "#{function}#{token.literal}#{Enum.join(arguments, ", ")})}"
+        "#{function}#{token.literal}#{Enum.join(arguments, ", ")})"
   end
 end

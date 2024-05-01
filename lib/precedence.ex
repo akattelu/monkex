@@ -8,7 +8,8 @@ defmodule Monkex.Parser.Precedence do
     :plus => :sum,
     :minus => :sum,
     :slash => :product,
-    :asterisk => :product
+    :asterisk => :product,
+    :lparen => :call
   }
 
   def of_token(tok) do
