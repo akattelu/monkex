@@ -2,6 +2,19 @@ defmodule Monkex.REPL do
   alias Monkex.Lexer
   alias Monkex.Parser
 
+  @monkey_face ~S"""
+              __,__
+     .--.  .-"     "-.  .--.
+    / .. \/  .-. .-.  \/ .. \
+   | |  '|  /   Y   \  |'  | |
+   | \   \  \ x | x /  /   / |
+    \ '- ,\.-\"""\""""-./, -' /
+     ''-' /_   ^ ^   _\ '-''
+         |  \._   _./  |
+         \   \ '~' /   /
+          '._ '-=-' _.'
+             '-----'
+  """
   def start() do
     start_parser()
   end
@@ -38,18 +51,34 @@ defmodule Monkex.REPL do
     end
   end
 
+  defp get_line(input) do
+    case input do
+      :eof -> {:end}
+      line -> {:ok, line |> String.trim()}
+    end
+  end
+
   def start_parser() do
-    input = IO.gets(">> ")
+    with input <- IO.gets(">> "), # read
+         {:ok, line} <- get_line(input),
+         {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program() do # eval
+      if parser.errors != [] do
+        IO.puts("\nWoops! We ran into some monkey business here!")
+        IO.puts(@monkey_face)
+        IO.puts("Here are the parser errors:")
 
-    if input == :eof do
-      nil
-    else
-      {_parser, program} =
-        input |> String.trim() |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+        parser.errors
+        |> Enum.each(fn err ->
+          IO.puts("\t - #{err}")
+        end)
+      else
+        IO.puts("#{program}") # print
+      end
 
-      IO.puts("#{program}")
-
+      # loop
       start()
+    else
+      {:end} -> nil
     end
   end
 end
