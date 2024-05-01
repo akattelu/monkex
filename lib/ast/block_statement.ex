@@ -1,15 +1,29 @@
 defmodule Monkex.AST.BlockStatement do
+  alias Monkex.Object.Node
+  alias __MODULE__
+  alias Monkex.AST.Statement
   @enforce_keys [:token, :statements]
   defstruct [:token, :statements]
-end
 
-defimpl Monkex.AST.Statement, for: Monkex.AST.BlockStatement do
-  def token_literal(%Monkex.AST.BlockStatement{token: token}) do
-    token.literal
+  defimpl Statement, for: BlockStatement do
+    def token_literal(%BlockStatement{token: token}), do: token.literal 
   end
-end
 
-defimpl String.Chars, for: Monkex.AST.BlockStatement do
-  def to_string(%Monkex.AST.BlockStatement{token: token, statements: []}), do: "#{token.literal} }"
-  def to_string(%Monkex.AST.BlockStatement{token: token, statements: statements}), do: "#{token.literal} #{Enum.join(statements, " ")} }"
+  defimpl String.Chars, for: BlockStatement do
+    def to_string(%BlockStatement{token: token, statements: []}), do: "#{token.literal} }"
+    def to_string(%BlockStatement{token: token, statements: statements}),
+      do: "#{token.literal} #{Enum.join(statements, " ")} }"
+  end
+
+  defimpl Node, for: BlockStatement do
+    def eval(%BlockStatement{statements: []}), do: %Monkex.Object.Null{}
+    def eval(%BlockStatement{statements: [s | []]}), do: Node.eval(s)
+    def eval(%BlockStatement{statements: statements}) do
+      statements
+      |> Enum.reduce(fn (s, _) ->
+        Node.eval(s) 
+      end)
+    end
+
+  end
 end
