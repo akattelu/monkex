@@ -9,10 +9,10 @@ defmodule Mix.Tasks.Repl do
   def run(_args) do
     {name, _} = System.cmd("whoami", [])
     IO.puts("Hello #{name |> String.trim()}, this is MonkEx")
-    IO.puts("Feel free to type in some commands!")
+    IO.puts("Feel free to type in some commands!\n")
 
     Monkex.REPL.start()
 
     IO.puts("Bye!")
-     end
+  end
 end
