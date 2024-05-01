@@ -1,6 +1,5 @@
 defmodule EvaluatorTest do
   use ExUnit.Case
-  alias Monkex.Object
   alias Monkex.Object.Node
   alias Monkex.Lexer
   alias Monkex.Parser
