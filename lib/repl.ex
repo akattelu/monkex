@@ -54,6 +54,7 @@ defmodule Monkex.REPL do
   defp get_line(input) do
     case input do
       :eof -> {:end}
+      "\n" -> {:end}
       line -> {:ok, line |> String.trim()}
     end
   end
