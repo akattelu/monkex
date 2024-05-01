@@ -20,7 +20,16 @@ defimpl String.Chars, for: Monkex.Object.Integer do
 end
 
 defmodule Monkex.Object.Boolean do
+  alias __MODULE__
   defstruct [:value]
+
+  def yes() do
+    %Boolean{value: true}
+  end
+
+  def no() do
+    %Boolean{value: false}
+  end
 end
 
 defimpl Monkex.Object, for: Monkex.Object.Boolean do

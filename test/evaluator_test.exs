@@ -21,4 +21,16 @@ defmodule EvaluatorTest do
       assert input |> eval == expected
     end)
   end
+
+  test "evaluate booleans" do
+    cases = [
+      {"true", true},
+      {"false", false}
+    ]
+
+    cases
+    |> Enum.each(fn {input, expected} ->
+      assert input |> eval == expected
+    end)
+  end
 end
