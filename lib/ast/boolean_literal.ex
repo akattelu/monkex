@@ -1,16 +1,20 @@
 defmodule Monkex.AST.BooleanLiteral do
+  alias __MODULE__
+  alias Monkex.AST.Expression
+  alias Monkex.Object.Node
+
   @enforce_keys [:token, :value]
   defstruct [:token, :value]
-end
 
-defimpl Monkex.AST.Expression, for: Monkex.AST.BooleanLiteral do
-  def token_literal(%Monkex.AST.BooleanLiteral{token: token}) do
-    token.literal
+  defimpl Expression, for: BooleanLiteral do
+    def token_literal(%BooleanLiteral{token: token}), do: token.literal
   end
-end
 
-defimpl String.Chars, for: Monkex.AST.BooleanLiteral do
-  def to_string(%Monkex.AST.BooleanLiteral{token: token}) do
-    token.literal
+  defimpl String.Chars, for: BooleanLiteral do
+    def to_string(%BooleanLiteral{token: token}), do: token.literal
+  end
+
+  defimpl Node, for: BooleanLiteral do
+    def eval(%BooleanLiteral{value: value}), do: value
   end
 end
