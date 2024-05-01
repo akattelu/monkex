@@ -1,16 +1,20 @@
 defmodule Monkex.AST.IntegerLiteral do
+  alias __MODULE__
+  alias Monkex.AST.Expression
+  alias Monkex.Object.Node
+
   @enforce_keys [:token, :value]
   defstruct [:token, :value]
-end
 
-defimpl Monkex.AST.Expression, for: Monkex.AST.IntegerLiteral do
-  def token_literal(%Monkex.AST.IntegerLiteral{token: token}) do
-    token.literal
+  defimpl Expression, for: IntegerLiteral do
+    def token_literal(%IntegerLiteral{token: token}), do: token.literal
   end
-end
 
-defimpl String.Chars, for: Monkex.AST.IntegerLiteral do
-  def to_string(%Monkex.AST.IntegerLiteral{token: token}) do
-    token.literal
+  defimpl String.Chars, for: IntegerLiteral do
+    def to_string(%IntegerLiteral{token: token}), do: token.literal
+  end
+
+  defimpl Node, for: IntegerLiteral do
+    def eval(%IntegerLiteral{value: value}), do: value
   end
 end
