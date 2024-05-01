@@ -1,16 +1,20 @@
 defmodule Monkex.AST.ExpressionStatement do
+  alias __MODULE__
+  alias Monkex.AST.Statement
+  alias Monkex.Object.Node
+
   @enforce_keys [:token, :expression]
   defstruct [:token, :expression]
-end
 
-defimpl Monkex.AST.Statement, for: Monkex.AST.ExpressionStatement do
-  def token_literal(%Monkex.AST.ExpressionStatement{token: token}) do
-    token.literal
+  defimpl Statement, for: ExpressionStatement do
+    def token_literal(%ExpressionStatement{token: token}), do: token.literal
   end
-end
 
-defimpl String.Chars, for: Monkex.AST.ExpressionStatement do
-  def to_string(%Monkex.AST.ExpressionStatement{expression: expression}) do
-    "#{expression}"
+  defimpl String.Chars, for: ExpressionStatement do
+    def to_string(%ExpressionStatement{expression: expression}), do: "#{expression}"
+  end
+
+  defimpl Node, for: ExpressionStatement do
+    def eval(%ExpressionStatement{expression: expression}), do: Node.eval(expression)
   end
 end
