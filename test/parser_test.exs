@@ -271,6 +271,54 @@ defmodule ParserTest do
     end)
   end
 
+  test "parse infix expressions with precedence" do
+    tests = [
+      {
+        "-a * b",
+        "((-a) * b)"
+      },
+      {
+        "!-a",
+        "(!(-a))"
+      },
+      {
+        "a + b + c",
+        "((a + b) + c)"
+      },
+      {
+        "a + b - c",
+        "((a + b) - c)"
+      },
+      {
+        "a * b * c",
+        "((a * b) * c)"
+      },
+      {
+        "a * b / c",
+        "((a * b) / c)"
+      },
+      {
+        "a + b / c",
+        "(a + (b / c))"
+      },
+      {
+        "a + b * c + d / e - f",
+        "(((a + (b * c)) + (d / e)) - f)"
+      },
+      {
+        "3 + 4; -5 * 5",
+        "(3 + 4)((-5) * 5)"
+      }
+    ]
+
+    tests
+    |> Enum.map(fn {input, expected} ->
+      {_, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+
+      assert "#{program}" == expected
+    end)
+  end
+
   test "parses grouped expressions" do
     inputs = [
       "(5 + 5)",

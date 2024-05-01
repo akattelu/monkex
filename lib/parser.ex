@@ -241,7 +241,9 @@ defmodule Monkex.Parser do
   end
 
   def parse_infix_expression(parser, left) do
-    {next, right} = parser |> next_token |> parse_expression(parser |> current_precedence)
+    prec = current_precedence(parser)
+    # IO.inspect("Calling infix expression with precedence: #{inspect(prec)}")
+    {next, right} = parser |> next_token |> parse_expression(prec)
 
     {
       next,
@@ -286,7 +288,7 @@ defmodule Monkex.Parser do
               {p |> with_error(err), nil}
 
             {:ok, at_else_lb} ->
-              {after_else, else_block} = at_else_lb|> parse_block_statement()
+              {after_else, else_block} = at_else_lb |> parse_block_statement()
 
               {after_else,
                %AST.IfExpression{
@@ -334,15 +336,17 @@ defmodule Monkex.Parser do
   def parse_expression(parser, precedence) do
     with {:ok, prefix_fn} <- Map.fetch(parser.prefix_parse_fns, parser.current_token.type) do
       {next, left} = prefix_fn.(parser)
-
       # send in left expression and the last parser pos
       acc =
-        prefix_fn.(parser)
+        {next, left}
         |> Stream.unfold(fn {p, left} ->
           infix_fn = Map.get(p.infix_parse_fns, p.next_token.type)
 
           cond do
             next_token_is?(p, :semicolon) ->
+              nil
+
+            next_token_is?(p, :eof) ->
               nil
 
             Precedence.compare(precedence, next_precedence(p)) >= 0 ->
@@ -352,8 +356,8 @@ defmodule Monkex.Parser do
               nil
 
             true ->
-              {next, l} = next |> next_token |> infix_fn.(left)
-              {{next, l}, {next, l}}
+              {n, l} = p |> next_token |> infix_fn.(left)
+              {{n, l}, {n, l}}
           end
         end)
         |> Enum.reverse()
