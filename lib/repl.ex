@@ -1,7 +1,12 @@
 defmodule Monkex.REPL do
   alias Monkex.Lexer
+  alias Monkex.Parser
 
   def start() do
+    start_parser()
+  end
+
+  def start_lexer() do
     input = IO.gets(">> ")
 
     unless input == :eof do
@@ -30,6 +35,21 @@ defmodule Monkex.REPL do
         # loop
         start()
       end
+    end
+  end
+
+  def start_parser() do
+    input = IO.gets(">> ")
+
+    if input == :eof do
+      nil
+    else
+      {_parser, program} =
+        input |> String.trim() |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+
+      IO.puts("#{program}")
+
+      start()
     end
   end
 end
