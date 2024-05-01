@@ -3,8 +3,11 @@ defmodule Mix.Tasks.Repl do
   --lex
     Start the REPL as a tokenizer and print out tokens
 
-  --parse (default)
+  --parse
     Start the REPL as a parser and print out string representations of ASTs
+
+  --eval (default)
+    Start the REPL as an evaluator and evaluate monkex programs
   "
   @shortdoc "Start the Monkex REPL"
   @requirements ["app.config"]
@@ -17,10 +20,10 @@ defmodule Mix.Tasks.Repl do
     IO.puts("Hello #{name |> String.trim()}, this is MonkEx")
     IO.puts("Feel free to type in some commands!\n")
 
-    if "--lex" in args do
-      Monkex.REPL.start_lexer()
-    else
-      Monkex.REPL.start_parser()
+    cond do
+      "--lex" in args -> Monkex.REPL.start_lexer()
+      "--parse" in args -> Monkex.REPL.start_parser()
+      true -> Monkex.REPL.start_evaluator()
     end
 
     IO.puts("Bye!")

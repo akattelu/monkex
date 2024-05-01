@@ -1,6 +1,7 @@
 defmodule Monkex.REPL do
   alias Monkex.Lexer
   alias Monkex.Parser
+  alias Monkex.Object.Node
 
   @monkey_face ~S"""
               __,__
@@ -74,6 +75,31 @@ defmodule Monkex.REPL do
 
       # loop
       start_parser()
+    else
+      {:end} -> nil
+    end
+  end
+
+  def start_evaluator() do
+    with input <- IO.gets(">> "), # read
+         {:ok, line} <- get_line(input),
+         {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program() do # parse
+      if parser.errors != [] do
+        IO.puts("\nWoops! We ran into some monkey business here!")
+        IO.puts(@monkey_face)
+        IO.puts("Here are the parser errors:")
+
+        parser.errors
+        |> Enum.each(fn err ->
+          IO.puts("\t - #{err}")
+        end)
+      else
+        result = Node.eval(program) # eval 
+        IO.puts(result) # print
+      end
+
+      # loop
+      start_evaluator()
     else
       {:end} -> nil
     end
