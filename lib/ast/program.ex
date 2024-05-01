@@ -20,10 +20,12 @@ defmodule Monkex.AST.Program do
   end
 
   defimpl Node, for: Program do
+    def eval(%Program{statements: []}), do: %Monkex.Object.Null{}
+    def eval(%Program{statements: [s | []]}), do: Node.eval(s)
     def eval(%Program{statements: statements}) do
       statements
-      |> Enum.reduce(fn {s, _} ->
-        Node.eval(s)
+      |> Enum.reduce(fn (s, _) ->
+        Node.eval(s) 
       end)
     end
   end
