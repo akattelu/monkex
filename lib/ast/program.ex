@@ -1,6 +1,7 @@
 defmodule Monkex.AST.Program do
   alias __MODULE__
   alias Monkex.AST.Statement
+  alias Monkex.Object.Node
 
   @enforce_keys [:statements]
   defstruct statements: []
@@ -13,16 +14,17 @@ defmodule Monkex.AST.Program do
     end
   end
 
-  @spec new([Statement.t()]) :: t
-  def new(statements) do
-    %Program{
-      statements: statements
-    }
+  defimpl String.Chars, for: Monkex.AST.Program do
+    def to_string(%Monkex.AST.Program{statements: statements}),
+      do: statements |> Enum.map(fn s -> "#{s}" end) |> Enum.join("")
   end
-end
 
-defimpl String.Chars, for: Monkex.AST.Program do
-  def to_string(%Monkex.AST.Program{statements: statements}) do
-    statements |> Enum.map(fn s -> "#{s}" end) |> Enum.join("")
+  defimpl Node, for: Program do
+    def eval(%Program{statements: statements}) do
+      statements
+      |> Enum.reduce(fn {s, _} ->
+        Node.eval(s)
+      end)
+    end
   end
 end
