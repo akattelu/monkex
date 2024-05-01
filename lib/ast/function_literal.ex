@@ -1,6 +1,6 @@
 defmodule Monkex.AST.FunctionLiteral do
-  @enforce_keys [:token, :name, :params, :body]
-  defstruct [:token, :name, :params, :body]
+  @enforce_keys [:token, :params, :body]
+  defstruct [:token, :params, :body]
 end
 
 defimpl Monkex.AST.Expression, for: Monkex.AST.FunctionLiteral do
@@ -12,10 +12,9 @@ end
 defimpl String.Chars, for: Monkex.AST.FunctionLiteral do
   def to_string(%Monkex.AST.FunctionLiteral{
         token: token,
-        name: name,
         params: params,
         body: body
       }) do
-    "#{token.literal} #{name}(#{Enum.join(params,  " ")}) #{body}"
+    "#{token.literal} (#{Enum.join(params,  ", ")}) #{body}"
   end
 end

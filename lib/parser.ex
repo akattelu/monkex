@@ -35,7 +35,8 @@ defmodule Monkex.Parser do
         :bang => &parse_prefix_expression/1,
         :minus => &parse_prefix_expression/1,
         :lparen => &parse_grouped_expression/1,
-        :if => &parse_if_expression/1
+        :if => &parse_if_expression/1,
+        :function => &parse_function_literal/1
       },
       infix_parse_fns: %{
         :plus => &parse_infix_expression/2,
@@ -176,7 +177,7 @@ defmodule Monkex.Parser do
         end
       end)
       |> Enum.reverse()
-      |> then(fn items -> if items == [] do  {parser |> next_token, []} else hd(items) end end)
+      |> head_or({parser |> next_token, []})
 
     {final,
      %AST.BlockStatement{
@@ -210,7 +211,8 @@ defmodule Monkex.Parser do
   def parse_expression_statement(parser) do
     with {next, expr} <- parse_expression(parser, :lowest) do
       # skip semicolon if it exists, otherwise keep parsing
-      {next |> skip_optional_semicolon, %AST.ExpressionStatement{token: parser.current_token, expression: expr}}
+      {next |> skip_optional_semicolon,
+       %AST.ExpressionStatement{token: parser.current_token, expression: expr}}
     end
   end
 
@@ -320,6 +322,53 @@ defmodule Monkex.Parser do
            "false" -> false
          end)
      }}
+  end
+
+  def parse_function_literal(parser) do
+    with {:ok, before_params} <- parser |> expect_and_peek(:lparen),
+         {after_params, params} <- before_params |> parse_function_parameters,
+         {:ok, before_block} <- after_params |> expect_and_peek(:lbrace),
+         {after_block, block} <- before_block |> parse_block_statement do
+      {after_block,
+       %AST.FunctionLiteral{
+         token: parser.current_token,
+         params: params,
+         body: block
+       }}
+    else
+      {:error, p, err} -> {p |> with_error(err), nil}
+    end
+  end
+
+  defp head_or([], default), do: default
+  defp head_or([head | _], _default), do: head
+
+  def parse_function_parameters(parser) do
+    if next_token_is?(parser, :rparen) do
+      # empty params
+      {parser |> next_token, []}
+    else
+      {next, ident} = parser |> next_token |> parse_identifier()
+
+      {final, params} =
+        {next, [ident]}
+        |> Stream.unfold(fn {p, params} ->
+          if p |> next_token_is?(:comma) do
+            {on_next_ident, next_ident} = p |> next_token |> next_token |> parse_identifier
+            acc = {on_next_ident, [next_ident | params]}
+            {acc, acc}
+          else
+            nil
+          end
+        end)
+        |> Enum.reverse()
+        |> head_or({next, [ident]})
+
+      case final |> expect_and_peek(:rparen) do
+        {:error, p, err} -> {p |> with_error(err), []}
+        {:ok, p} -> {p, params |> Enum.reverse()}
+      end
+    end
   end
 
   def parse_expression(parser, precedence) do
