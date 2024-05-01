@@ -461,6 +461,28 @@ defmodule ParserTest do
     end)
   end
 
+  test "function literal parsing body" do
+    tests = [
+      {"fn () { };", "{ }"},
+      {"fn (x) {x};", "{ x }"},
+      {"fn (x,y) {x + y};", "{ (x + y) }"}
+    ]
+
+    tests
+    |> Enum.each(fn {input, expected} ->
+      {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+      assert parser.errors == []
+
+      assert length(program.statements) == 1
+
+      first_statement = program.statements |> hd()
+      expression = first_statement.expression
+
+      assert "#{expression.body}" == expected
+    end)
+  end
+
+
   def test_let_statement(statement, name, value) do
     assert Statement.token_literal(statement) == "let"
     assert statement.name.symbol_name == name

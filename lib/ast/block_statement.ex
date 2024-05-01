@@ -10,7 +10,6 @@ defimpl Monkex.AST.Statement, for: Monkex.AST.BlockStatement do
 end
 
 defimpl String.Chars, for: Monkex.AST.BlockStatement do
-  def to_string(%Monkex.AST.BlockStatement{token: token, statements: statements}) do
-    "#{token.literal} #{Enum.join(statements, " ")} }"
-  end
+  def to_string(%Monkex.AST.BlockStatement{token: token, statements: []}), do: "#{token.literal} }"
+  def to_string(%Monkex.AST.BlockStatement{token: token, statements: statements}), do: "#{token.literal} #{Enum.join(statements, " ")} }"
 end
