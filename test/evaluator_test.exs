@@ -10,27 +10,14 @@ defmodule EvaluatorTest do
     program |> Node.eval()
   end
 
-  test "evaluate integers" do
-    cases = [
-      {"5", 5},
-      {"10", 10}
-    ]
+  defp test_integer({obj, expected}), do: assert obj.value == expected
+  defp test_boolean({obj, expected}), do: assert obj.value == expected
 
-    cases
-    |> Enum.each(fn {input, expected} ->
-      assert input |> eval == expected
-    end)
+  test "evaluate integers" do
+    [ {"5", 5}, {"10", 10} ] |> Enum.map(fn {input, output} -> {input |> eval, output} end) |> Enum.map(&test_integer/1)
   end
 
   test "evaluate booleans" do
-    cases = [
-      {"true", true},
-      {"false", false}
-    ]
-
-    cases
-    |> Enum.each(fn {input, expected} ->
-      assert input |> eval == expected
-    end)
+    [ {"true", true}, {"false", false} ] |> Enum.map(fn {input, output} -> {input |> eval, output} end) |> Enum.map(&test_boolean/1)
   end
 end

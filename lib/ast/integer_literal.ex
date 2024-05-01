@@ -2,6 +2,7 @@ defmodule Monkex.AST.IntegerLiteral do
   alias __MODULE__
   alias Monkex.AST.Expression
   alias Monkex.Object.Node
+  alias Monkex.Object.Integer
 
   @enforce_keys [:token, :value]
   defstruct [:token, :value]
@@ -15,6 +16,6 @@ defmodule Monkex.AST.IntegerLiteral do
   end
 
   defimpl Node, for: IntegerLiteral do
-    def eval(%IntegerLiteral{value: value}), do: value
+    def eval(%IntegerLiteral{value: value}), do: %Integer{value: value}
   end
 end
