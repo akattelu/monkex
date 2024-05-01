@@ -41,7 +41,12 @@ defimpl String.Chars, for: Monkex.Object.Boolean do
 end
 
 defmodule Monkex.Object.Null do
+  alias __MODULE__
   defstruct []
+
+  def object() do
+    %Null{}
+  end
 end
 
 defimpl Monkex.Object, for: Monkex.Object.Null do
