@@ -176,7 +176,7 @@ defmodule Monkex.Parser do
         end
       end)
       |> Enum.reverse()
-      |> hd
+      |> then(fn items -> if items == [] do  {parser |> next_token, []} else hd(items) end end)
 
     {final,
      %AST.BlockStatement{
