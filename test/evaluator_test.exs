@@ -1,6 +1,7 @@
 defmodule EvaluatorTest do
   use ExUnit.Case
   alias Monkex.Object.Node
+  alias Monkex.Object.Null
   alias Monkex.Lexer
   alias Monkex.Parser
 
@@ -47,6 +48,58 @@ defmodule EvaluatorTest do
       {"10", 10}
     ]
     |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_integer/1)
+  end
+
+  test "infix expressions with integers" do
+    [
+      {"5", 5},
+      {"10", 10},
+      {"-5", -5},
+      {"-10", -10},
+      {"5 + 5 + 5 + 5 - 10", 10},
+      {"2 * 2 * 2 * 2 * 2", 32},
+      {"-50 + 100 + -50", 0},
+      {"5 * 2 + 10", 20},
+      {"5 + 2 * 10", 25},
+      {"20 + 2 * -10", 0},
+      {"50 / 2 * 2 + 10", 60},
+      {"2 * (5 + 10)", 30},
+      {"3 * 3 * 3 + 10", 37},
+      {"3 * (3 * 3) + 10", 37},
+      {"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_integer/1)
+  end
+
+  test "infix expressions with booleans" do
+    [
+      {"true == true", true},
+      {"false == false", true},
+      {"true == false", false},
+      {"true != false", true},
+      {"false != true", true},
+      {"(1 < 2) == true", true},
+      {"(1 < 2) == false", false},
+      {"(1 > 2) == true", false},
+      {"(1 > 2) == false", true},
+      {"1 == true", false},
+      {"1 > true", false},
+      {"1 < true", false},
+      {"1 != true", false}
+    ]
+    |> Enum.map(&eval_input/1)
     |> Enum.map(&test_boolean/1)
+  end
+
+  test "infix expressions that should eval to null" do
+    [
+      "1 + false",
+      "(1 + false) + 2",
+      "(2 * 2) + true"
+    ]
+    |> Enum.map(&eval/1)
+    |> Enum.each(&assert &1 == Null.object())
   end
 end
