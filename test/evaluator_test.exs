@@ -13,19 +13,19 @@ defmodule EvaluatorTest do
 
   def eval_input({input, output}), do: {input |> eval, output}
 
-  defp test_integer({obj, expected}), do: assert(obj.value == expected)
-  defp test_boolean({obj, expected}), do: assert(obj.value == expected)
+  defp test_literal({obj, nil}), do: assert(obj == Null.object())
+  defp test_literal({obj, expected}), do: assert(obj.value == expected)
 
   test "evaluate integers" do
     [{"5", 5}, {"10", 10}]
     |> Enum.map(&eval_input/1)
-    |> Enum.map(&test_integer/1)
+    |> Enum.map(&test_literal/1)
   end
 
   test "evaluate booleans" do
     [{"true", true}, {"false", false}]
     |> Enum.map(&eval_input/1)
-    |> Enum.map(&test_boolean/1)
+    |> Enum.map(&test_literal/1)
   end
 
   test "bang operator" do
@@ -37,7 +37,7 @@ defmodule EvaluatorTest do
       {"!5", false}
     ]
     |> Enum.map(&eval_input/1)
-    |> Enum.map(&test_boolean/1)
+    |> Enum.map(&test_literal/1)
   end
 
   test "minus operator" do
@@ -48,7 +48,7 @@ defmodule EvaluatorTest do
       {"10", 10}
     ]
     |> Enum.map(&eval_input/1)
-    |> Enum.map(&test_integer/1)
+    |> Enum.map(&test_literal/1)
   end
 
   test "infix expressions with integers" do
@@ -70,7 +70,7 @@ defmodule EvaluatorTest do
       {"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50}
     ]
     |> Enum.map(&eval_input/1)
-    |> Enum.map(&test_integer/1)
+    |> Enum.map(&test_literal/1)
   end
 
   test "infix expressions with booleans" do
@@ -90,16 +90,29 @@ defmodule EvaluatorTest do
       {"1 != true", false}
     ]
     |> Enum.map(&eval_input/1)
-    |> Enum.map(&test_boolean/1)
+    |> Enum.map(&test_literal/1)
   end
 
   test "infix expressions that should eval to null" do
     [
-      "1 + false",
-      "(1 + false) + 2",
-      "(2 * 2) + true"
+      {"1 + false", nil},
+      {"(1 + false) + 2", nil},
+      {"(2 * 2) + true", nil}
     ]
-    |> Enum.map(&eval/1)
-    |> Enum.each(&assert &1 == Null.object())
+    |> Enum.map(&eval_input/1)
+    |> Enum.each(&test_literal/1)
   end
+
+  # test "if expressions" do
+  #   [
+  #     {"if (true) { 10 }", 10},
+  #     {"if (false) { 10 }", nil},
+  #     {"if (1) { 10 }", 10},
+  #     {"if (1 < 2) { 10 }", 10},
+  #     {"if (1 > 2) { 10 }", nil},
+  #     {"if (1 > 2) { 10 } else { 20 }", 20},
+  #     {"if (1 < 2) { 10 } else { 20 }", 10}
+  #   ]
+  #   |> Enum.map(&eval_input/1)
+  # end
 end
