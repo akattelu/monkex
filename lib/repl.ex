@@ -15,10 +15,6 @@ defmodule Monkex.REPL do
           '._ '-=-' _.'
              '-----'
   """
-  def start() do
-    start_parser()
-  end
-
   def start_lexer() do
     input = IO.gets(">> ")
 
@@ -46,7 +42,7 @@ defmodule Monkex.REPL do
         tokens |> Enum.map(&IO.inspect/1)
 
         # loop
-        start()
+        start_lexer()
       end
     end
   end
@@ -77,7 +73,7 @@ defmodule Monkex.REPL do
       end
 
       # loop
-      start()
+      start_parser()
     else
       {:end} -> nil
     end
