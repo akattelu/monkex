@@ -1,16 +1,32 @@
 defmodule Monkex.AST.PrefixExpression do
+  alias __MODULE__
+  alias Monkex.AST.Expression
+  alias Monkex.Object.Node
+
   @enforce_keys [:token, :operator, :right]
   defstruct [:token, :operator, :right]
-end
 
-defimpl Monkex.AST.Expression, for: Monkex.AST.PrefixExpression do
-  def token_literal(%Monkex.AST.PrefixExpression{token: token}) do
-    token.literal
+  defimpl Expression, for: PrefixExpression do
+    def token_literal(%PrefixExpression{token: token}), do: token.literal
   end
-end
 
-defimpl String.Chars, for: Monkex.AST.PrefixExpression do
-  def to_string(%Monkex.AST.PrefixExpression{operator: op, right: right}) do
-    "(#{op}#{right})"
+  defimpl String.Chars, for: PrefixExpression do
+    def to_string(%PrefixExpression{operator: op, right: right}), do: "(#{op}#{right})"
+  end
+
+  defimpl Node, for: PrefixExpression do
+    alias Monkex.Object.Integer
+    alias Monkex.Object.Boolean
+    alias Monkex.Object.Null
+
+    def eval(%PrefixExpression{operator: "!", right: right}) do
+      case Node.eval(right) do
+        %Integer{} -> Boolean.no()
+        %Boolean{value: true} -> Boolean.no()
+        %Boolean{value: false} -> Boolean.yes()
+        %Null{} -> Boolean.yes()
+        _ -> Boolean.no()
+      end
+    end
   end
 end
