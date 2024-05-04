@@ -197,4 +197,25 @@ defmodule EvaluatorTest do
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
   end
+
+  test "function definition" do
+    input = "fn(x) { x + 2 }"
+    result = eval(input)
+    assert result.params |> length() == 1
+    assert "#{result.params |> elem(0)}"== "x"
+    assert "#{result.body}" == "{ x + 2 }"
+  end
+
+  test "function calls" do
+    [
+      {"let identity = fn(x) { x; }; identity(5);", 5},
+      {"let identity = fn(x) { return x; }; identity(5);", 5},
+      {"let double = fn(x) { x * 2; }; double(5);", 10},
+      {"let add = fn(x, y) { x + y; }; add(5, 5);", 10},
+      {"let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
+      {"fn(x) { x; }(5)", 5}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+  end
 end
