@@ -2,6 +2,9 @@ defmodule Monkex.AST.Program do
   alias __MODULE__
   alias Monkex.AST.Statement
   alias Monkex.Object.Node
+  alias Monkex.Object.Error
+  alias Monkex.Object.ReturnValue
+  alias Monkex.Object.Null
 
   @enforce_keys [:statements]
   defstruct statements: []
@@ -20,15 +23,13 @@ defmodule Monkex.AST.Program do
   end
 
   defimpl Node, for: Program do
-    alias Monkex.Object.ReturnValue
-    alias Monkex.Object.Null
-
     def eval(%Program{statements: []}), do: %Monkex.Object.Null{}
 
     def eval(%Program{statements: [s | []]}) do
       case Node.eval(s) do
-          %ReturnValue{value: val} -> val
-          val -> val
+        %Error{} = err -> err
+        %ReturnValue{value: val} -> val
+        val -> val
       end
     end
 
@@ -36,6 +37,7 @@ defmodule Monkex.AST.Program do
       statements
       |> Enum.reduce_while(Null.object(), fn s, _ ->
         case Node.eval(s) do
+          %Error{} = err -> {:halt, err}
           %ReturnValue{value: val} -> {:halt, val}
           val -> {:cont, val}
         end

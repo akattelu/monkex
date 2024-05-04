@@ -15,9 +15,11 @@ defmodule Monkex.AST.PrefixExpression do
   end
 
   defimpl Node, for: PrefixExpression do
+    alias Monkex.Object
     alias Monkex.Object.Integer
     alias Monkex.Object.Boolean
     alias Monkex.Object.Null
+    alias Monkex.Object.Error
 
     def eval(%PrefixExpression{operator: "!", right: right}) do
       case Node.eval(right) do
@@ -31,8 +33,11 @@ defmodule Monkex.AST.PrefixExpression do
     def eval(%PrefixExpression{operator: "-", right: right}) do
       case Node.eval(right) do
         %Integer{value: value} -> Integer.from(value * -1) 
-        _ -> Null.object()
+        _ -> Error.with_message("unknown operator: -#{Node.eval(right) |> Object.type}")
       end
+    end
+    def eval(%PrefixExpression{operator: unknown, right: right}) do
+      Error.with_message("unknown operator: #{unknown}#{Node.eval(right) |> Object.type}")
     end
   end
 end

@@ -1,6 +1,8 @@
 defmodule Monkex.AST.InfixExpression do
   alias __MODULE__
+  alias Monkex.Object
   alias Monkex.Object.Node
+  alias Monkex.Object.Error
   alias Monkex.AST.Expression
 
   @enforce_keys [:token, :left, :operator, :right]
@@ -16,7 +18,6 @@ defmodule Monkex.AST.InfixExpression do
   end
 
   defimpl Node, for: InfixExpression do
-    alias Monkex.Object.Null
     alias Monkex.Object.Integer
     alias Monkex.Object.Boolean
 
@@ -36,10 +37,16 @@ defmodule Monkex.AST.InfixExpression do
         when op in @boolean_operators do
       case {Node.eval(left), Node.eval(right)} do
         {%Integer{value: left_value}, %Integer{value: right_value}} ->
-          op |> fn_from_operator() |> then(fn f -> f.(left_value, right_value) end) |> Boolean.from
+          op
+          |> fn_from_operator()
+          |> then(fn f -> f.(left_value, right_value) end)
+          |> Boolean.from()
 
         {%Boolean{value: left_value}, %Boolean{value: right_value}} ->
-          op |> fn_from_operator() |> then(fn f -> f.(left_value, right_value) end) |> Boolean.from
+          op
+          |> fn_from_operator()
+          |> then(fn f -> f.(left_value, right_value) end)
+          |> Boolean.from()
 
         _ ->
           Boolean.no()
@@ -48,13 +55,22 @@ defmodule Monkex.AST.InfixExpression do
 
     def eval(%InfixExpression{operator: op, left: left, right: right})
         when op in @integer_operators do
-      with %Integer{value: left_value} <- Node.eval(left),
-           %Integer{value: right_value} <- Node.eval(right) do
-        op |> fn_from_operator() |> then(fn f -> f.(left_value, right_value) end) |> Integer.from
-      else
-        _ -> 
-          Null.object()
-      end   
-     end
+      case {Node.eval(left), Node.eval(right)} do
+        {%Integer{value: left_value}, %Integer{value: right_value}} ->
+          op
+          |> fn_from_operator()
+          |> then(fn f -> f.(left_value, right_value) end)
+          |> Integer.from()
+
+        {left_value, right_value} ->
+          case {Object.type(left_value), Object.type(right_value)} do
+            {t, t} ->
+              Error.with_message("unknown operator: #{t} #{op} #{t}")
+
+            {tl, tr} ->
+              Error.with_message("type mismatch: #{tl} #{op} #{tr}")
+          end
+      end
+    end
   end
 end

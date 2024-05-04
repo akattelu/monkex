@@ -2,6 +2,7 @@ defmodule Monkex.AST.BlockStatement do
   alias __MODULE__
   alias Monkex.Object.Node
   alias Monkex.Object.ReturnValue
+  alias Monkex.Object.Error
   alias Monkex.Object.Null
   alias Monkex.AST.Statement
 
@@ -25,7 +26,8 @@ defmodule Monkex.AST.BlockStatement do
       statements
       |> Enum.reduce_while(Null.object(), fn s, _ ->
         case Node.eval(s) do
-          %ReturnValue{value: v} -> {:halt, v |> ReturnValue.from}
+          %Error{} = err -> {:halt, err}
+          %ReturnValue{} = val -> {:halt, val}
           val -> {:cont, val}
         end
       end)

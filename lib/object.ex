@@ -77,3 +77,20 @@ defmodule Monkex.Object.ReturnValue do
     def to_string(_), do: "ReturnValue"
   end
 end
+
+defmodule Monkex.Object.Error do
+  alias __MODULE__
+
+  @enforce_keys [:message]
+  defstruct [:message]
+
+  def with_message(msg), do: %Error{message:  msg}
+
+  defimpl Monkex.Object, for: Error do
+    def type(_), do: :error
+  end
+
+  defimpl String.Chars, for: Error do
+    def to_string(%Error{message: msg}), do: "Error: #{msg}"
+  end
+end

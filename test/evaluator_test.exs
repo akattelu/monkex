@@ -1,5 +1,6 @@
 defmodule EvaluatorTest do
   use ExUnit.Case
+  alias Monkex.Object
   alias Monkex.Object.Node
   alias Monkex.Object.Null
   alias Monkex.Lexer
@@ -15,6 +16,11 @@ defmodule EvaluatorTest do
 
   defp test_literal({obj, nil}), do: assert(obj == Null.object())
   defp test_literal({obj, expected}), do: assert(obj.value == expected)
+
+  defp expect_error({obj, expected}) do
+    assert Object.type(obj) == :error
+    assert obj.message == expected
+  end
 
   test "evaluate integers" do
     [{"5", 5}, {"10", 10}]
@@ -93,15 +99,15 @@ defmodule EvaluatorTest do
     |> Enum.map(&test_literal/1)
   end
 
-  test "infix expressions that should eval to null" do
-    [
-      {"1 + false", nil},
-      {"(1 + false) + 2", nil},
-      {"(2 * 2) + true", nil}
-    ]
-    |> Enum.map(&eval_input/1)
-    |> Enum.each(&test_literal/1)
-  end
+  # test "infix expressions that should eval to null" do
+  #   [
+  #     {"1 + false", nil},
+  #     {"(1 + false) + 2", nil},
+  #     {"(2 * 2) + true", nil}
+  #   ]
+  #   |> Enum.map(&eval_input/1)
+  #   |> Enum.each(&test_literal/1)
+  # end
 
   test "if expressions" do
     [
@@ -143,5 +149,48 @@ defmodule EvaluatorTest do
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.each(&test_literal/1)
+  end
+
+  test "error messages" do
+    [
+      {
+        "5 + true;",
+        "type mismatch: integer + boolean"
+      },
+      {
+        "5 + true; 5;",
+        "type mismatch: integer + boolean"
+      },
+      {
+        "-true",
+        "unknown operator: -boolean"
+      },
+      {
+        "true + false;",
+        "unknown operator: boolean + boolean"
+      },
+      {
+        "5; true + false; 5",
+        "unknown operator: boolean + boolean"
+      },
+      {
+        "if (10 > 1) { true + false; }",
+        "unknown operator: boolean + boolean"
+      },
+      {
+        """
+        if (10 > 1) {
+          if (10 > 1) {
+            return true + false;
+          }
+
+          return 1;
+        }
+        """,
+        "unknown operator: boolean + boolean"
+      }
+    ] 
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&expect_error/1)
   end
 end
