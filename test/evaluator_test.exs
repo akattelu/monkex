@@ -202,7 +202,7 @@ defmodule EvaluatorTest do
     input = "fn(x) { x + 2 }"
     result = eval(input)
     assert result.params |> length() == 1
-    assert "#{result.params |> hd}"== "x"
+    assert "#{result.params |> hd}" == "x"
     assert "#{result.body}" == "{ (x + 2) }"
   end
 
@@ -217,5 +217,25 @@ defmodule EvaluatorTest do
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
+  end
+
+  test "closure calls" do
+    [
+      {"let adder = fn(x) { fn(y) { x + y; } }; let newAdder = adder(5); newAdder(3);", 8},
+      {"let threeFn = fn() { return fn() { return 3; } }; let three = threeFn(); three();", 3}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+  end
+
+  test "function errors" do
+    [
+      {"let f = fn(x) { 1 + x }; f();", "expected 1 args in function call but was given 0"},
+      {"let f = fn(x) { 1 + x }; f(1 + true);", "type mismatch: integer + boolean"},
+      {"let adder = fn(x) { fn(y) { x + y; } }; let newAdder = adder(5); newAdder(3); x;",
+       "identifier not found: x"}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&expect_error/1)
   end
 end
