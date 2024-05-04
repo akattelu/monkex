@@ -1,7 +1,8 @@
 defmodule Monkex.AST.ReturnStatement do
-  alias Monkex.Object.Node
   alias __MODULE__
   alias Monkex.AST.Statement
+  alias Monkex.Object.Node
+  alias Monkex.Object.Error
 
   @enforce_keys [:token, :return_value]
   defstruct [:token, :return_value]
@@ -19,7 +20,10 @@ defmodule Monkex.AST.ReturnStatement do
     alias Monkex.Object.ReturnValue
 
     def eval(%ReturnStatement{return_value: expr}) do
-      expr |> Node.eval() |> ReturnValue.from()
+      case Node.eval(expr) do
+        %Error{} = err -> err
+        val -> ReturnValue.from(val)
+      end
     end
   end
 end

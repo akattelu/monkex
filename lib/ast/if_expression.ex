@@ -24,14 +24,41 @@ defmodule Monkex.AST.IfExpression do
     alias Monkex.Object.Null
     alias Monkex.Object.Boolean
     alias Monkex.Object.Integer
+    alias Monkex.Object.Error
+    def eval(%Error{} = err), do: err
+
     def eval(%IfExpression{condition: condition, then_block: then_block, else_block: else_block}) do
       case {Node.eval(condition), else_block} do
-        {%Boolean{value: true}, _} -> Node.eval(then_block) # true then always do the then
-        {%Integer{value: value}, nil} -> if value > 0 do Node.eval(then_block) else Null.object() end
-        {%Integer{value: value}, else_block} -> if value > 0 do Node.eval(then_block) else Node.eval(else_block) end
-        {_, nil} -> Null.object() # falsy and no else block
-        {%Boolean{value: false}, else_expr} -> Node.eval(else_expr) # falsy but there is an else block
-          _ -> Null.object() # anything else 
+        {%Error{} = err, _} -> err
+        # true then always do the then
+        {%Boolean{value: true}, _} ->
+          Node.eval(then_block)
+
+        {%Integer{value: value}, nil} ->
+          if value > 0 do
+            Node.eval(then_block)
+          else
+            Null.object()
+          end
+
+        {%Integer{value: value}, else_block} ->
+          if value > 0 do
+            Node.eval(then_block)
+          else
+            Node.eval(else_block)
+          end
+
+        # falsy and no else block
+        {_, nil} ->
+          Null.object()
+
+        # falsy but there is an else block
+        {%Boolean{value: false}, else_expr} ->
+          Node.eval(else_expr)
+
+        # anything else 
+        _ ->
+          Null.object()
       end
     end
   end

@@ -23,6 +23,7 @@ defmodule Monkex.AST.PrefixExpression do
 
     def eval(%PrefixExpression{operator: "!", right: right}) do
       case Node.eval(right) do
+        %Error{} = err -> err
         %Integer{} -> Boolean.no()
         %Boolean{value: true} -> Boolean.no()
         %Boolean{value: false} -> Boolean.yes()
@@ -32,6 +33,7 @@ defmodule Monkex.AST.PrefixExpression do
     end
     def eval(%PrefixExpression{operator: "-", right: right}) do
       case Node.eval(right) do
+        %Error{} = err -> err
         %Integer{value: value} -> Integer.from(value * -1) 
         _ -> Error.with_message("unknown operator: -#{Node.eval(right) |> Object.type}")
       end
