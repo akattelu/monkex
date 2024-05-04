@@ -62,7 +62,9 @@ defmodule Monkex.Object.ReturnValue do
 
   defstruct [:value]
 
-  def with(obj), do: %ReturnValue{value: obj}
+
+  def from(%ReturnValue{} = x) do x end
+  def from(obj), do: %ReturnValue{value: obj}
 
   defimpl Monkex.Object, for: ReturnValue do
     def type(_), do: :return_value
