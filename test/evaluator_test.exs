@@ -189,8 +189,19 @@ defmodule EvaluatorTest do
         """,
         "unknown operator: boolean + boolean"
       }
-    ] 
+    ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&expect_error/1)
+  end
+
+  test "let statements" do
+    [
+      {"let a = 5; a;", 5},
+      {"let a = 5 * 5; a;", 25},
+      {"let a = 5; let b = a; b;", 5},
+      {"let a = 5; let b = a; let c = a + b + 5; c;", 15}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
   end
 end
