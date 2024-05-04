@@ -103,12 +103,20 @@ defmodule Monkex.Object.Function do
   @enforce_keys [:params, :body, :env]
   defstruct [:params, :body, :env]
 
+  def new(params, body, env) do
+    %Function{
+      params: params,
+      body: body,
+      env: env
+    }
+  end
 
   defimpl Monkex.Object, for: Function do
     def type(_), do: :function
   end
 
   defimpl String.Chars, for: Function do
-    def to_string(%Function{params: params, body: body}), do: "fn(#{Enum.join(params, ", ")}) #{body}"
+    def to_string(%Function{params: params, body: body}),
+      do: "fn(#{Enum.join(params, ", ")}) #{body}"
   end
 end

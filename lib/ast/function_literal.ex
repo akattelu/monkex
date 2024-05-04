@@ -1,20 +1,28 @@
 defmodule Monkex.AST.FunctionLiteral do
+  alias Monkex.AST.Expression
+  alias Monkex.Object.Node
+  alias Monkex.Object.Function
+  alias __MODULE__
+
   @enforce_keys [:token, :params, :body]
   defstruct [:token, :params, :body]
-end
 
-defimpl Monkex.AST.Expression, for: Monkex.AST.FunctionLiteral do
-  def token_literal(%Monkex.AST.FunctionLiteral{token: token}) do
-    token.literal
+  defimpl Expression, for: FunctionLiteral do
+    def token_literal(%FunctionLiteral{token: token}), do: token.literal
   end
-end
 
-defimpl String.Chars, for: Monkex.AST.FunctionLiteral do
-  def to_string(%Monkex.AST.FunctionLiteral{
-        token: token,
-        params: params,
-        body: body
-      }) do
-    "#{token.literal} (#{Enum.join(params,  ", ")}) #{body}"
+  defimpl String.Chars, for: FunctionLiteral do
+    def to_string(%FunctionLiteral{
+          token: token,
+          params: params,
+          body: body
+        }),
+        do: "#{token.literal} (#{Enum.join(params, ", ")}) #{body}"
+  end
+
+  defimpl Node, for: FunctionLiteral do
+    def eval(%FunctionLiteral{params: params, body: body}, env) do
+      {Function.new(params, body, env), env}
+    end
   end
 end

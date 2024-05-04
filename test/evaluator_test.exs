@@ -202,8 +202,8 @@ defmodule EvaluatorTest do
     input = "fn(x) { x + 2 }"
     result = eval(input)
     assert result.params |> length() == 1
-    assert "#{result.params |> elem(0)}"== "x"
-    assert "#{result.body}" == "{ x + 2 }"
+    assert "#{result.params |> hd}"== "x"
+    assert "#{result.body}" == "{ (x + 2) }"
   end
 
   test "function calls" do
