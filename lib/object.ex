@@ -9,6 +9,7 @@ end
 
 defmodule Monkex.Object.Integer do
   alias __MODULE__
+  @enforce_keys [:value]
   defstruct [:value]
 
   def from(value), do: %Integer{value: value}
@@ -24,6 +25,7 @@ end
 
 defmodule Monkex.Object.Boolean do
   alias __MODULE__
+  @enforce_keys [:value]
   defstruct [:value]
 
   def yes(), do: %Boolean{value: true}
@@ -60,6 +62,7 @@ end
 defmodule Monkex.Object.ReturnValue do
   alias __MODULE__
 
+  @enforce_keys [:value]
   defstruct [:value]
 
 
