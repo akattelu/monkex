@@ -1,7 +1,10 @@
 defmodule Monkex.AST.BlockStatement do
-  alias Monkex.Object.Node
   alias __MODULE__
+  alias Monkex.Object.Node
+  alias Monkex.Object.ReturnValue
+  alias Monkex.Object.Null
   alias Monkex.AST.Statement
+
   @enforce_keys [:token, :statements]
   defstruct [:token, :statements]
 
@@ -20,8 +23,11 @@ defmodule Monkex.AST.BlockStatement do
     def eval(%BlockStatement{statements: [s | []]}), do: Node.eval(s)
     def eval(%BlockStatement{statements: statements}) do
       statements
-      |> Enum.reduce(fn (s, _) ->
-        Node.eval(s) 
+      |> Enum.reduce_while(Null.object(), fn s, _ ->
+        case Node.eval(s) do
+          %ReturnValue{value: v} -> {:halt, v |> ReturnValue.from}
+          val -> {:cont, val}
+        end
       end)
     end
 

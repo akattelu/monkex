@@ -20,12 +20,25 @@ defmodule Monkex.AST.Program do
   end
 
   defimpl Node, for: Program do
+    alias Monkex.Object.ReturnValue
+    alias Monkex.Object.Null
+
     def eval(%Program{statements: []}), do: %Monkex.Object.Null{}
-    def eval(%Program{statements: [s | []]}), do: Node.eval(s)
+
+    def eval(%Program{statements: [s | []]}) do
+      case Node.eval(s) do
+          %ReturnValue{value: val} -> val
+          val -> val
+      end
+    end
+
     def eval(%Program{statements: statements}) do
       statements
-      |> Enum.reduce(fn (s, _) ->
-        Node.eval(s) 
+      |> Enum.reduce_while(Null.object(), fn s, _ ->
+        case Node.eval(s) do
+          %ReturnValue{value: val} -> {:halt, val}
+          val -> {:cont, val}
+        end
       end)
     end
   end

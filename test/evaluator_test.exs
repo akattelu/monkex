@@ -1,6 +1,5 @@
 defmodule EvaluatorTest do
   use ExUnit.Case
-  alias Monkex.Object
   alias Monkex.Object.Node
   alias Monkex.Object.Null
   alias Monkex.Lexer
@@ -16,10 +15,6 @@ defmodule EvaluatorTest do
 
   defp test_literal({obj, nil}), do: assert(obj == Null.object())
   defp test_literal({obj, expected}), do: assert(obj.value == expected)
-  defp test_return_value({obj, expected}) do
-    assert Object.type(obj) == :return_value
-    test_literal({obj.value, expected})
-  end
 
   test "evaluate integers" do
     [{"5", 5}, {"10", 10}]
@@ -125,9 +120,28 @@ defmodule EvaluatorTest do
   test "return statements" do
     [
       {"return 10;", 10},
-      {"9; return 10; 9", 10}
+      {"9; return 10; 9", 10},
+      {"""
+
+       if (10 > 1) {
+       if (10 > 1) {
+       return 10;
+       }
+
+       return 1;
+       }
+         
+       """, 10},
+      {"""
+
+       if (10 > 1) {
+       return 10;
+       }
+       return 1;
+         
+       """, 10}
     ]
     |> Enum.map(&eval_input/1)
-    |> Enum.each(&test_return_value/1)
+    |> Enum.each(&test_literal/1)
   end
 end
