@@ -1,5 +1,4 @@
 defmodule Monkex.REPL do
-  alias Monkex.Environment
   alias Monkex.Lexer
   alias Monkex.Parser
   alias Monkex.Object.Node
@@ -58,9 +57,11 @@ defmodule Monkex.REPL do
   end
 
   def start_parser() do
-    with input <- IO.gets(">> "), # read
+    # read
+    with input <- IO.gets(">> "),
          {:ok, line} <- get_line(input),
-         {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program() do # eval
+         # eval
+         {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program() do
       if parser.errors != [] do
         IO.puts("\nWoops! We ran into some monkey business here!")
         IO.puts(@monkey_face)
@@ -71,7 +72,8 @@ defmodule Monkex.REPL do
           IO.puts("\t - #{err}")
         end)
       else
-        IO.puts("#{program}") # print
+        # print
+        IO.puts("#{program}")
       end
 
       # loop
@@ -81,10 +83,12 @@ defmodule Monkex.REPL do
     end
   end
 
-  def start_evaluator() do
-    with input <- IO.gets(">> "), # read
+  def start_evaluator(env) do
+    # read
+    with input <- IO.gets(">> "),
          {:ok, line} <- get_line(input),
-         {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program() do # parse
+         # parse
+         {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program() do
       if parser.errors != [] do
         IO.puts("\nWoops! We ran into some monkey business here!")
         IO.puts(@monkey_face)
@@ -94,14 +98,18 @@ defmodule Monkex.REPL do
         |> Enum.each(fn err ->
           IO.puts("\t - #{err}")
         end)
-      else
-        env = Environment.new()
-        {result, _}= Node.eval(program, env) # eval 
-        IO.puts(result) # print
-      end
 
-      # loop
-      start_evaluator()
+        # loop with old env
+        start_evaluator(env)
+      else
+        # eval 
+        {result, next_env} = Node.eval(program, env)
+        # print
+        IO.puts(result)
+
+        # loop with new env
+        start_evaluator(next_env)
+      end
     else
       {:end} -> nil
     end

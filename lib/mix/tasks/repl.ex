@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Repl do
     cond do
       "--lex" in args -> Monkex.REPL.start_lexer()
       "--parse" in args -> Monkex.REPL.start_parser()
-      true -> Monkex.REPL.start_evaluator()
+      true -> Monkex.REPL.start_evaluator(Monkex.Environment.new())
     end
 
     IO.puts("Bye!")
