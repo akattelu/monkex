@@ -27,9 +27,9 @@ defmodule Monkex.Object.Boolean do
   defstruct [:value]
 
   def yes(), do: %Boolean{value: true}
-  def no(), do: %Boolean{value: false} 
-  def from(true), do: yes() 
-  def from(false), do: no() 
+  def no(), do: %Boolean{value: false}
+  def from(true), do: yes()
+  def from(false), do: no()
 end
 
 defimpl Monkex.Object, for: Monkex.Object.Boolean do
@@ -55,4 +55,20 @@ end
 
 defimpl String.Chars, for: Monkex.Object.Null do
   def to_string(_), do: "NULL"
+end
+
+defmodule Monkex.Object.ReturnValue do
+  alias __MODULE__
+
+  defstruct [:value]
+
+  def with(obj), do: %ReturnValue{value: obj}
+
+  defimpl Monkex.Object, for: ReturnValue do
+    def type(_), do: :return_value
+  end
+
+  defimpl String.Chars, for: ReturnValue do
+    def to_string(_), do: "ReturnValue"
+  end
 end
