@@ -1,39 +1,6 @@
-defmodule MonkexTest do
+defmodule LexerTest do
   use ExUnit.Case
-  doctest Monkex
   alias Monkex.Lexer
-  alias Monkex.Token
-  alias Monkex.Parser.Precedence
-
-  test "greets the world" do
-    assert Monkex.hello() == :world
-  end
-
-  test "precedence compare" do
-    assert Precedence.compare(:lowest, :equals) == -1
-    assert Precedence.compare(:lowest, :lessgreater) == -2
-    assert Precedence.compare(:equals, :equals) == 0
-    assert Precedence.compare(:product, :sum) == 1
-  end
-
-  test "is digit" do
-    assert Token.is_digit("1") == true
-    assert Token.is_digit("0") == true
-    assert Token.is_digit("9") == true
-    assert Token.is_digit("a") == false
-  end
-
-  test "is letter" do
-    assert Token.is_letter("a") == true
-    assert Token.is_letter("z") == true
-    assert Token.is_letter("A") == true
-    assert Token.is_letter("Z") == true
-    assert Token.is_letter("_") == true
-    assert Token.is_letter("0") == false
-    assert Token.is_letter("9") == false
-    assert Token.is_letter(" ") == false
-    assert Token.is_letter("!") == false
-  end
 
   test "lex simple number expr with eof" do
     input = "1 + 2"
@@ -42,7 +9,7 @@ defmodule MonkexTest do
       {:int, "1"},
       {:plus, "+"},
       {:int, "2"},
-      {:eof, ""},
+      {:eof, ""}
     ]
 
     expected
@@ -149,7 +116,7 @@ defmodule MonkexTest do
     let result = add(five, ten);
     !-/*5;
     5 < 10 > 5;
- 
+
     if (5 < 10) {
         return true;
     } else {
@@ -209,7 +176,7 @@ defmodule MonkexTest do
       {:gt, ">"},
       {:int, "5"},
       {:semicolon, ";"},
-       {:if, "if"},
+      {:if, "if"},
       {:lparen, "("},
       {:int, "5"},
       {:lt, "<"},
@@ -217,13 +184,13 @@ defmodule MonkexTest do
       {:rparen, ")"},
       {:lbrace, "{"},
       {:return, "return"},
-      {:true, "true"},
+      {true, "true"},
       {:semicolon, ";"},
       {:rbrace, "}"},
       {:else, "else"},
       {:lbrace, "{"},
       {:return, "return"},
-      {:false, "false"},
+      {false, "false"},
       {:semicolon, ";"},
       {:rbrace, "}"},
       {:int, "10"},
@@ -234,7 +201,6 @@ defmodule MonkexTest do
       {:not_eq, "!="},
       {:int, "9"},
       {:semicolon, ";"}
-
     ]
 
     expected
