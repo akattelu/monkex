@@ -37,7 +37,7 @@ defmodule Monkex.AST.InfixExpression do
 
     def eval(%InfixExpression{operator: op, left: left, right: right}, env)
         when op in @boolean_operators do
-      {case {Node.eval(left, env), Node.eval(right, env)} do
+      {case {Node.eval(left, env) |> elem(0), Node.eval(right, env) |> elem(0)} do
          {%Error{} = err, _} ->
            err
 
@@ -63,7 +63,7 @@ defmodule Monkex.AST.InfixExpression do
 
     def eval(%InfixExpression{operator: op, left: left, right: right}, env)
         when op in @integer_operators do
-      {case {Node.eval(left, env), Node.eval(right, env)} do
+      {case {Node.eval(left, env) |> elem(0), Node.eval(right, env) |> elem(0)} do
          {%Error{} = err, _} ->
            err
 

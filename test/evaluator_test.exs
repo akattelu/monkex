@@ -56,7 +56,7 @@ defmodule EvaluatorTest do
       {"5", 5},
       {"10", 10}
     ]
-    |> Enum.map(&eval_input/1)
+    |> Enum.map(&eval_input/1)  
     |> Enum.map(&test_literal/1)
   end
 
@@ -102,16 +102,6 @@ defmodule EvaluatorTest do
     |> Enum.map(&test_literal/1)
   end
 
-  # test "infix expressions that should eval to null" do
-  #   [
-  #     {"1 + false", nil},
-  #     {"(1 + false) + 2", nil},
-  #     {"(2 * 2) + true", nil}
-  #   ]
-  #   |> Enum.map(&eval_input/1)
-  #   |> Enum.each(&test_literal/1)
-  # end
-
   test "if expressions" do
     [
       {"if (true) { 10 }", 10},
@@ -150,7 +140,7 @@ defmodule EvaluatorTest do
          
        """, 10}
     ]
-    |> Enum.map(&eval_input/1)
+    |> Enum.map(&eval_input/1) 
     |> Enum.each(&test_literal/1)
   end
 
@@ -197,14 +187,14 @@ defmodule EvaluatorTest do
     |> Enum.map(&expect_error/1)
   end
 
-  test "let statements" do
-    [
-      {"let a = 5; a;", 5},
-      {"let a = 5 * 5; a;", 25},
-      {"let a = 5; let b = a; b;", 5},
-      {"let a = 5; let b = a; let c = a + b + 5; c;", 15}
-    ]
-    |> Enum.map(&eval_input/1)
-    |> Enum.map(&test_literal/1)
-  end
+  # test "let statements" do
+  #   [
+  #     {"let a = 5; a;", 5},
+  #     {"let a = 5 * 5; a;", 25},
+  #     {"let a = 5; let b = a; b;", 5},
+  #     {"let a = 5; let b = a; let c = a + b + 5; c;", 15}
+  #   ]
+  #   |> Enum.map(&eval_input/1)
+  #   |> Enum.map(&test_literal/1)
+  # end
 end

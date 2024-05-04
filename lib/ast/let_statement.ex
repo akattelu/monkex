@@ -14,9 +14,9 @@ defmodule Monkex.AST.LetStatement do
     def to_string(%LetStatement{name: name, value: value}), do: "let #{name} = #{value};"
   end
 
-  defimpl Node, for: LetStatement do
-    def eval(%LetStatement{name: name, value: value}, env) do
+  # defimpl Node, for: LetStatement do
+  #   def eval(%LetStatement{name: name, value: value}, env) do
 
-    end
-  end
+  #   end
+  # end
 end

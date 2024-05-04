@@ -22,7 +22,7 @@ defmodule Monkex.AST.PrefixExpression do
     alias Monkex.Object.Error
 
     def eval(%PrefixExpression{operator: "!", right: right}, env) do
-      {case Node.eval(right, env) do
+      {case Node.eval(right, env) |> elem(0) do
         %Error{} = err -> err
         %Integer{} -> Boolean.no()
         %Boolean{value: true} -> Boolean.no()
@@ -33,15 +33,15 @@ defmodule Monkex.AST.PrefixExpression do
     end
 
     def eval(%PrefixExpression{operator: "-", right: right}, env) do
-      {case Node.eval(right, env) do
+      {case Node.eval(right, env) |> elem(0) do
         %Error{} = err -> err
         %Integer{value: value} -> Integer.from(value * -1)
-        _ -> Error.with_message("unknown operator: -#{Node.eval(right, env) |> Object.type()}")
+        _ -> Error.with_message("unknown operator: -#{Node.eval(right, env) |> elem(0) |> Object.type()}")
       end, env}
     end
 
     def eval(%PrefixExpression{operator: unknown, right: right}, env) do
-      {Error.with_message("unknown operator: #{unknown}#{Node.eval(right, env) |> Object.type()}"), env}
+      {Error.with_message("unknown operator: #{unknown}#{Node.eval(right, env) |> elem(0) |> Object.type()}"), env}
     end
   end
 end

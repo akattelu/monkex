@@ -20,10 +20,10 @@ defmodule Monkex.AST.ReturnStatement do
     alias Monkex.Object.ReturnValue
 
     def eval(%ReturnStatement{return_value: expr}, env) do
-      case Node.eval(expr, env) do
-        %Error{} = err -> err
-        val -> ReturnValue.from(val)
-      end
+      {case Node.eval(expr, env) |> elem(0) do
+         %Error{} = err -> err
+         val -> ReturnValue.from(val)
+       end, env}
     end
   end
 end

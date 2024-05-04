@@ -31,43 +31,40 @@ defmodule Monkex.AST.IfExpression do
           %IfExpression{condition: condition, then_block: then_block, else_block: else_block},
           env
         ) do
-      result =
-        case {Node.eval(condition, env), else_block} do
-          {%Error{} = err, _} ->
-            err
+      case {Node.eval(condition, env) |> elem(0), else_block} do
+        {%Error{} = err, _} ->
+          {err, env}
 
-          # true then always do the then
-          {%Boolean{value: true}, _} ->
+        # true then always do the then
+        {%Boolean{value: true}, _} ->
+          Node.eval(then_block, env)
+
+        {%Integer{value: value}, nil} ->
+          if value > 0 do
             Node.eval(then_block, env)
+          else
+            {Null.object(), env}
+          end
 
-          {%Integer{value: value}, nil} ->
-            if value > 0 do
-              Node.eval(then_block, env)
-            else
-              Null.object()
-            end
+        {%Integer{value: value}, else_block} ->
+          if value > 0 do
+            Node.eval(then_block, env)
+          else
+            Node.eval(else_block, env)
+          end
 
-          {%Integer{value: value}, else_block} ->
-            if value > 0 do
-              Node.eval(then_block, env)
-            else
-              Node.eval(else_block, env)
-            end
+        # falsy and no else block
+        {_, nil} ->
+          {Null.object(), env}
 
-          # falsy and no else block
-          {_, nil} ->
-            Null.object()
+        # falsy but there is an else block
+        {%Boolean{value: false}, else_expr} ->
+          Node.eval(else_expr, env)
 
-          # falsy but there is an else block
-          {%Boolean{value: false}, else_expr} ->
-            Node.eval(else_expr, env)
-
-          # anything else 
-          _ ->
-            Null.object()
-        end
-
-      {result, env}
+        # anything else 
+        _ ->
+          {Null.object(), env}
+      end
     end
   end
 end
