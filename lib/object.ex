@@ -12,14 +12,14 @@ defmodule Monkex.Object.Integer do
   defstruct [:value]
 
   def from(value), do: %Integer{value: value}
-end
 
-defimpl Monkex.Object, for: Monkex.Object.Integer do
-  def type(_), do: :integer
-end
+  defimpl Monkex.Object, for: Integer do
+    def type(_), do: :integer
+  end
 
-defimpl String.Chars, for: Monkex.Object.Integer do
-  def to_string(obj), do: "#{obj.value}"
+  defimpl String.Chars, for: Integer do
+    def to_string(obj), do: "#{obj.value}"
+  end
 end
 
 defmodule Monkex.Object.Boolean do
@@ -30,14 +30,14 @@ defmodule Monkex.Object.Boolean do
   def no(), do: %Boolean{value: false}
   def from(true), do: yes()
   def from(false), do: no()
-end
 
-defimpl Monkex.Object, for: Monkex.Object.Boolean do
-  def type(_), do: :boolean
-end
+  defimpl Monkex.Object, for: Boolean do
+    def type(_), do: :boolean
+  end
 
-defimpl String.Chars, for: Monkex.Object.Boolean do
-  def to_string(obj), do: "#{obj.value}"
+  defimpl String.Chars, for: Boolean do
+    def to_string(obj), do: "#{obj.value}"
+  end
 end
 
 defmodule Monkex.Object.Null do
@@ -47,14 +47,14 @@ defmodule Monkex.Object.Null do
   def object() do
     %Null{}
   end
-end
 
-defimpl Monkex.Object, for: Monkex.Object.Null do
-  def type(_), do: :null
-end
+  defimpl Monkex.Object, for: Null do
+    def type(_), do: :null
+  end
 
-defimpl String.Chars, for: Monkex.Object.Null do
-  def to_string(_), do: "NULL"
+  defimpl String.Chars, for: Null do
+    def to_string(_), do: "NULL"
+  end
 end
 
 defmodule Monkex.Object.ReturnValue do
