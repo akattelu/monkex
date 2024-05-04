@@ -94,7 +94,8 @@ defmodule Monkex.REPL do
           IO.puts("\t - #{err}")
         end)
       else
-        result = Node.eval(program) # eval 
+        env = nil
+        {result, _}= Node.eval(program, env) # eval 
         IO.puts(result) # print
       end
 

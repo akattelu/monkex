@@ -16,6 +16,6 @@ defmodule Monkex.AST.BooleanLiteral do
   end
 
   defimpl Node, for: BooleanLiteral do
-    def eval(%BooleanLiteral{value: value}), do: %Boolean{value: value}
+    def eval(%BooleanLiteral{value: value}, env), do: {%Boolean{value: value}, env}
   end
 end

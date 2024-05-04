@@ -4,7 +4,7 @@ defprotocol Monkex.Object do
 end
 
 defprotocol Monkex.Object.Node do
-  def eval(node)
+  def eval(node, env)
 end
 
 defmodule Monkex.Object.Integer do

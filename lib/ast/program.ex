@@ -23,25 +23,26 @@ defmodule Monkex.AST.Program do
   end
 
   defimpl Node, for: Program do
-    def eval(%Program{statements: []}), do: %Monkex.Object.Null{}
+    def eval(%Program{statements: []}, env), do: {Null.object(), env}
 
-    def eval(%Program{statements: [s | []]}) do
-      case Node.eval(s) do
+    def eval(%Program{statements: [s | []]}, env) do
+      {case Node.eval(s, env) do
         %Error{} = err -> err
         %ReturnValue{value: val} -> val
         val -> val
-      end
+      end, env}
     end
 
-    def eval(%Program{statements: statements}) do
-      statements
+    def eval(%Program{statements: statements}, env) do
+      result = statements
       |> Enum.reduce_while(Null.object(), fn s, _ ->
-        case Node.eval(s) do
+        case Node.eval(s, env) do
           %Error{} = err -> {:halt, err}
           %ReturnValue{value: val} -> {:halt, val}
           val -> {:cont, val}
         end
       end)
+    {result, env}
     end
   end
 end

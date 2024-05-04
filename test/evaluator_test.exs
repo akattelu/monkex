@@ -9,7 +9,10 @@ defmodule EvaluatorTest do
   defp eval(input) do
     {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
     assert parser.errors == []
-    program |> Node.eval()
+    env = nil
+
+    # ignore env
+    program |> Node.eval(env) |> elem(0)
   end
 
   def eval_input({input, output}), do: {input |> eval, output}

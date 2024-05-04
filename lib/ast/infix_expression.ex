@@ -33,49 +33,58 @@ defmodule Monkex.AST.InfixExpression do
     def fn_from_operator(">"), do: &(&1 > &2)
     def fn_from_operator("<"), do: &(&1 < &2)
 
-    def eval(%Error{} = err), do: err
-    def eval(%InfixExpression{operator: op, left: left, right: right})
+    def eval(%Error{} = err, env), do: {err, env}
+
+    def eval(%InfixExpression{operator: op, left: left, right: right}, env)
         when op in @boolean_operators do
-      case {Node.eval(left), Node.eval(right)} do
-        {%Error{} = err, _} -> err
-        {_, %Error{} = err} -> err
-        {%Integer{value: left_value}, %Integer{value: right_value}} ->
-          op
-          |> fn_from_operator()
-          |> then(fn f -> f.(left_value, right_value) end)
-          |> Boolean.from()
+      {case {Node.eval(left, env), Node.eval(right, env)} do
+         {%Error{} = err, _} ->
+           err
 
-        {%Boolean{value: left_value}, %Boolean{value: right_value}} ->
-          op
-          |> fn_from_operator()
-          |> then(fn f -> f.(left_value, right_value) end)
-          |> Boolean.from()
+         {_, %Error{} = err} ->
+           err
 
-        _ ->
-          Boolean.no()
-      end
+         {%Integer{value: left_value}, %Integer{value: right_value}} ->
+           op
+           |> fn_from_operator()
+           |> then(fn f -> f.(left_value, right_value) end)
+           |> Boolean.from()
+
+         {%Boolean{value: left_value}, %Boolean{value: right_value}} ->
+           op
+           |> fn_from_operator()
+           |> then(fn f -> f.(left_value, right_value) end)
+           |> Boolean.from()
+
+         _ ->
+           Boolean.no()
+       end, env}
     end
 
-    def eval(%InfixExpression{operator: op, left: left, right: right})
+    def eval(%InfixExpression{operator: op, left: left, right: right}, env)
         when op in @integer_operators do
-      case {Node.eval(left), Node.eval(right)} do
-        {%Error{} = err, _} -> err
-        {_, %Error{} = err} -> err
-        {%Integer{value: left_value}, %Integer{value: right_value}} ->
-          op
-          |> fn_from_operator()
-          |> then(fn f -> f.(left_value, right_value) end)
-          |> Integer.from()
+      {case {Node.eval(left, env), Node.eval(right, env)} do
+         {%Error{} = err, _} ->
+           err
 
-        {left_value, right_value} ->
-          case {Object.type(left_value), Object.type(right_value)} do
-            {t, t} ->
-              Error.with_message("unknown operator: #{t} #{op} #{t}")
+         {_, %Error{} = err} ->
+           err
 
-            {tl, tr} ->
-              Error.with_message("type mismatch: #{tl} #{op} #{tr}")
-          end
-      end
+         {%Integer{value: left_value}, %Integer{value: right_value}} ->
+           op
+           |> fn_from_operator()
+           |> then(fn f -> f.(left_value, right_value) end)
+           |> Integer.from()
+
+         {left_value, right_value} ->
+           case {Object.type(left_value), Object.type(right_value)} do
+             {t, t} ->
+               Error.with_message("unknown operator: #{t} #{op} #{t}")
+
+             {tl, tr} ->
+               Error.with_message("type mismatch: #{tl} #{op} #{tr}")
+           end
+       end, env}
     end
   end
 end

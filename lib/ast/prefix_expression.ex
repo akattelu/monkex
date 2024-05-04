@@ -21,25 +21,27 @@ defmodule Monkex.AST.PrefixExpression do
     alias Monkex.Object.Null
     alias Monkex.Object.Error
 
-    def eval(%PrefixExpression{operator: "!", right: right}) do
-      case Node.eval(right) do
+    def eval(%PrefixExpression{operator: "!", right: right}, env) do
+      {case Node.eval(right, env) do
         %Error{} = err -> err
         %Integer{} -> Boolean.no()
         %Boolean{value: true} -> Boolean.no()
         %Boolean{value: false} -> Boolean.yes()
         %Null{} -> Boolean.yes()
         _ -> Boolean.no()
-      end
+      end, env}
     end
-    def eval(%PrefixExpression{operator: "-", right: right}) do
-      case Node.eval(right) do
+
+    def eval(%PrefixExpression{operator: "-", right: right}, env) do
+      {case Node.eval(right, env) do
         %Error{} = err -> err
-        %Integer{value: value} -> Integer.from(value * -1) 
-        _ -> Error.with_message("unknown operator: -#{Node.eval(right) |> Object.type}")
-      end
+        %Integer{value: value} -> Integer.from(value * -1)
+        _ -> Error.with_message("unknown operator: -#{Node.eval(right, env) |> Object.type()}")
+      end, env}
     end
-    def eval(%PrefixExpression{operator: unknown, right: right}) do
-      Error.with_message("unknown operator: #{unknown}#{Node.eval(right) |> Object.type}")
+
+    def eval(%PrefixExpression{operator: unknown, right: right}, env) do
+      {Error.with_message("unknown operator: #{unknown}#{Node.eval(right, env) |> Object.type()}"), env}
     end
   end
 end

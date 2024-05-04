@@ -25,41 +25,49 @@ defmodule Monkex.AST.IfExpression do
     alias Monkex.Object.Boolean
     alias Monkex.Object.Integer
     alias Monkex.Object.Error
-    def eval(%Error{} = err), do: err
+    def eval(%Error{} = err, env), do: {err, env}
 
-    def eval(%IfExpression{condition: condition, then_block: then_block, else_block: else_block}) do
-      case {Node.eval(condition), else_block} do
-        {%Error{} = err, _} -> err
-        # true then always do the then
-        {%Boolean{value: true}, _} ->
-          Node.eval(then_block)
+    def eval(
+          %IfExpression{condition: condition, then_block: then_block, else_block: else_block},
+          env
+        ) do
+      result =
+        case {Node.eval(condition, env), else_block} do
+          {%Error{} = err, _} ->
+            err
 
-        {%Integer{value: value}, nil} ->
-          if value > 0 do
-            Node.eval(then_block)
-          else
+          # true then always do the then
+          {%Boolean{value: true}, _} ->
+            Node.eval(then_block, env)
+
+          {%Integer{value: value}, nil} ->
+            if value > 0 do
+              Node.eval(then_block, env)
+            else
+              Null.object()
+            end
+
+          {%Integer{value: value}, else_block} ->
+            if value > 0 do
+              Node.eval(then_block, env)
+            else
+              Node.eval(else_block, env)
+            end
+
+          # falsy and no else block
+          {_, nil} ->
             Null.object()
-          end
 
-        {%Integer{value: value}, else_block} ->
-          if value > 0 do
-            Node.eval(then_block)
-          else
-            Node.eval(else_block)
-          end
+          # falsy but there is an else block
+          {%Boolean{value: false}, else_expr} ->
+            Node.eval(else_expr, env)
 
-        # falsy and no else block
-        {_, nil} ->
-          Null.object()
+          # anything else 
+          _ ->
+            Null.object()
+        end
 
-        # falsy but there is an else block
-        {%Boolean{value: false}, else_expr} ->
-          Node.eval(else_expr)
-
-        # anything else 
-        _ ->
-          Null.object()
-      end
+      {result, env}
     end
   end
 end
