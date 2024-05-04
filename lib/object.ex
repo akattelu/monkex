@@ -65,8 +65,10 @@ defmodule Monkex.Object.ReturnValue do
   @enforce_keys [:value]
   defstruct [:value]
 
+  def from(%ReturnValue{} = x) do
+    x
+  end
 
-  def from(%ReturnValue{} = x) do x end
   def from(obj), do: %ReturnValue{value: obj}
 
   defimpl Monkex.Object, for: ReturnValue do
@@ -84,7 +86,7 @@ defmodule Monkex.Object.Error do
   @enforce_keys [:message]
   defstruct [:message]
 
-  def with_message(msg), do: %Error{message:  msg}
+  def with_message(msg), do: %Error{message: msg}
 
   defimpl Monkex.Object, for: Error do
     def type(_), do: :error
@@ -92,5 +94,21 @@ defmodule Monkex.Object.Error do
 
   defimpl String.Chars, for: Error do
     def to_string(%Error{message: msg}), do: "Error: #{msg}"
+  end
+end
+
+defmodule Monkex.Object.Function do
+  alias __MODULE__
+
+  @enforce_keys [:params, :body, :env]
+  defstruct [:params, :body, :env]
+
+
+  defimpl Monkex.Object, for: Function do
+    def type(_), do: :function
+  end
+
+  defimpl String.Chars, for: Function do
+    def to_string(%Function{params: params, body: body}), do: "fn(#{Enum.join(params, ", ")}) #{body}"
   end
 end
