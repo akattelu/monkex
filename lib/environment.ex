@@ -14,7 +14,7 @@ defmodule Monkex.Environment do
   def get(env, name) do
     case Map.fetch(env.store, name) do
       {:ok, obj} -> {:ok, obj}
-      {:error} -> {:undefined}
+      :error -> :undefined
     end
   end
 

@@ -4,15 +4,15 @@ defmodule EvaluatorTest do
   alias Monkex.Object.Node
   alias Monkex.Object.Null
   alias Monkex.Lexer
+  alias Monkex.Environment
   alias Monkex.Parser
 
   defp eval(input) do
     {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
     assert parser.errors == []
-    env = nil
-
-    # ignore env
-    program |> Node.eval(env) |> elem(0)
+    env = Environment.new()
+    {obj, _env} = program |> Node.eval(env)
+    obj
   end
 
   def eval_input({input, output}), do: {input |> eval, output}
@@ -56,7 +56,7 @@ defmodule EvaluatorTest do
       {"5", 5},
       {"10", 10}
     ]
-    |> Enum.map(&eval_input/1)  
+    |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
   end
 
@@ -140,7 +140,7 @@ defmodule EvaluatorTest do
          
        """, 10}
     ]
-    |> Enum.map(&eval_input/1) 
+    |> Enum.map(&eval_input/1)
     |> Enum.each(&test_literal/1)
   end
 
@@ -187,14 +187,14 @@ defmodule EvaluatorTest do
     |> Enum.map(&expect_error/1)
   end
 
-  # test "let statements" do
-  #   [
-  #     {"let a = 5; a;", 5},
-  #     {"let a = 5 * 5; a;", 25},
-  #     {"let a = 5; let b = a; b;", 5},
-  #     {"let a = 5; let b = a; let c = a + b + 5; c;", 15}
-  #   ]
-  #   |> Enum.map(&eval_input/1)
-  #   |> Enum.map(&test_literal/1)
-  # end
+  test "let statements" do
+    [
+      {"let a = 5; a;", 5},
+      {"let a = 5 * 5; a;", 25},
+      {"let a = 5; let b = a; b;", 5},
+      {"let a = 5; let b = a; let c = a + b + 5; c;", 15}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+  end
 end

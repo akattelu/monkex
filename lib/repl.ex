@@ -1,4 +1,5 @@
 defmodule Monkex.REPL do
+  alias Monkex.Environment
   alias Monkex.Lexer
   alias Monkex.Parser
   alias Monkex.Object.Node
@@ -94,7 +95,7 @@ defmodule Monkex.REPL do
           IO.puts("\t - #{err}")
         end)
       else
-        env = nil
+        env = Environment.new()
         {result, _}= Node.eval(program, env) # eval 
         IO.puts(result) # print
       end

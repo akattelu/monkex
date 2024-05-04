@@ -6,6 +6,7 @@ defmodule EnvironmentTest do
   test "env get" do
     e = Environment.from_store(%{"a" => Integer.from(1)})
     assert Environment.get(e, "a") == {:ok, Integer.from(1)}
+    assert Environment.get(e, "b") == :undefined
   end
 
   test "env set" do
