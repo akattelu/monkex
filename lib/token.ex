@@ -39,6 +39,7 @@ defmodule Monkex.Token do
 
   @spec is_letter(String.t()) :: boolean
   def is_letter(char) when char == "" or char == nil, do: false
+
   def is_letter(char) do
     # convert to ascii val
     ch = char |> String.to_charlist() |> hd
@@ -47,6 +48,7 @@ defmodule Monkex.Token do
 
   @spec is_digit(String.t()) :: boolean
   def is_digit(char) when char == "" or char == nil, do: false
+
   def is_digit(char) do
     # convert to ascii val
     ch = char |> String.to_charlist() |> hd

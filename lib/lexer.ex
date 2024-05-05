@@ -46,6 +46,9 @@ defmodule Monkex.Lexer do
           {l |> read_char, Token.from_ch("!")}
         end
 
+      l.ch == "\"" ->
+        l |> read_string |> then(fn {l, str} -> {l, %Token{type: :string, literal: str}} end)
+
       Token.is_letter(l.ch) ->
         {lexer, identifier} = read_identifier(l)
         tok = %Token{type: Token.lookup_ident(identifier), literal: identifier}
@@ -57,9 +60,7 @@ defmodule Monkex.Lexer do
         {lexer, tok}
 
       true ->
-        tok = Token.from_ch(l.ch)
-        next_ch_lexer = read_char(l)
-        {next_ch_lexer, tok}
+        {l |> read_char, l.ch |> Token.from_ch()}
     end
   end
 
@@ -79,6 +80,14 @@ defmodule Monkex.Lexer do
   defp read_digit(initial) do
     final = initial |> advance_while(&Token.is_digit(&1))
     {final, String.slice(final.input, initial.position, final.position - initial.position)}
+  end
+
+  @spec read_string(Lexer.t()) :: {Lexer.t(), String.t()}
+  defp read_string(initial) do
+    final = initial |> read_char |> advance_while(&(&1 != "\"")) |> read_char
+    # do not read the first quote or the end quote
+    {final,
+     String.slice(final.input, initial.position + 1, final.position - initial.position - 2)}
   end
 
   @spec read_char(Lexer.t()) :: Lexer.t()

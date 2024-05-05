@@ -125,6 +125,9 @@ defmodule LexerTest do
 
     10 == 10;
     10 != 9;
+    "foobar";
+    "foo bar";
+    "";
     """
 
     expected = [
@@ -200,15 +203,20 @@ defmodule LexerTest do
       {:int, "10"},
       {:not_eq, "!="},
       {:int, "9"},
+      {:semicolon, ";"},
+      {:string, "foobar"},
+      {:semicolon, ";"},
+      {:string, "foo bar"},
+      {:semicolon, ";"},
+      {:string, ""},
       {:semicolon, ";"}
     ]
 
     expected
     |> Enum.reduce(Lexer.new(input), fn {type, literal}, next_lexer ->
-      {l, token} = Lexer.next_token(next_lexer)
+      {_, token} = Lexer.next_token(next_lexer)
       assert token.literal == literal
       assert token.type == type
-      l
     end)
   end
 end
