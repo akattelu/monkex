@@ -214,9 +214,10 @@ defmodule LexerTest do
 
     expected
     |> Enum.reduce(Lexer.new(input), fn {type, literal}, next_lexer ->
-      {_, token} = Lexer.next_token(next_lexer)
+      {l, token} = Lexer.next_token(next_lexer)
       assert token.literal == literal
       assert token.type == type
+      l
     end)
   end
 end
