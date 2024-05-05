@@ -1,6 +1,6 @@
 # MonkEx
 
-Elixir verison of Monkey: a toy programming language implemented for learning purposes
+Elixir implementation of the Monkey programming language
 
 # Features
 
