@@ -26,13 +26,13 @@ defmodule Monkex.AST.BlockStatement do
 
     def eval(%BlockStatement{statements: statements}, env) do
       {statements
-      |> Enum.reduce_while(Null.object(), fn s, _ ->
-        case Node.eval(s, env) |> elem(0) do
-          %Error{} = err -> {:halt, err}
-          %ReturnValue{} = val -> {:halt, val}
-          val -> {:cont, val}
-        end
-      end), env}
+       |> Enum.reduce_while(Null.object(), fn s, _ ->
+         case Node.eval(s, env) |> elem(0) do
+           %Error{} = err -> {:halt, err}
+           %ReturnValue{} = val -> {:halt, val}
+           val -> {:cont, val}
+         end
+       end), env}
     end
   end
 end

@@ -47,7 +47,7 @@ defmodule Monkex.Parser do
         :not_eq => &parse_infix_expression/2,
         :lt => &parse_infix_expression/2,
         :gt => &parse_infix_expression/2,
-        :lparen => &parse_call_expression/2,
+        :lparen => &parse_call_expression/2
       }
     }
     |> next_token
@@ -249,14 +249,14 @@ defmodule Monkex.Parser do
   end
 
   def parse_call_expression(parser, function) do
-    {next, args} = parser |> parse_call_arguments 
+    {next, args} = parser |> parse_call_arguments
 
-    {next, %AST.CallExpression{
-      token: parser.current_token,
-      function: function,
-      arguments: args
-    }}
-
+    {next,
+     %AST.CallExpression{
+       token: parser.current_token,
+       function: function,
+       arguments: args
+     }}
   end
 
   def parse_call_arguments(parser) do
@@ -270,7 +270,9 @@ defmodule Monkex.Parser do
         {next, [ident]}
         |> Stream.unfold(fn {p, params} ->
           if p |> next_token_is?(:comma) do
-            {on_next_ident, next_ident} = p |> next_token |> next_token |> parse_expression(:lowest)
+            {on_next_ident, next_ident} =
+              p |> next_token |> next_token |> parse_expression(:lowest)
+
             acc = {on_next_ident, [next_ident | params]}
             {acc, acc}
           else

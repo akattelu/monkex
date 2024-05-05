@@ -29,8 +29,7 @@ defmodule Monkex.AST.CallExpression do
       if length(params) == length(args) do
         :ok
       else
-        {:error,
-         "expected #{length(params)} args in function call but was given #{length(args)}"}
+        {:error, "expected #{length(params)} args in function call but was given #{length(args)}"}
       end
     end
 
@@ -53,7 +52,8 @@ defmodule Monkex.AST.CallExpression do
           {obj, _} -> {obj, env}
         end
       else
-        {%Error{}, _} = result -> result
+        {%Error{}, _} = result ->
+          result
 
         {:error, msg} ->
           {Error.with_message(msg), env}

@@ -33,14 +33,14 @@ defmodule Monkex.AST.Program do
     end
 
     def eval(%Program{statements: statements}, env) do
-        statements
-        |> Enum.reduce_while({Null.object(), env}, fn s, {_, e} ->
-          case Node.eval(s, e) do
-            {%Error{}, _} = acc -> {:halt, acc}
-            {%ReturnValue{value: val}, e_next} -> {:halt, {val, e_next}}
-            val -> {:cont, val}
-          end 
-        end)
+      statements
+      |> Enum.reduce_while({Null.object(), env}, fn s, {_, e} ->
+        case Node.eval(s, e) do
+          {%Error{}, _} = acc -> {:halt, acc}
+          {%ReturnValue{value: val}, e_next} -> {:halt, {val, e_next}}
+          val -> {:cont, val}
+        end
+      end)
     end
   end
 end

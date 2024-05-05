@@ -16,7 +16,7 @@ defmodule Monkex.Parser.Precedence do
     Map.get(@token_to_precedence, tok, :lowest)
   end
 
-  def compare(p1, p2) do 
+  def compare(p1, p2) do
     to_num = fn x -> Enum.find_index(@precedence, fn p -> p == x end) end
     to_num.(p1) - to_num.(p2)
   end
