@@ -5,7 +5,6 @@ Elixir verison of Monkey: a toy programming language implemented for learning pu
 # Features
 
 
-
 ## REPL
 
 MonkEx features a functional REPL
@@ -19,7 +18,7 @@ mix repl
 The REPL is a good way to play around with the language and its features:
 
 ```sh
-monkex main* ⇡λ  mix repl
+$ mix repl
 Hello aakash, this is MonkEx
 Feel free to type in some commands!
                                                                                                                                                   
@@ -35,9 +34,9 @@ fn(y) { (x + y) }
 ```
 
 The REPL also outputs parser errors and runtime errors: 
+
 ```sh
-  
-  monkex main ⇡λ mix repl
+$ mix repl
 Hello aakash, this is MonkEx
 Feel free to type in some commands!
 
@@ -68,7 +67,7 @@ Error: identifier not found: b
 The REPL can also be run in lexer (`--lex`) or parser (`--parse`) mode for debugging purposes:
 
 ```sh
-monkex main* ⇡λ  mix repl --lex
+$ mix repl --lex
 Hello aakash, this is MonkEx
 Feel free to type in some commands!
                                                                                                                                                   
@@ -88,9 +87,9 @@ Feel free to type in some commands!
 %Monkex.Token{type: :int, literal: "5"}
 %Monkex.Token{type: :rbrace, literal: "}"}
 %Monkex.Token{type: :semicolon, literal: ";"}
->> Bye!
-                                                                                                                                                  
-monkex main* ⇡15s λ  mix repl --parse
+```
+```sh
+$ mix repl --parse
 Hello aakash, this is MonkEx
 Feel free to type in some commands!
                                                                                                                                                   
@@ -100,9 +99,7 @@ Feel free to type in some commands!
 fn (a) { (a + 5) }
 >> a + b + c;
 ((a + b) + c)
->> Bye!
 ```
-
 
 You can input a newline or C-d to exit the REPL
 
@@ -116,3 +113,13 @@ MonkEx depends on elixir and mix
 ```sh
 mix test
 ```
+
+<!-- 
+# Learnings
+
+
+## Evaluator
+
+Having an immutable environment helped a lot when supporting closures. You can see the implementation in [the call expression AST node](./lib/ast/call_expression.ex)
+
+-->
