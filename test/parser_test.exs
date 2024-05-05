@@ -10,6 +10,7 @@ defmodule ParserTest do
   alias Monkex.AST.ExpressionStatement
   alias Monkex.AST.IntegerLiteral
   alias Monkex.AST.BooleanLiteral
+  alias Monkex.AST.StringLiteral
   alias Monkex.AST.Identifier
   alias Monkex.AST.Program
   alias Monkex.Lexer
@@ -190,6 +191,28 @@ defmodule ParserTest do
                expression: %BooleanLiteral{
                  token: %Token{type: false, literal: "false"},
                  value: false
+               }
+             }
+           ]
+  end
+
+  test "parse string literals" do
+    {parser, program} =
+      """
+        "hello world";
+      """
+      |> Lexer.new()
+      |> Parser.new()
+      |> Parser.parse_program()
+
+    assert parser.errors == []
+
+    assert program.statements == [
+             %ExpressionStatement{
+               token: %Token{type: :string, literal: "hello world"},
+               expression: %StringLiteral{
+                 token: %Token{type: :string, literal: "hello world"},
+                 value: "hello world"
                }
              }
            ]
