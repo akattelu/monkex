@@ -238,4 +238,13 @@ defmodule EvaluatorTest do
     |> Enum.map(&eval_input/1)
     |> Enum.map(&expect_error/1)
   end
+
+  test "string literals" do
+    [
+      {~s("foobar"), "foobar"},
+      {~s("foo bar"), "foo bar"}
+    ] 
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+  end
 end

@@ -120,3 +120,19 @@ defmodule Monkex.Object.Function do
       do: "fn(#{Enum.join(params, ", ")}) #{body}"
   end
 end
+
+defmodule Monkex.Object.String do
+  alias __MODULE__, as: ObjString
+  @enforce_keys [:value]
+  defstruct [:value]
+
+  def from(value), do: %ObjString{value: value}
+
+  defimpl Monkex.Object, for: ObjString do
+    def type(_), do: :string
+  end
+
+  defimpl String.Chars, for: ObjString do
+    def to_string(%ObjString{value: value}), do: "\"#{value}\""
+  end
+end
