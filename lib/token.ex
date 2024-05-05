@@ -1,8 +1,9 @@
 defmodule Monkex.Token do
+  alias __MODULE__
   @enforce_keys [:type, :literal]
   defstruct [:type, :literal]
 
-  @type t :: %Monkex.Token{type: atom, literal: String.t()}
+  @type t :: %Token{type: atom, literal: String.t()}
 
   @keywords %{
     "fn" => :function,
@@ -14,33 +15,30 @@ defmodule Monkex.Token do
     "return" => :return
   }
 
+  @doc "Looks up special keywords and defaults to :ident"
   @spec lookup_ident(String.t()) :: atom
-  def lookup_ident(ident) do
-    # default to :ident type
-    Map.get(@keywords, ident, :ident)
-  end
+  def lookup_ident(ident), do: Map.get(@keywords, ident, :ident)
 
-  @spec from_ch(String.t()) :: Monkex.Token.t()
-  def from_ch("="), do: %Monkex.Token{type: :assign, literal: "="}
-  def from_ch("+"), do: %Monkex.Token{type: :plus, literal: "+"}
-  def from_ch("("), do: %Monkex.Token{type: :lparen, literal: "("}
-  def from_ch(")"), do: %Monkex.Token{type: :rparen, literal: ")"}
-  def from_ch("{"), do: %Monkex.Token{type: :lbrace, literal: "{"}
-  def from_ch("}"), do: %Monkex.Token{type: :rbrace, literal: "}"}
-  def from_ch(","), do: %Monkex.Token{type: :comma, literal: ","}
-  def from_ch(";"), do: %Monkex.Token{type: :semicolon, literal: ";"}
-  def from_ch("!"), do: %Monkex.Token{type: :bang, literal: "!"}
-  def from_ch("*"), do: %Monkex.Token{type: :asterisk, literal: "*"}
-  def from_ch("/"), do: %Monkex.Token{type: :slash, literal: "/"}
-  def from_ch("-"), do: %Monkex.Token{type: :minus, literal: "-"}
-  def from_ch("<"), do: %Monkex.Token{type: :lt, literal: "<"}
-  def from_ch(">"), do: %Monkex.Token{type: :gt, literal: ">"}
-  def from_ch(nil), do: %Monkex.Token{type: :eof, literal: ""}
-  def from_ch(illegal), do: %Monkex.Token{type: :illegal, literal: illegal}
+  @spec from_ch(String.t()) :: Token.t()
+  def from_ch("="), do: %Token{type: :assign, literal: "="}
+  def from_ch("+"), do: %Token{type: :plus, literal: "+"}
+  def from_ch("("), do: %Token{type: :lparen, literal: "("}
+  def from_ch(")"), do: %Token{type: :rparen, literal: ")"}
+  def from_ch("{"), do: %Token{type: :lbrace, literal: "{"}
+  def from_ch("}"), do: %Token{type: :rbrace, literal: "}"}
+  def from_ch(","), do: %Token{type: :comma, literal: ","}
+  def from_ch(";"), do: %Token{type: :semicolon, literal: ";"}
+  def from_ch("!"), do: %Token{type: :bang, literal: "!"}
+  def from_ch("*"), do: %Token{type: :asterisk, literal: "*"}
+  def from_ch("/"), do: %Token{type: :slash, literal: "/"}
+  def from_ch("-"), do: %Token{type: :minus, literal: "-"}
+  def from_ch("<"), do: %Token{type: :lt, literal: "<"}
+  def from_ch(">"), do: %Token{type: :gt, literal: ">"}
+  def from_ch(nil), do: %Token{type: :eof, literal: ""}
+  def from_ch(illegal), do: %Token{type: :illegal, literal: illegal}
 
   @spec is_letter(String.t()) :: boolean
   def is_letter(char) when char == "" or char == nil, do: false
-
   def is_letter(char) do
     # convert to ascii val
     ch = char |> String.to_charlist() |> hd
@@ -49,7 +47,6 @@ defmodule Monkex.Token do
 
   @spec is_digit(String.t()) :: boolean
   def is_digit(char) when char == "" or char == nil, do: false
-
   def is_digit(char) do
     # convert to ascii val
     ch = char |> String.to_charlist() |> hd
