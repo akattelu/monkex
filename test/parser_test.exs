@@ -534,6 +534,31 @@ defmodule ParserTest do
            ]
   end
 
+  test "parse function literals" do
+    tests = [
+      {"[]", []},
+      {"[1]", [1]},
+      {"[1, 2, 3]", [1, 2, 3]}
+    ]
+
+    tests
+    |> Enum.each(fn {input, expected} ->
+      {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+      assert parser.errors == []
+      assert length(program.statements) == 1
+
+      first_statement = program.statements |> hd()
+      expression = first_statement.expression
+
+      assert expression.items |> length == expected |> length
+
+      Enum.zip(expression.items, expected)
+      |> Enum.each(fn {actual, exp} ->
+        assert actual.value == exp
+      end)
+    end)
+  end
+
   def test_let_statement(statement, name, value) do
     assert Statement.token_literal(statement) == "let"
     assert statement.name.symbol_name == name

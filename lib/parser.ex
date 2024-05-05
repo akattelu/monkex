@@ -1,4 +1,5 @@
 defmodule Monkex.Parser do
+  alias Monkex.AST.ArrayLiteral
   alias Monkex.Lexer
   alias Monkex.AST
   alias Monkex.Parser.Precedence
@@ -37,7 +38,8 @@ defmodule Monkex.Parser do
         :minus => &parse_prefix_expression/1,
         :lparen => &parse_grouped_expression/1,
         :if => &parse_if_expression/1,
-        :function => &parse_function_literal/1
+        :function => &parse_function_literal/1,
+        :lbracket => &parse_array_literal/1
       },
       infix_parse_fns: %{
         :plus => &parse_infix_expression/2,
@@ -373,6 +375,49 @@ defmodule Monkex.Parser do
        token: parser.current_token,
        value: parser.current_token.literal
      }}
+  end
+
+  def parse_array_literal(parser) do
+    if next_token_is?(parser, :rbracket) do
+      # empty params
+      {parser |> next_token,
+       %ArrayLiteral{
+         token: parser.current_token,
+         items: []
+       }}
+    else
+      {next, expr} = parser |> next_token |> parse_expression(:lowest)
+
+      {final, params} =
+        {next, [expr]}
+        |> Stream.unfold(fn {p, params} ->
+          if p |> next_token_is?(:comma) do
+            {on_next_expr, next_expr} = p |> next_token |> next_token |> parse_expression(:lowest)
+            acc = {on_next_expr, [next_expr | params]}
+            {acc, acc}
+          else
+            nil
+          end
+        end)
+        |> Enum.reverse()
+        |> head_or({next, [expr]})
+
+      case final |> expect_and_peek(:rbracket) do
+        {:error, p, err} ->
+          {p |> with_error(err),
+           %ArrayLiteral{
+             token: parser.current_token,
+             items: []
+           }}
+
+        {:ok, p} ->
+          {p,
+           %ArrayLiteral{
+             token: parser.current_token,
+             items: params |> Enum.reverse()
+           }}
+      end
+    end
   end
 
   def parse_function_literal(parser) do
