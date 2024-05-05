@@ -60,7 +60,7 @@ defmodule EvaluatorTest do
     |> Enum.map(&test_literal/1)
   end
 
-  test "infix expressions with integers" do
+  test "infix expressions" do
     [
       {"5", 5},
       {"10", 10},
@@ -76,14 +76,7 @@ defmodule EvaluatorTest do
       {"2 * (5 + 10)", 30},
       {"3 * 3 * 3 + 10", 37},
       {"3 * (3 * 3) + 10", 37},
-      {"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50}
-    ]
-    |> Enum.map(&eval_input/1)
-    |> Enum.map(&test_literal/1)
-  end
-
-  test "infix expressions with booleans" do
-    [
+      {"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50},
       {"true == true", true},
       {"false == false", true},
       {"true == false", false},
@@ -94,9 +87,8 @@ defmodule EvaluatorTest do
       {"(1 > 2) == true", false},
       {"(1 > 2) == false", true},
       {"1 == true", false},
-      {"1 > true", false},
-      {"1 < true", false},
-      {"1 != true", false}
+      {"1 != true", false},
+      {~s("hello" + " " + "world"), "hello world"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
@@ -155,6 +147,14 @@ defmodule EvaluatorTest do
         "type mismatch: integer + boolean"
       },
       {
+        "5 > true;",
+        "type mismatch: integer > boolean"
+      },
+      {
+        "5 < true;",
+        "type mismatch: integer < boolean"
+      },
+      {
         "-true",
         "unknown operator: -boolean"
       },
@@ -169,6 +169,14 @@ defmodule EvaluatorTest do
       {
         "if (10 > 1) { true + false; }",
         "unknown operator: boolean + boolean"
+      },
+      {
+        ~s("hello" + true;),
+        "type mismatch: string + boolean"
+      },
+      {
+        ~s("hello" + 9;),
+        "type mismatch: string + integer"
       },
       {
         """

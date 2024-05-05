@@ -21,6 +21,7 @@ defmodule Monkex.AST.InfixExpression do
     alias Monkex.Object.Integer
     alias Monkex.Object.Boolean
 
+    @string_operators ["+"]
     @integer_operators ["+", "*", "-", "/"]
     @boolean_operators ["==", "!=", ">", "<"]
 
@@ -34,6 +35,11 @@ defmodule Monkex.AST.InfixExpression do
     def fn_from_operator("<"), do: &(&1 < &2)
 
     def eval(%Error{} = err, env), do: {err, env}
+
+    def eval(%InfixExpression{operator: op, left: left, right: right}, env)
+        when op in @string_operators do
+          
+    end
 
     def eval(%InfixExpression{operator: op, left: left, right: right}, env)
         when op in @boolean_operators do
