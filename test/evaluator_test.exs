@@ -21,7 +21,16 @@ defmodule EvaluatorTest do
   defp test_literal({obj, expected}), do: assert(obj.value == expected)
 
   defp expect_error({obj, expected}) do
+    if Object.type(obj)!= :error do
+      IO.inspect(obj)
+      IO.inspect(expected)
+    end
     assert Object.type(obj) == :error
+
+    if obj.message != expected do
+      IO.inspect(obj)
+    end
+
     assert obj.message == expected
   end
 
@@ -86,8 +95,6 @@ defmodule EvaluatorTest do
       {"(1 < 2) == false", false},
       {"(1 > 2) == true", false},
       {"(1 > 2) == false", true},
-      {"1 == true", false},
-      {"1 != true", false},
       {~s("hello" + " " + "world"), "hello world"}
     ]
     |> Enum.map(&eval_input/1)
@@ -178,6 +185,8 @@ defmodule EvaluatorTest do
         ~s("hello" + 9;),
         "type mismatch: string + integer"
       },
+      {"1 == true", "type mismatch: integer == boolean"},
+      {"1 != true", "type mismatch: integer != boolean"},
       {
         """
         if (10 > 1) {
@@ -251,7 +260,7 @@ defmodule EvaluatorTest do
     [
       {~s("foobar"), "foobar"},
       {~s("foo bar"), "foo bar"}
-    ] 
+    ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
   end
