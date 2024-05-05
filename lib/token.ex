@@ -24,6 +24,8 @@ defmodule Monkex.Token do
   def from_ch("+"), do: %Token{type: :plus, literal: "+"}
   def from_ch("("), do: %Token{type: :lparen, literal: "("}
   def from_ch(")"), do: %Token{type: :rparen, literal: ")"}
+  def from_ch("["), do: %Token{type: :lbracket, literal: "["}
+  def from_ch("]"), do: %Token{type: :rbracket, literal: "]"}
   def from_ch("{"), do: %Token{type: :lbrace, literal: "{"}
   def from_ch("}"), do: %Token{type: :rbrace, literal: "}"}
   def from_ch(","), do: %Token{type: :comma, literal: ","}

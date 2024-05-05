@@ -22,7 +22,7 @@ defmodule LexerTest do
   end
 
   test "next token with single char" do
-    input = "=+(){},;"
+    input = "=+(){},;[]"
 
     expected = [
       {:assign, "="},
@@ -32,7 +32,9 @@ defmodule LexerTest do
       {:lbrace, "{"},
       {:rbrace, "}"},
       {:comma, ","},
-      {:semicolon, ";"}
+      {:semicolon, ";"},
+      {:lbracket, "["},
+      {:rbracket, "]"}
     ]
 
     expected
