@@ -534,7 +534,19 @@ defmodule ParserTest do
            ]
   end
 
-  test "parse function literals" do
+  test "errors for array literals" do
+      [
+        {"[", "expected rbracket, got eof"},
+        {"[ 1 2 3]", "expected rbracket, got int"},
+        {"[ 1 , ,]", "no prefix function found for ,"},
+      ]
+      |> Enum.each(fn {input, expected} ->
+        {parser, _} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+        assert expected in parser.errors
+      end)
+  end
+
+  test "parse array literals" do
     tests = [
       {"[]", []},
       {"[1]", [1]},

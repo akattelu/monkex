@@ -255,23 +255,7 @@ defmodule Monkex.Parser do
      }}
   end
 
-  def parse_call_arguments(parser) do
-    parser
-    |> next_token
-    |> reduce_while([], fn p, acc ->
-      cond do
-        current_token_is?(p, :rparen) ->
-          {:halt, p, Enum.reverse(acc)}
-
-        current_token_is?(p, :comma) ->
-          {:cont, next_token(p), acc}
-
-        true ->
-          {next, expr} = parse_expression(p, :lowest)
-          {:cont, next_token(next), [expr | acc]}
-      end
-    end)
-  end
+  def parse_call_arguments(parser), do: parse_expression_list(parser, :rparen)
 
   def parse_grouped_expression(parser) do
     {next, expr} = parser |> next_token |> parse_expression(:lowest)
@@ -358,28 +342,38 @@ defmodule Monkex.Parser do
      }}
   end
 
+  def parse_expression_list(parser, end_token) do
+    with false <- next_token_is?(parser, end_token),
+         next <- parser |> next_token,
+         {after_expr, expr} <- parse_expression(next, :lowest),
+         {final, exprs} <-
+           after_expr
+           |> reduce_while([expr], fn p, acc ->
+             if next_token_is?(p, :comma) do
+               {after_next, next_expr} =
+                 p |> next_token |> next_token |> parse_expression(:lowest)
+
+               {:cont, after_next, [next_expr | acc]}
+             else
+               {:halt, p, Enum.reverse(acc)}
+             end
+           end),
+         {:ok, p} <- expect_and_peek(final, end_token) do
+      {p, exprs}
+    else
+      true -> {parser |> next_token, []}
+      {:error, p, msg} -> {p |> with_error(msg), []}
+    end
+  end
+
   def parse_array_literal(parser) do
-    parser
-    |> next_token
-    |> reduce_while(
-      %ArrayLiteral{token: parser.current_token, items: []},
-      fn p,
-         %ArrayLiteral{
-           items: items
-         } = acc ->
-        cond do
-          current_token_is?(p, :rbracket) ->
-            {:halt, p, %ArrayLiteral{acc | items: Enum.reverse(items)}}
+    {next, items} = parse_expression_list(parser, :rbracket)
 
-          current_token_is?(p, :comma) ->
-            {:cont, next_token(p), acc}
-
-          true ->
-            {next, expr} = parse_expression(p, :lowest)
-            {:cont, next_token(next), %ArrayLiteral{acc | items: [expr | items]}}
-        end
-      end
-    )
+    {next,
+     %ArrayLiteral{
+       token: parser.current_token,
+       items: items
+     }}
   end
 
   def parse_function_literal(parser) do
@@ -399,23 +393,27 @@ defmodule Monkex.Parser do
   end
 
   def parse_function_parameters(parser) do
-    parser
-    |> next_token
-    |> reduce_while(
-      [],
-      fn p, acc ->
-        cond do
-          current_token_is?(p, :rparen) ->
-            {:halt, p, Enum.reverse(acc)}
+    with false <- next_token_is?(parser, :rparen),
+         next <- parser |> next_token,
+         {before_ident, ident} <- parse_identifier(next),
+         {final, idents} <-
+           before_ident
+           |> reduce_while([ident], fn p, acc ->
+             if next_token_is?(p, :comma) do
+               {before_next, next_ident} =
+                 p |> next_token |> next_token |> parse_identifier
 
-          current_token_is?(p, :comma) ->
-            {:cont, next_token(p), acc}
-
-          true ->
-            {:cont, next_token(p), [parse_identifier(p) |> elem(1) | acc]}
-        end
-      end
-    )
+               {:cont, before_next, [next_ident | acc]}
+             else
+               {:halt, p, Enum.reverse(acc)}
+             end
+           end),
+         {:ok, p} <- expect_and_peek(final, :rparen) do
+      {p, idents}
+    else
+      true -> {parser |> next_token, []}
+      {:error, p, msg} -> {p |> with_error(msg), []}
+    end
   end
 
   def parse_expression(parser, precedence) do
