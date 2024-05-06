@@ -6,7 +6,7 @@ Elixir implementation of the Monkey programming language
 
 Example:
 
-```monkey
+```
 let fibonacci = fn(x) {
   if (x == 0) {
     0
