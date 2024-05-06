@@ -40,7 +40,10 @@ defmodule Monkex.REPL do
         nil
       else
         # print tokens
-        tokens |> Enum.map(&IO.inspect/1)
+        tokens
+        |> Enum.map(fn %Monkex.Token{type: type, literal: literal} ->
+          IO.puts("token type: #{type}, literal: #{literal}")
+        end)
 
         # loop
         start_lexer()
