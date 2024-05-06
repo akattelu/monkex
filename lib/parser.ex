@@ -259,16 +259,16 @@ defmodule Monkex.Parser do
     parser
     |> next_token
     |> advance_while([], fn p, acc ->
-      if current_token_is?(p, :rparen) do
-        {:halt, p, Enum.reverse(acc)}
-      else
-        # expr or comma
-        if current_token_is?(p, :comma) do
+      cond do
+        current_token_is?(p, :rparen) ->
+          {:halt, p, Enum.reverse(acc)}
+
+        current_token_is?(p, :comma) ->
           {:cont, next_token(p), acc}
-        else
+
+        true ->
           {next, expr} = parse_expression(p, :lowest)
           {:cont, next_token(next), [expr | acc]}
-        end
       end
     end)
   end
@@ -359,46 +359,27 @@ defmodule Monkex.Parser do
   end
 
   def parse_array_literal(parser) do
-    if next_token_is?(parser, :rbracket) do
-      # empty params
-      {parser |> next_token,
-       %ArrayLiteral{
-         token: parser.current_token,
-         items: []
-       }}
-    else
-      {next, expr} = parser |> next_token |> parse_expression(:lowest)
+    parser
+    |> next_token
+    |> advance_while(
+      %ArrayLiteral{token: parser.current_token, items: []},
+      fn p,
+         %ArrayLiteral{
+           items: items
+         } = acc ->
+        cond do
+          current_token_is?(p, :rbracket) ->
+            {:halt, p, %ArrayLiteral{acc | items: Enum.reverse(items)}}
 
-      {final, params} =
-        {next, [expr]}
-        |> Stream.unfold(fn {p, params} ->
-          if p |> next_token_is?(:comma) do
-            {on_next_expr, next_expr} = p |> next_token |> next_token |> parse_expression(:lowest)
-            acc = {on_next_expr, [next_expr | params]}
-            {acc, acc}
-          else
-            nil
-          end
-        end)
-        |> Enum.reverse()
-        |> head_or({next, [expr]})
+          current_token_is?(p, :comma) ->
+            {:cont, next_token(p), acc}
 
-      case final |> expect_and_peek(:rbracket) do
-        {:error, p, err} ->
-          {p |> with_error(err),
-           %ArrayLiteral{
-             token: parser.current_token,
-             items: []
-           }}
-
-        {:ok, p} ->
-          {p,
-           %ArrayLiteral{
-             token: parser.current_token,
-             items: params |> Enum.reverse()
-           }}
+          true ->
+            {next, expr} = parse_expression(p, :lowest)
+            {:cont, next_token(next), %ArrayLiteral{acc | items: [expr | items]}}
+        end
       end
-    end
+    )
   end
 
   def parse_function_literal(parser) do

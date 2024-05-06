@@ -21,10 +21,11 @@ defmodule EvaluatorTest do
   defp test_literal({obj, expected}), do: assert(obj.value == expected)
 
   defp expect_error({obj, expected}) do
-    if Object.type(obj)!= :error do
+    if Object.type(obj) != :error do
       IO.inspect(obj)
       IO.inspect(expected)
     end
+
     assert Object.type(obj) == :error
 
     if obj.message != expected do
