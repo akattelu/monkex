@@ -116,11 +116,11 @@ defmodule Monkex.Parser do
     parser |> expect_and_peek(:semicolon) |> elem(1)
   end
 
-  @spec advance_while(t, any(), (t, any() -> {:halt, t, any()} | {:cont, t, any()})) :: {t, any()}
-  def advance_while(parser, acc, reducer) do
+  @spec reduce_while(t, any(), (t, any() -> {:halt, t, any()} | {:cont, t, any()})) :: {t, any()}
+  def reduce_while(parser, acc, reducer) do
     case reducer.(parser, acc) do
       {:halt, next_parser, next_acc} -> {next_parser, next_acc}
-      {:cont, next_parser, next_acc} -> advance_while(next_parser, next_acc, reducer)
+      {:cont, next_parser, next_acc} -> reduce_while(next_parser, next_acc, reducer)
     end
   end
 
@@ -128,7 +128,7 @@ defmodule Monkex.Parser do
   def parse_program(parser) do
     {p, stmts} =
       parser
-      |> advance_while([], fn p, acc ->
+      |> reduce_while([], fn p, acc ->
         if current_is_eof?(p) do
           {:halt, p, Enum.reverse(acc)}
         else
@@ -167,7 +167,7 @@ defmodule Monkex.Parser do
     {final, stmts} =
       parser
       |> next_token
-      |> advance_while([], fn p, acc ->
+      |> reduce_while([], fn p, acc ->
         if current_token_is?(p, :rbrace) or current_token_is?(p, :eof) do
           {:halt, p, Enum.reverse(acc)}
         else
@@ -258,7 +258,7 @@ defmodule Monkex.Parser do
   def parse_call_arguments(parser) do
     parser
     |> next_token
-    |> advance_while([], fn p, acc ->
+    |> reduce_while([], fn p, acc ->
       cond do
         current_token_is?(p, :rparen) ->
           {:halt, p, Enum.reverse(acc)}
@@ -361,7 +361,7 @@ defmodule Monkex.Parser do
   def parse_array_literal(parser) do
     parser
     |> next_token
-    |> advance_while(
+    |> reduce_while(
       %ArrayLiteral{token: parser.current_token, items: []},
       fn p,
          %ArrayLiteral{
@@ -398,70 +398,52 @@ defmodule Monkex.Parser do
     end
   end
 
-  defp head_or([], default), do: default
-  defp head_or([head | _], _default), do: head
-
   def parse_function_parameters(parser) do
-    if next_token_is?(parser, :rparen) do
-      # empty params
-      {parser |> next_token, []}
-    else
-      {next, ident} = parser |> next_token |> parse_identifier()
+    parser
+    |> next_token
+    |> reduce_while(
+      [],
+      fn p, acc ->
+        cond do
+          current_token_is?(p, :rparen) ->
+            {:halt, p, Enum.reverse(acc)}
 
-      {final, params} =
-        {next, [ident]}
-        |> Stream.unfold(fn {p, params} ->
-          if p |> next_token_is?(:comma) do
-            {on_next_ident, next_ident} = p |> next_token |> next_token |> parse_identifier
-            acc = {on_next_ident, [next_ident | params]}
-            {acc, acc}
-          else
-            nil
-          end
-        end)
-        |> Enum.reverse()
-        |> head_or({next, [ident]})
+          current_token_is?(p, :comma) ->
+            {:cont, next_token(p), acc}
 
-      case final |> expect_and_peek(:rparen) do
-        {:error, p, err} -> {p |> with_error(err), []}
-        {:ok, p} -> {p, params |> Enum.reverse()}
+          true ->
+            {:cont, next_token(p), [parse_identifier(p) |> elem(1) | acc]}
+        end
       end
-    end
+    )
   end
 
   def parse_expression(parser, precedence) do
     with {:ok, prefix_fn} <- Map.fetch(parser.prefix_parse_fns, parser.current_token.type) do
-      {next, left} = prefix_fn.(parser)
+      {next, l} = prefix_fn.(parser)
       # send in left expression and the last parser pos
-      acc =
-        {next, left}
-        |> Stream.unfold(fn {p, left} ->
-          infix_fn = Map.get(p.infix_parse_fns, p.next_token.type)
+      next
+      |> reduce_while(l, fn p, left ->
+        infix_fn = Map.get(p.infix_parse_fns, p.next_token.type)
 
-          cond do
-            next_token_is?(p, :semicolon) ->
-              nil
+        cond do
+          next_token_is?(p, :semicolon) ->
+            {:halt, p, left}
 
-            next_token_is?(p, :eof) ->
-              nil
+          next_token_is?(p, :eof) ->
+            {:halt, p, left}
 
-            Precedence.compare(precedence, next_precedence(p)) >= 0 ->
-              nil
+          Precedence.compare(precedence, next_precedence(p)) >= 0 ->
+            {:halt, p, left}
 
-            infix_fn == nil ->
-              nil
+          infix_fn == nil ->
+            {:halt, p, left}
 
-            true ->
-              {n, l} = p |> next_token |> infix_fn.(left)
-              {{n, l}, {n, l}}
-          end
-        end)
-        |> Enum.reverse()
-
-      case acc do
-        [] -> {next, left}
-        [head | _] -> head
-      end
+          true ->
+            {next_p, next_l} = p |> next_token |> infix_fn.(left)
+            {:cont, next_p, next_l}
+        end
+      end)
     else
       :error ->
         {parser |> with_error("no prefix function found for #{parser.current_token.literal}"),
