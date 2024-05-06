@@ -116,7 +116,6 @@ defmodule Monkex.Parser do
     parser |> expect_and_peek(:semicolon) |> elem(1)
   end
 
-
   @spec advance_while(t, any(), (t, any() -> {:halt, t, any()} | {:cont, t, any()})) :: {t, any()}
   def advance_while(parser, acc, reducer) do
     case reducer.(parser, acc) do
@@ -134,10 +133,8 @@ defmodule Monkex.Parser do
           {:halt, p, Enum.reverse(acc)}
         else
           # parse a statement, then return parser pointed to next token
-          case parse_statement(p) do
-            {next, nil} -> {:halt, next |> next_token, acc |> Enum.reverse()}
-            {next, stmt} -> {:cont, next |> next_token, [stmt | acc]}
-          end
+          {next, stmt} = parse_statement(p)
+          {:cont, next |> next_token, [stmt | acc]}
         end
       end)
 
@@ -167,30 +164,22 @@ defmodule Monkex.Parser do
 
   @spec parse_block_statement(t) :: {t, AST.BlockStatement.t()} | {t, nil}
   def parse_block_statement(parser) do
-    {final, statements} =
-      {parser |> next_token, []}
-      |> Stream.unfold(fn {p, statements} ->
+    {final, stmts} =
+      parser
+      |> next_token
+      |> advance_while([], fn p, acc ->
         if current_token_is?(p, :rbrace) or current_token_is?(p, :eof) do
-          nil
+          {:halt, p, Enum.reverse(acc)}
         else
-          case parse_statement(p) do
-            {next, nil} ->
-              acc = {next |> next_token, statements}
-              {acc, acc}
-
-            {next, stmt} ->
-              acc = {next |> next_token, [stmt | statements]}
-              {acc, acc}
-          end
+          {next, stmt} = parse_statement(p)
+          {:cont, next |> next_token, [stmt | acc]}
         end
       end)
-      |> Enum.reverse()
-      |> head_or({parser |> next_token, []})
 
     {final,
      %AST.BlockStatement{
        token: parser.current_token,
-       statements: statements |> Enum.reverse()
+       statements: stmts
      }}
   end
 
@@ -267,33 +256,21 @@ defmodule Monkex.Parser do
   end
 
   def parse_call_arguments(parser) do
-    if next_token_is?(parser, :rparen) do
-      # empty params
-      {parser |> next_token, []}
-    else
-      {next, ident} = parser |> next_token |> parse_expression(:lowest)
-
-      {final, params} =
-        {next, [ident]}
-        |> Stream.unfold(fn {p, params} ->
-          if p |> next_token_is?(:comma) do
-            {on_next_ident, next_ident} =
-              p |> next_token |> next_token |> parse_expression(:lowest)
-
-            acc = {on_next_ident, [next_ident | params]}
-            {acc, acc}
-          else
-            nil
-          end
-        end)
-        |> Enum.reverse()
-        |> head_or({next, [ident]})
-
-      case final |> expect_and_peek(:rparen) do
-        {:error, p, err} -> {p |> with_error(err), []}
-        {:ok, p} -> {p, params |> Enum.reverse()}
+    parser
+    |> next_token
+    |> advance_while([], fn p, acc ->
+      if current_token_is?(p, :rparen) do
+        {:halt, p, Enum.reverse(acc)}
+      else
+        # expr or comma
+        if current_token_is?(p, :comma) do
+          {:cont, next_token(p), acc}
+        else
+          {next, expr} = parse_expression(p, :lowest)
+          {:cont, next_token(next), [expr | acc]}
+        end
       end
-    end
+    end)
   end
 
   def parse_grouped_expression(parser) do
