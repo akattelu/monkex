@@ -111,33 +111,37 @@ defmodule Monkex.Parser do
     end
   end
 
+  @spec skip_optional_semicolon(t) :: t
   defp skip_optional_semicolon(parser) do
     parser |> expect_and_peek(:semicolon) |> elem(1)
   end
 
+
+  @spec advance_while(t, any(), (t, any() -> {:halt, t, any()} | {:cont, t, any()})) :: {t, any()}
+  def advance_while(parser, acc, reducer) do
+    case reducer.(parser, acc) do
+      {:halt, next_parser, next_acc} -> {next_parser, next_acc}
+      {:cont, next_parser, next_acc} -> advance_while(next_parser, next_acc, reducer)
+    end
+  end
+
   @spec parse_program(t) :: {t, AST.Program.t()}
   def parse_program(parser) do
-    parsers_and_statements =
+    {p, stmts} =
       parser
-      |> Stream.unfold(fn p ->
+      |> advance_while([], fn p, acc ->
         if current_is_eof?(p) do
-          nil
+          {:halt, p, Enum.reverse(acc)}
         else
           # parse a statement, then return parser pointed to next token
           case parse_statement(p) do
-            {next, nil} -> {{next |> next_token, nil}, next |> next_token}
-            {next, stmt} -> {{next |> next_token, stmt}, next |> next_token}
+            {next, nil} -> {:halt, next |> next_token, acc |> Enum.reverse()}
+            {next, stmt} -> {:cont, next |> next_token, [stmt | acc]}
           end
         end
       end)
-      |> Enum.to_list()
 
-    statements =
-      parsers_and_statements |> Enum.map(fn {_, stmt} -> stmt end) |> Enum.filter(&(&1 != nil))
-
-    program_parser = parsers_and_statements |> Enum.at(-1) |> elem(0)
-
-    {program_parser, %AST.Program{statements: statements}}
+    {p, %AST.Program{statements: stmts}}
   end
 
   @spec parse_statement(t) :: {t, AST.Statement.t()} | {t, nil}
