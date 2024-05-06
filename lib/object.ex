@@ -136,3 +136,23 @@ defmodule Monkex.Object.String do
     def to_string(%ObjString{value: value}), do: "\"#{value}\""
   end
 end
+
+defmodule Monkex.Object.Array do
+  alias __MODULE__
+  @enforce_keys [:items]
+  defstruct [:items]
+
+  def from(items) do
+    %Array{
+      items: items
+    }
+  end
+
+  defimpl Monkex.Object, for: Array do
+    def type(_), do: :array
+  end
+
+  defimpl String.Chars, for: Array do
+    def to_string(%Array{items: items}), do: "[#{Enum.join(items, ", ")}]"
+  end
+end

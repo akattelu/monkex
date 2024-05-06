@@ -3,6 +3,7 @@ defmodule EvaluatorTest do
   alias Monkex.Object
   alias Monkex.Object.Node
   alias Monkex.Object.Null
+  alias Monkex.Object.Array
   alias Monkex.Lexer
   alias Monkex.Environment
   alias Monkex.Parser
@@ -17,21 +18,18 @@ defmodule EvaluatorTest do
 
   def eval_input({input, output}), do: {input |> eval, output}
 
+  defp test_literal_array({obj, []}), do: assert(obj.items == [])
+
+  defp test_literal_array({%Array{items: [first | rest]}, [h | t]}) do
+    test_literal({first, h})
+    test_literal_array({%Array{items: rest}, t})
+  end
+
   defp test_literal({obj, nil}), do: assert(obj == Null.object())
   defp test_literal({obj, expected}), do: assert(obj.value == expected)
 
   defp expect_error({obj, expected}) do
-    if Object.type(obj) != :error do
-      IO.inspect(obj)
-      IO.inspect(expected)
-    end
-
     assert Object.type(obj) == :error
-
-    if obj.message != expected do
-      IO.inspect(obj)
-    end
-
     assert obj.message == expected
   end
 
@@ -264,5 +262,15 @@ defmodule EvaluatorTest do
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
+  end
+
+  test "array literals" do
+    [
+      {"[]", []},
+      {"[2]", [2]},
+      {~s(["hello", 2, true]), ["hello", 2, true]}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal_array/1)
   end
 end
