@@ -535,15 +535,15 @@ defmodule ParserTest do
   end
 
   test "errors for array literals" do
-      [
-        {"[", "expected rbracket, got eof"},
-        {"[ 1 2 3]", "expected rbracket, got int"},
-        {"[ 1 , ,]", "no prefix function found for ,"},
-      ]
-      |> Enum.each(fn {input, expected} ->
-        {parser, _} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
-        assert expected in parser.errors
-      end)
+    [
+      {"[", "expected rbracket, got eof"},
+      {"[ 1 2 3]", "expected rbracket, got int"},
+      {"[ 1 , ,]", "no prefix function found for ,"}
+    ]
+    |> Enum.each(fn {input, expected} ->
+      {parser, _} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+      assert expected in parser.errors
+    end)
   end
 
   test "parse array literals" do
@@ -570,6 +570,20 @@ defmodule ParserTest do
       end)
     end)
   end
+
+  test "parses indexing expressions" do
+    input = "arr[2 + 3];"
+
+    {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+    assert parser.errors == []
+    assert program.statements |> length == 1
+    index_expr = program.statements |> hd |> then(& &1.expression)
+
+    assert index_expr.indexable_expr.symbol_name == "arr"
+
+    assert "#{index_expr.index_expr}" == "(2 + 3)"
+  end
+
 
   def test_let_statement(statement, name, value) do
     assert Statement.token_literal(statement) == "let"

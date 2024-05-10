@@ -1,7 +1,7 @@
 defmodule Monkex.Parser.Precedence do
   alias Monkex.Token
 
-  @precedence [:lowest, :equals, :lessgreater, :sum, :product, :prefix, :call]
+  @precedence [:lowest, :equals, :lessgreater, :sum, :product, :prefix, :access, :call]
   @token_to_precedence %{
     :eq => :equals,
     :not_eq => :equals,
@@ -11,7 +11,8 @@ defmodule Monkex.Parser.Precedence do
     :minus => :sum,
     :slash => :product,
     :asterisk => :product,
-    :lparen => :call
+    :lparen => :call,
+    :lbracket => :access
   }
 
   @spec of_token(Token.t()) :: atom()

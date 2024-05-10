@@ -50,7 +50,8 @@ defmodule Monkex.Parser do
         :not_eq => &parse_infix_expression/2,
         :lt => &parse_infix_expression/2,
         :gt => &parse_infix_expression/2,
-        :lparen => &parse_call_expression/2
+        :lparen => &parse_call_expression/2,
+        :lbracket => &parse_access_expression/2
       }
     }
     |> next_token
@@ -256,6 +257,23 @@ defmodule Monkex.Parser do
   end
 
   def parse_call_arguments(parser), do: parse_expression_list(parser, :rparen)
+
+  def parse_access_expression(parser, indexable) do
+    {next, expr} = parser |> next_token |> parse_expression(:lowest)
+
+    case next |> expect_and_peek(:rbracket) do
+      {:ok, p} ->
+        {p,
+         %AST.AccessExpression{
+           token: parser.current_token,
+           indexable_expr: indexable,
+           index_expr: expr
+         }}
+
+      {:error, p, msg} ->
+        {p |> with_error(msg), nil}
+    end
+  end
 
   def parse_grouped_expression(parser) do
     {next, expr} = parser |> next_token |> parse_expression(:lowest)
