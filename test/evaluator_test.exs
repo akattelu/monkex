@@ -11,7 +11,7 @@ defmodule EvaluatorTest do
   defp eval(input) do
     {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
     assert parser.errors == []
-    env = Environment.new |> Environment.with_builtins()
+    env = Environment.new() |> Environment.with_builtins()
     {obj, _env} = program |> Node.eval(env)
     obj
   end
@@ -240,11 +240,10 @@ defmodule EvaluatorTest do
       {"len([1, 2, 3])", 3},
       {"len([1])", 1},
       {~s(charAt("hello", 0\)), "h"},
-      {~s(charAt("hello", 3\)), "l"},
+      {~s(charAt("hello", 3\)), "l"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
-
   end
 
   test "closure calls" do
@@ -285,5 +284,26 @@ defmodule EvaluatorTest do
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal_array/1)
+  end
+
+  test "array access" do
+    [
+      {~s(["hello", 2, true][0]), "hello"},
+      {~s(["hello", 2, true][1]), 2},
+      {~s(["hello", 2, true][2]), true},
+      {"let arr = [1,2, 3]; arr[2];", 3}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+  end
+
+  test "array access errors" do
+    [
+      {"[][0]", "index out of bounds"},
+      {"2[0]", "tried to access non-array object: integer"},
+      {"[0][true]", "tried to access array with non-integer index: boolean"},
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&expect_error/1)
   end
 end
