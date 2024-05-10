@@ -156,3 +156,17 @@ defmodule Monkex.Object.Array do
     def to_string(%Array{items: items}), do: "[#{Enum.join(items, ", ")}]"
   end
 end
+
+defmodule Monkex.Object.Builtin do
+  alias Monkex.Object.Array
+  alias Monkex.Object.Integer
+  alias Monkex.Object.Null
+  defstruct [:param_count, :handler]
+
+  def len([%Array{items: items} | _]), do: length(items) |> Integer.from()
+
+  def puts([obj | _]) do
+    IO.puts("#{obj}")
+    Null.object()
+  end
+end

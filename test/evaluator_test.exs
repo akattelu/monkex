@@ -11,7 +11,7 @@ defmodule EvaluatorTest do
   defp eval(input) do
     {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
     assert parser.errors == []
-    env = Environment.new()
+    env = Environment.new |> Environment.with_builtins()
     {obj, _env} = program |> Node.eval(env)
     obj
   end
@@ -233,6 +233,16 @@ defmodule EvaluatorTest do
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
+  end
+
+  test "builtin functions" do
+    [
+      {"len([1, 2, 3])", 3},
+      {"len([1])", 1},
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+
   end
 
   test "closure calls" do

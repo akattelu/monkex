@@ -1,4 +1,5 @@
 defmodule Monkex.Environment do
+  alias Monkex.Object.Builtin
   alias __MODULE__
 
   defstruct store: %{}
@@ -21,4 +22,17 @@ defmodule Monkex.Environment do
   def set(env, key, value) do
     Map.put(env.store, key, value) |> from_store
   end
+
+  def with_builtins(env) do
+    env
+    |> Environment.set("len", %Builtin{
+      param_count: 1,
+      handler: &Builtin.len/1
+    })
+    |> Environment.set("puts", %Builtin{
+      param_count: 1,
+      handler: &Builtin.puts/1
+    })
+  end
 end
+
