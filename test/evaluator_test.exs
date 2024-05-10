@@ -239,6 +239,8 @@ defmodule EvaluatorTest do
     [
       {"len([1, 2, 3])", 3},
       {"len([1])", 1},
+      {~s(charAt("hello", 0\)), "h"},
+      {~s(charAt("hello", 3\)), "l"},
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
@@ -258,6 +260,7 @@ defmodule EvaluatorTest do
     [
       {"let f = fn(x) { 1 + x }; f();", "expected 1 args in function call but was given 0"},
       {"let f = fn(x) { 1 + x }; f(1 + true);", "type mismatch: integer + boolean"},
+      {"charAt(1)", "incorrect number of arguments passed to builtin function"},
       {"let adder = fn(x) { fn(y) { x + y; } }; let newAdder = adder(5); newAdder(3); x;",
        "identifier not found: x"}
     ]

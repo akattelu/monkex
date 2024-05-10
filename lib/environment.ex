@@ -33,6 +33,10 @@ defmodule Monkex.Environment do
       param_count: 1,
       handler: &Builtin.puts/1
     })
+    |> Environment.set("charAt", %Builtin{
+      param_count: 2,
+      handler: &Builtin.char_at/1
+    })
   end
 end
 

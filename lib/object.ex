@@ -160,6 +160,7 @@ end
 defmodule Monkex.Object.Builtin do
   alias Monkex.Object.Array
   alias Monkex.Object.Integer
+  alias Monkex.Object.String, as: StringObj
   alias Monkex.Object.Null
   defstruct [:param_count, :handler]
 
@@ -168,5 +169,9 @@ defmodule Monkex.Object.Builtin do
   def puts([obj | _]) do
     IO.puts("#{obj}")
     Null.object()
+  end
+
+  def char_at([%StringObj{value: str} | [%Integer{value: int} | _]]) do
+    str |> String.at(int) |> String.Chars.to_string() |> StringObj.from()
   end
 end
