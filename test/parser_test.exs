@@ -543,6 +543,7 @@ defmodule ParserTest do
 
   test "parse dictionary literals" do
     input = ~s({"a": 1, "b": true, "c": "hello", "d": [], var: {}, "e": 2 + 3, "f": {"a": 1}})
+
     expected = [
       {~s("a"), "1"},
       {~s("b"), "true"},
@@ -550,7 +551,7 @@ defmodule ParserTest do
       {~s("d"), "[]"},
       {"var", "{ }"},
       {~s("e"), "(2 + 3)"},
-      {~s("f"), ~s({ "a": 1 })},
+      {~s("f"), ~s({ "a": 1 })}
     ]
 
     {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
@@ -561,8 +562,10 @@ defmodule ParserTest do
     pairs = expr.pairs
 
     assert length(pairs) == length(expected)
-    
-    pairs |> Enum.zip(expected) |>  Enum.map(fn {pair, {exp_key, exp_val}} ->
+
+    pairs
+    |> Enum.zip(expected)
+    |> Enum.map(fn {pair, {exp_key, exp_val}} ->
       assert "#{exp_key}" == "#{pair.key}"
       assert "#{exp_val}" == "#{pair.value}"
     end)
@@ -574,5 +577,4 @@ defmodule ParserTest do
     assert statement.value.value == value
     assert Expression.token_literal(statement.name) == name
   end
-
 end

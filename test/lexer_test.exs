@@ -231,6 +231,7 @@ defmodule LexerTest do
       "c": "hello"
     }
     """
+
     expected = [
       {:let, "let"},
       {:ident, "x"},
@@ -249,6 +250,7 @@ defmodule LexerTest do
       {:string, "hello"},
       {:rbrace, "}"}
     ]
+
     expected
     |> Enum.reduce(Lexer.new(input), fn {type, literal}, next_lexer ->
       {l, token} = Lexer.next_token(next_lexer)
@@ -256,6 +258,5 @@ defmodule LexerTest do
       assert token.type == type
       l
     end)
-
-    end
+  end
 end

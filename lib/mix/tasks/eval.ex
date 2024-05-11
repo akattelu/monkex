@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Mx do
   use Mix.Task
 
   @impl Mix.Task
-  def run([arg| _]) do
+  def run([arg | _]) do
     Monkex.run(arg)
   end
 end

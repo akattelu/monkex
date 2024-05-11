@@ -428,7 +428,7 @@ defmodule Monkex.Parser do
        }}
     else
       {:error, p, msg} -> {with_error(p, msg), nil}
-    end 
+    end
   end
 
   def parse_kv_pair_list(parser) do

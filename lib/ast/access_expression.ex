@@ -34,9 +34,14 @@ defmodule Monkex.AST.AccessExpression do
 
     defp is_index(obj, indexable_type) do
       case {obj, indexable_type} do
-        {%Integer{}, :array} -> {:ok, obj}
-        {%Object.String{}, :dict} -> {:ok, obj}
-        {other, expected} -> {:error, "tried to access #{expected} with invalid index type: #{Object.type(other)}"}
+        {%Integer{}, :array} ->
+          {:ok, obj}
+
+        {%Object.String{}, :dict} ->
+          {:ok, obj}
+
+        {other, expected} ->
+          {:error, "tried to access #{expected} with invalid index type: #{Object.type(other)}"}
       end
     end
 
@@ -58,7 +63,7 @@ defmodule Monkex.AST.AccessExpression do
       else
         {:error, msg} -> {Error.with_message(msg), env}
         {%Error{}, _} = result -> result
-      end 
+      end
     end
 
     def eval_array(index_expr, env, arr) do
