@@ -317,8 +317,8 @@ defmodule EvaluatorTest do
   test "array access errors" do
     [
       {"[][0]", "index out of bounds"},
-      {"2[0]", "tried to access non-array object: integer"},
-      {"[0][true]", "tried to access array with non-integer index: boolean"}
+      {"2[0]", "tried to access non-indexable object: integer"},
+      {"[0][true]", "tried to access array with invalid index type: boolean"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&expect_error/1)
@@ -334,10 +334,28 @@ defmodule EvaluatorTest do
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal_dict/1)
   end
+  test "dictionary access" do
+    [
+      {~s({"a": 1}["a"]), 1},
+      {~s({"a": 1}["b"]), nil},
+      {~s(let var = "hello"; let d = {"a": 1, "b" : true, var : "world"}; d[var]),
+       "world"}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+  end
+
+  test "dictionary access errors" do
+    [
+      {~s({"a": 1}[true]), "tried to access dict with invalid index type: boolean"},
+      {~s(2["b"]), "tried to access non-indexable object: integer"},
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&expect_error/1)
+  end
+
   test "dictionary literal errors" do
     [
-      # {"{}", %{}},
-      # {~s({"a": 1}), %{"a" => 1}},
       {~s(let var = true; {"a": 1, "b" : true, var : "world"}), "expected string as key, got boolean"}
     ]
     |> Enum.map(&eval_input/1)

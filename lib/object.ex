@@ -139,6 +139,7 @@ end
 
 defmodule Monkex.Object.Array do
   alias __MODULE__
+  alias Monkex.Object.Null
   @enforce_keys [:items]
   defstruct [:items]
 
@@ -146,6 +147,14 @@ defmodule Monkex.Object.Array do
     %Array{
       items: items
     }
+  end
+
+  def at(%Array{items: items}, index) do
+    if index >= length(items) do
+      {:error, "index out of bounds"}
+    else
+      {:ok, Enum.at(items, index, Null.object())}
+    end
   end
 
   defimpl Monkex.Object, for: Array do
@@ -159,8 +168,13 @@ end
 
 defmodule Monkex.Object.Dictionary do
   alias __MODULE__
+  alias Monkex.Object.Null
   @enforce_keys [:map]
   defstruct [:map]
+
+  def at(%Dictionary{map: map}, index) do
+    Map.get(map, index, Null.object())
+  end
 
   defimpl Monkex.Object, for: Dictionary do
     def type(_), do: :dict
