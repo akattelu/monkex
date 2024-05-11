@@ -157,6 +157,29 @@ defmodule Monkex.Object.Array do
   end
 end
 
+defmodule Monkex.Object.Dictionary do
+  alias __MODULE__
+  @enforce_keys [:map]
+  defstruct [:map]
+
+  defimpl Monkex.Object, for: Dictionary do
+    def type(_), do: :dict
+  end
+
+  defimpl String.Chars, for: Dictionary do
+    def to_string(%Dictionary{map: map}) do
+      pairs =
+        map
+        |> Map.to_list()
+        |> Enum.map(fn {k, v} ->
+          "#{k}: #{v}"
+        end)
+
+      "{#{Enum.join(pairs, ", ")}}"
+    end
+  end
+end
+
 defmodule Monkex.Object.Builtin do
   alias Monkex.Object.Array
   alias Monkex.Object.Integer

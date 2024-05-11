@@ -1,5 +1,6 @@
 defmodule EvaluatorTest do
   use ExUnit.Case
+  alias Monkex.Object.Dictionary
   alias Monkex.Object
   alias Monkex.Object.Node
   alias Monkex.Object.Null
@@ -23,6 +24,22 @@ defmodule EvaluatorTest do
   defp test_literal_array({%Array{items: [first | rest]}, [h | t]}) do
     test_literal({first, h})
     test_literal_array({%Array{items: rest}, t})
+  end
+
+  defp test_literal_dict({%Dictionary{map: map}, expected}) do
+
+    map |> Map.to_list() |> Enum.each(fn {act_k, act_v} -> 
+      assert %Object.String{} = act_k
+      k = act_k.value 
+      assert Map.has_key?(expected, k)
+
+      case {act_v, Map.get(expected, k)} do
+        {%Object.Array{} = arr, e} -> test_literal_array({arr, e})
+        {%Object.Dictionary{} = d, e} -> test_literal_dict({d, e})
+        {a, e} -> test_literal({a, e})
+      end
+     
+    end)
   end
 
   defp test_literal({obj, nil}), do: assert(obj == Null.object())
@@ -301,7 +318,27 @@ defmodule EvaluatorTest do
     [
       {"[][0]", "index out of bounds"},
       {"2[0]", "tried to access non-array object: integer"},
-      {"[0][true]", "tried to access array with non-integer index: boolean"},
+      {"[0][true]", "tried to access array with non-integer index: boolean"}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&expect_error/1)
+  end
+
+  test "dictionary literals" do
+    [
+      {"{}", %{}},
+      {~s({"a": 1}), %{"a" => 1}},
+      {~s(let var = "hello"; {"a": 1, "b" : true, var : "world"}),
+       %{"a" => 1, "b" => true, "hello" => "world"}}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal_dict/1)
+  end
+  test "dictionary literal errors" do
+    [
+      # {"{}", %{}},
+      # {~s({"a": 1}), %{"a" => 1}},
+      {~s(let var = true; {"a": 1, "b" : true, var : "world"}), "expected string as key, got boolean"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&expect_error/1)
