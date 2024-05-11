@@ -1,5 +1,4 @@
 defmodule Monkex.Parser do
-  alias Monkex.AST.ArrayLiteral
   alias Monkex.Lexer
   alias Monkex.AST
   alias Monkex.Parser.Precedence
@@ -39,7 +38,8 @@ defmodule Monkex.Parser do
         :lparen => &parse_grouped_expression/1,
         :if => &parse_if_expression/1,
         :function => &parse_function_literal/1,
-        :lbracket => &parse_array_literal/1
+        :lbracket => &parse_array_literal/1,
+        :lbrace => &parse_dictionary_literal/1
       },
       infix_parse_fns: %{
         :plus => &parse_infix_expression/2,
@@ -147,7 +147,6 @@ defmodule Monkex.Parser do
     case parser.current_token.type do
       :let -> parse_let_statement(parser)
       :return -> parse_return_statement(parser)
-      :lbrace -> parse_block_statement(parser)
       _ -> parse_expression_statement(parser)
     end
   end
@@ -388,10 +387,72 @@ defmodule Monkex.Parser do
     {next, items} = parse_expression_list(parser, :rbracket)
 
     {next,
-     %ArrayLiteral{
+     %AST.ArrayLiteral{
        token: parser.current_token,
        items: items
      }}
+  end
+
+  def parse_dictionary_literal(parser) do
+    {next, pairs} = parse_kv_pair_list(parser)
+
+    {next,
+     %AST.DictionaryLiteral{
+       token: parser.current_token,
+       pairs: pairs
+     }}
+  end
+
+  def parse_dict_key(parser) do
+    if current_token_is?(parser, :string) do
+      parse_string_literal(parser)
+    else
+      parse_identifier(parser)
+    end
+  end
+
+  def parse_dict_value(parser) do
+    parse_expression(parser, :lowest)
+  end
+
+  def parse_dict_pair(parser) do
+    with {next, key} <- parse_dict_key(parser),
+         {:ok, on_colon} <- expect_and_peek(next, :colon),
+         before_val <- next_token(on_colon),
+         {final, val} <- parse_dict_value(before_val) do
+      {final,
+       %AST.Pair{
+         token: next.current_token,
+         key: key,
+         value: val
+       }}
+    else
+      {:error, p, msg} -> {with_error(p, msg), nil}
+    end 
+  end
+
+  def parse_kv_pair_list(parser) do
+    with false <- next_token_is?(parser, :rbrace),
+         next <- parser |> next_token,
+         {before_ident, pair} <- parse_dict_pair(next),
+         {final, pairs} <-
+           before_ident
+           |> reduce_while([pair], fn p, acc ->
+             if next_token_is?(p, :comma) do
+               {before_next, next_pair} =
+                 p |> next_token |> next_token |> parse_dict_pair
+
+               {:cont, before_next, [next_pair | acc]}
+             else
+               {:halt, p, Enum.reverse(acc)}
+             end
+           end),
+         {:ok, p} <- expect_and_peek(final, :rbrace) do
+      {p, pairs}
+    else
+      true -> {parser |> next_token, []}
+      {:error, p, msg} -> {p |> with_error(msg), []}
+    end
   end
 
   def parse_function_literal(parser) do
