@@ -30,6 +30,7 @@ defmodule Monkex.Token do
   def from_ch("}"), do: %Token{type: :rbrace, literal: "}"}
   def from_ch(","), do: %Token{type: :comma, literal: ","}
   def from_ch(";"), do: %Token{type: :semicolon, literal: ";"}
+  def from_ch(":"), do: %Token{type: :colon, literal: ":"}
   def from_ch("!"), do: %Token{type: :bang, literal: "!"}
   def from_ch("*"), do: %Token{type: :asterisk, literal: "*"}
   def from_ch("/"), do: %Token{type: :slash, literal: "/"}

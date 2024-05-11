@@ -222,4 +222,40 @@ defmodule LexerTest do
       l
     end)
   end
+
+  test "next token for dictionary" do
+    input = """
+    let x = {
+      "a": 1,
+      "b": true,
+      "c": "hello"
+    }
+    """
+    expected = [
+      {:let, "let"},
+      {:ident, "x"},
+      {:assign, "="},
+      {:lbrace, "{"},
+      {:string, "a"},
+      {:colon, ":"},
+      {:int, "1"},
+      {:comma, ","},
+      {:string, "b"},
+      {:colon, ":"},
+      {true, "true"},
+      {:comma, ","},
+      {:string, "c"},
+      {:colon, ":"},
+      {:string, "hello"},
+      {:rbrace, "}"}
+    ]
+    expected
+    |> Enum.reduce(Lexer.new(input), fn {type, literal}, next_lexer ->
+      {l, token} = Lexer.next_token(next_lexer)
+      assert token.literal == literal
+      assert token.type == type
+      l
+    end)
+
+    end
 end
