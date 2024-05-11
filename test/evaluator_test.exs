@@ -27,10 +27,11 @@ defmodule EvaluatorTest do
   end
 
   defp test_literal_dict({%Dictionary{map: map}, expected}) do
-
-    map |> Map.to_list() |> Enum.each(fn {act_k, act_v} -> 
+    map
+    |> Map.to_list()
+    |> Enum.each(fn {act_k, act_v} ->
       assert %Object.String{} = act_k
-      k = act_k.value 
+      k = act_k.value
       assert Map.has_key?(expected, k)
 
       case {act_v, Map.get(expected, k)} do
@@ -38,7 +39,6 @@ defmodule EvaluatorTest do
         {%Object.Dictionary{} = d, e} -> test_literal_dict({d, e})
         {a, e} -> test_literal({a, e})
       end
-     
     end)
   end
 
@@ -334,12 +334,12 @@ defmodule EvaluatorTest do
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal_dict/1)
   end
+
   test "dictionary access" do
     [
       {~s({"a": 1}["a"]), 1},
       {~s({"a": 1}["b"]), nil},
-      {~s(let var = "hello"; let d = {"a": 1, "b" : true, var : "world"}; d[var]),
-       "world"}
+      {~s(let var = "hello"; let d = {"a": 1, "b" : true, var : "world"}; d[var]), "world"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
@@ -348,7 +348,7 @@ defmodule EvaluatorTest do
   test "dictionary access errors" do
     [
       {~s({"a": 1}[true]), "tried to access dict with invalid index type: boolean"},
-      {~s(2["b"]), "tried to access non-indexable object: integer"},
+      {~s(2["b"]), "tried to access non-indexable object: integer"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&expect_error/1)
@@ -356,9 +356,31 @@ defmodule EvaluatorTest do
 
   test "dictionary literal errors" do
     [
-      {~s(let var = true; {"a": 1, "b" : true, var : "world"}), "expected string as key, got boolean"}
+      {~s(let var = true; {"a": 1, "b" : true, var : "world"}),
+       "expected string as key, got boolean"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&expect_error/1)
+  end
+
+  test "recursive function" do
+    [
+      {"""
+       let fibonacci = fn(x) {
+         if (x == 0) {
+           0
+         } else {
+           if (x == 1) {
+             1
+           } else {
+             fibonacci(x - 1) + fibonacci(x - 2);
+           }
+         }
+       };
+       fibonacci(10);
+       """, 55}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
   end
 end

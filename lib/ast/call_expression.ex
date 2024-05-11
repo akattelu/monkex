@@ -35,11 +35,10 @@ defmodule Monkex.AST.CallExpression do
 
     def make_local_env(params, args, fn_env, base_env) do
       Enum.zip(params, args)
-      |> Enum.reduce(fn_env, fn {param, arg}, acc ->
+      |> Enum.reduce(base_env |> Environment.merge(fn_env), fn {param, arg}, acc ->
         # take result of arg expr
         arg_value = Node.eval(arg, base_env) |> elem(0)
 
-        # TODO: do not assume params are identifiers or handle errors
         Environment.set(acc, param.symbol_name, arg_value)
       end)
     end

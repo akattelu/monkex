@@ -1,6 +1,6 @@
 defmodule Monkex.Environment do
-  alias Monkex.Object.Builtin
   alias __MODULE__
+  alias Monkex.Object.Builtin
 
   defstruct store: %{}
 
@@ -38,5 +38,8 @@ defmodule Monkex.Environment do
       handler: &Builtin.char_at/1
     })
   end
-end
 
+  def merge(%Environment{store: base}, %Environment{store: other}) do
+    Map.merge(base, other) |> from_store()
+  end
+end
