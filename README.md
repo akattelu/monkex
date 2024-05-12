@@ -203,9 +203,9 @@ Calculating statistics...
 Formatting results...
                                                                                                                                                          
 Name                            ips        average  deviation         median         99th %
-evaluate.string_split        6.22 K       0.161 ms     ±7.84%       0.159 ms       0.199 ms
-evaluate.fib10               4.01 K        0.25 ms     ±3.08%        0.25 ms        0.27 ms
-parse                       0.162 K        6.16 ms     ±1.60%        6.15 ms        6.43 ms
-tokenize                    0.157 K        6.37 ms     ±6.79%        6.22 ms        7.62 ms
+evaluate.string_split        6.31 K       0.158 ms     ±5.64%       0.157 ms       0.194 ms
+evaluate.fib10               4.04 K        0.25 ms    ±23.28%        0.24 ms        0.35 ms
+parse                       0.164 K        6.12 ms     ±0.79%        6.10 ms        6.29 ms
+tokenize                    0.156 K        6.42 ms     ±6.38%        6.33 ms        7.55 ms
 ```
 

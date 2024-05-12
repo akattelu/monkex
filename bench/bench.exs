@@ -4,21 +4,19 @@ defmodule Bench do
   alias Monkex.Token
   alias Monkex.Object.Node
 
-  def tokenize() do
-    {:ok, program} = File.read("./examples/string_split.mx")
+  def tokenize(program) do
     lexer = Lexer.new(program)
-
-    Stream.unfold(lexer, fn l ->
-      case Lexer.next_token(l) do
-        {_, %Token{type: :eof}} -> nil
-        {next, _} -> {:ok, next}
-      end
-    end)
-    |> Enum.to_list()
+    nil = read_tok(lexer)
   end
 
-  def parse() do
-    {:ok, program} = File.read("./examples/string_split.mx")
+  defp read_tok(l) do
+    case Lexer.next_token(l) do
+      {_, %Token{type: :eof}} -> nil
+      {next, _} -> read_tok(next)
+    end
+  end
+
+  def parse(program) do
     {_p, _ast} = program |> Lexer.new() |> Parser.new() |> Parser.parse_program()
   end
 
@@ -28,6 +26,8 @@ defmodule Bench do
 end
 
 env = Monkex.Environment.new() |> Monkex.Environment.with_builtins()
+
+{:ok, program} = File.read("./examples/string_split.mx")
 
 {_, parsed_fib} =
   File.read("./examples/fib.mx")
@@ -45,8 +45,8 @@ env = Monkex.Environment.new() |> Monkex.Environment.with_builtins()
 
 Benchee.run(
   %{
-    "tokenize" => &Bench.tokenize/0,
-    "parse" => &Bench.parse/0,
+    "tokenize" => fn -> Bench.tokenize(program) end,
+    "parse" => fn -> Bench.parse(program) end,
     "evaluate.string_split" => fn -> Bench.eval(parsed_string_split, env) end,
     "evaluate.fib10" => fn -> Bench.eval(parsed_fib, env) end
   },
