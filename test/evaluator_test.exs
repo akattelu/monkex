@@ -258,6 +258,10 @@ defmodule EvaluatorTest do
       {"len([1])", 1},
       {~s(charAt("hello", 0\)), "h"},
       {~s(charAt("hello", 3\)), "l"},
+      {"head([1, 2, 3])", 1},
+      {"tail([1, 2, 3])[1]",3},
+      {"last([1, 2, 3])",3},
+      {~s(len("hello"\)), 5},
       {"let arr = [1]; let next = push(arr, 2); next[1];", 2}
     ]
     |> Enum.map(&eval_input/1)

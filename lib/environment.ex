@@ -24,23 +24,46 @@ defmodule Monkex.Environment do
   end
 
   def with_builtins(env) do
-    env
-    |> Environment.set("len", %Builtin{
-      param_count: 1,
-      handler: &Builtin.len/1
-    })
-    |> Environment.set("puts", %Builtin{
-      param_count: 1,
-      handler: &Builtin.puts/1
-    })
-    |> Environment.set("charAt", %Builtin{
-      param_count: 2,
-      handler: &Builtin.char_at/1
-    })
-    |> Environment.set("push", %Builtin{
-      param_count: 2,
-      handler: &Builtin.push/1
-    })
+    [
+      {"len",
+       %Builtin{
+         param_count: 1,
+         handler: &Builtin.len/1
+       }},
+      {"head",
+       %Builtin{
+         param_count: 1,
+         handler: &Builtin.head/1
+       }},
+      {"tail",
+       %Builtin{
+         param_count: 1,
+         handler: &Builtin.tail/1
+       }},
+      {"last",
+       %Builtin{
+         param_count: 1,
+         handler: &Builtin.last/1
+       }},
+      {"puts",
+       %Builtin{
+         param_count: 1,
+         handler: &Builtin.puts/1
+       }},
+      {"charAt",
+       %Builtin{
+         param_count: 2,
+         handler: &Builtin.char_at/1
+       }},
+      {"push",
+       %Builtin{
+         param_count: 2,
+         handler: &Builtin.push/1
+       }}
+    ]
+    |> Enum.reduce(env, fn {name, builtin}, acc ->
+      Environment.set(acc, name, builtin)
+    end)
   end
 
   def merge(%Environment{store: base}, %Environment{store: other}) do

@@ -157,9 +157,10 @@ defmodule Monkex.Object.Array do
     end
   end
 
-  def push(%Array{items: items}, obj) do
-    (items ++ [obj]) |> Array.from()
-  end
+  def push(%Array{items: items}, obj), do: (items ++ [obj]) |> Array.from()
+  def head(%Array{items: items}), do: items |> hd
+  def tail(%Array{items: items}), do: items |> tl |> Array.from()
+  def last(%Array{items: items}), do: items |> List.last()
 
   defimpl Monkex.Object, for: Array do
     def type(_), do: :array
@@ -206,6 +207,7 @@ defmodule Monkex.Object.Builtin do
   defstruct [:param_count, :handler]
 
   def len([%Array{items: items} | _]), do: length(items) |> Integer.from()
+  def len([%StringObj{value: value} | _]), do: String.length(value) |> Integer.from()
 
   def puts([obj | _]) do
     IO.puts("#{obj}")
@@ -219,4 +221,8 @@ defmodule Monkex.Object.Builtin do
   def push([%Array{} = arr | [val | _]]) do
     Array.push(arr, val)
   end
+
+  def head([%Array{} = arr | _]), do: Array.head(arr)
+  def tail([%Array{} = arr | _]), do: Array.tail(arr)
+  def last([%Array{} = arr | _]), do: Array.last(arr)
 end
