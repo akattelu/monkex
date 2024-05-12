@@ -185,7 +185,7 @@ Available memory: 32 GB
 Elixir 1.16.2
 Erlang 26.2.4
 JIT enabled: true
-                                                                                                                                                         
+
 Benchmark suite executing with the following configuration:
 warmup: 2 s
 time: 5 s
@@ -193,19 +193,22 @@ memory time: 0 ns
 reduction time: 0 ns
 parallel: 1
 inputs: none specified
-Estimated total run time: 28 s
-                                                                                                                                                         
+Estimated total run time: 42 s
+
 Benchmarking evaluate.fib10 ...
 Benchmarking evaluate.string_split ...
 Benchmarking parse ...
+Benchmarking parse_and_evaluate.fib10 ...
+Benchmarking parse_and_evaluate.string_split ...
 Benchmarking tokenize ...
 Calculating statistics...
 Formatting results...
-                                                                                                                                                         
-Name                            ips        average  deviation         median         99th %
-evaluate.string_split        6.31 K       0.158 ms     ±5.64%       0.157 ms       0.194 ms
-evaluate.fib10               4.04 K        0.25 ms    ±23.28%        0.24 ms        0.35 ms
-parse                       0.164 K        6.12 ms     ±0.79%        6.10 ms        6.29 ms
-tokenize                    0.156 K        6.42 ms     ±6.38%        6.33 ms        7.55 ms
-```
 
+Name                                      ips        average  deviation         median         99th %
+evaluate.string_split                  8.10 K       0.123 ms    ±40.42%       0.115 ms        0.30 ms
+evaluate.fib10                         5.27 K       0.190 ms    ±37.22%       0.178 ms        0.47 ms
+parse_and_evaluate.fib10               1.89 K        0.53 ms     ±7.17%        0.51 ms        0.62 ms
+parse                                  0.23 K        4.31 ms     ±1.25%        4.30 ms        4.51 ms
+parse_and_evaluate.string_split        0.23 K        4.43 ms    ±10.63%        4.41 ms        4.70 ms
+tokenize                               0.22 K        4.46 ms     ±7.36%        4.29 ms        5.41 ms
+```
