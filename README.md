@@ -178,7 +178,6 @@ This repo uses https://github.com/bencheeorg/benchee for benchmarking. You can r
 Here are some results from my machine:
 
 ```sh
-monkex main* 28s λ  mix run ./bench/bench.exs
 Operating System: macOS
 CPU Information: Apple M2 Pro
 Number of Available Cores: 10
@@ -186,7 +185,7 @@ Available memory: 32 GB
 Elixir 1.16.2
 Erlang 26.2.4
 JIT enabled: true
-                                                                                                                          
+                                                                                                                                                         
 Benchmark suite executing with the following configuration:
 warmup: 2 s
 time: 5 s
@@ -195,26 +194,18 @@ reduction time: 0 ns
 parallel: 1
 inputs: none specified
 Estimated total run time: 28 s
-                                                                                                                          
+                                                                                                                                                         
 Benchmarking evaluate.fib10 ...
 Benchmarking evaluate.string_split ...
 Benchmarking parse ...
 Benchmarking tokenize ...
 Calculating statistics...
 Formatting results...
-                                                                                                                          
+                                                                                                                                                         
 Name                            ips        average  deviation         median         99th %
-evaluate.string_split        6.30 K       0.159 ms     ±5.35%       0.158 ms       0.194 ms
-evaluate.fib10               4.12 K        0.24 ms     ±3.13%        0.24 ms        0.27 ms
-parse                       0.161 K        6.20 ms     ±3.49%        6.17 ms        6.68 ms
-tokenize                    0.157 K        6.37 ms     ±8.06%        6.15 ms        7.88 ms
-                                                                                                                          
-Extended statistics:
-                                                                                                                          
-Name                          minimum        maximum    sample size                     mode
-evaluate.string_split        0.149 ms        0.30 ms        31.43 K                 0.158 ms
-evaluate.fib10                0.24 ms        0.57 ms        20.58 K         0.24 ms, 0.24 ms
-parse                         6.04 ms       10.51 ms            8076.19 ms, 6.16 ms, 6.13 ms
-tokenize                      5.82 ms       12.66 ms            786                  6.04 ms
+evaluate.string_split        6.22 K       0.161 ms     ±7.84%       0.159 ms       0.199 ms
+evaluate.fib10               4.01 K        0.25 ms     ±3.08%        0.25 ms        0.27 ms
+parse                       0.162 K        6.16 ms     ±1.60%        6.15 ms        6.43 ms
+tokenize                    0.157 K        6.37 ms     ±6.79%        6.22 ms        7.62 ms
 ```
 

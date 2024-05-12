@@ -50,5 +50,5 @@ Benchee.run(
     "evaluate.string_split" => fn -> Bench.eval(parsed_string_split, env) end,
     "evaluate.fib10" => fn -> Bench.eval(parsed_fib, env) end
   },
-  formatters: [{Benchee.Formatters.Console, extended_statistics: true, comparison: false}]
+  formatters: [{Benchee.Formatters.Console, extended_statistics: false, comparison: false}]
 )
