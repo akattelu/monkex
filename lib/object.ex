@@ -158,9 +158,9 @@ defmodule Monkex.Object.Array do
   end
 
   def push(%Array{items: items}, obj), do: (items ++ [obj]) |> Array.from()
-  def head(%Array{items: items}), do: items |> hd
-  def tail(%Array{items: items}), do: items |> tl |> Array.from()
-  def last(%Array{items: items}), do: items |> List.last()
+  def head(%Array{items: [h | _]}), do: h
+  def tail(%Array{items: [_ | t]}), do: Array.from(t)
+  def last(%Array{items: items}), do: List.last(items)
   def cons(%Array{items: items}, item), do: [item | items] |> Array.from()
 
   defimpl Monkex.Object, for: Array do
@@ -208,9 +208,16 @@ defmodule Monkex.Object.Builtin do
   alias Monkex.Object.Error
   defstruct [:param_count, :handler]
 
-  def read([%StringObj{value: path}]) do
+  def read([%StringObj{value: path} | _]) do
     case File.read(path) do
       {:ok, data} -> StringObj.from(data)
+      {:error, _} -> Error.with_message("could not read file #{path}")
+    end
+  end
+
+  def read_lines([%StringObj{value: path} | _]) do
+    case File.read(path) do
+      {:ok, data} -> data |> String.split("\n") |> Enum.map(&StringObj.from/1) |> Array.from()
       {:error, _} -> Error.with_message("could not read file #{path}")
     end
   end
@@ -219,6 +226,8 @@ defmodule Monkex.Object.Builtin do
     IO.puts("#{obj}")
     Null.object()
   end
+
+  def parse_int([%StringObj{value: value} | _]), do: value |> String.to_integer() |> Integer.from
 
   def len([%StringObj{value: value} | _]), do: String.length(value) |> Integer.from()
   def len([%Array{items: items} | _]), do: length(items) |> Integer.from()

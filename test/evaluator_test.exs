@@ -262,6 +262,7 @@ defmodule EvaluatorTest do
       {"tail([1, 2, 3])[1]", 3},
       {"last([1, 2, 3])", 3},
       {"cons([1, 2, 3], 0)[0];", 0},
+      {~s(parseInt("4"\)), 4},
       {~s(len("hello"\)), 5},
       {"let arr = [1]; let next = push(arr, 2); next[1];", 2}
     ]
@@ -408,16 +409,22 @@ defmodule EvaluatorTest do
 
   @tag :tmp_dir
   test "read builtin", %{tmp_dir: tmp_dir} do
-    :ok = File.write("#{tmp_dir}/f1.txt", "hello world")
+    :ok = File.write("#{tmp_dir}/f1.txt", "hello\nworld")
 
     [
-      {~s(let data = read("#{tmp_dir}/f1.txt"\); data;), "hello world"}
+      {~s(let data = read("#{tmp_dir}/f1.txt"\); data;), "hello\nworld"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
+    [
+      {~s(let data = readLines("#{tmp_dir}/f1.txt"\); data;), ["hello", "world"]}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal_array/1)
 
     [
-      {~s(let data = read("#{tmp_dir}/f2.txt"\); data;), "could not read file #{tmp_dir}/f2.txt"}
+      {~s(let data = read("#{tmp_dir}/f2.txt"\); data;), "could not read file #{tmp_dir}/f2.txt"},
+      {~s(let data = readLines("#{tmp_dir}/f2.txt"\); data;), "could not read file #{tmp_dir}/f2.txt"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&expect_error/1)

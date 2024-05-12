@@ -1,0 +1,117 @@
+let reduce = fn (arr, initial, reducer) {
+	if (len(arr) == 0) { return initial }
+	let acc = reducer(head(arr), initial);
+	reduce(tail(arr), acc, reducer);
+}
+
+let all = fn(arr) {
+	reduce(arr, true, fn (item, acc) {
+		if (item) {
+			if (acc) {
+				return true;
+			}
+		}
+		return false;
+ 	});
+}
+
+let filter = fn (arr, f) {
+	if (len(arr) == 0) { return [] };
+	if (f(head(arr))) {
+		cons(filter(tail(arr), f), head(arr));
+	} else {
+		filter(tail(arr), f);
+	}
+}
+
+let toArrayHelper = fn (str, idx, acc) {
+	if (idx == len(str)) { return acc }
+	toArrayHelper(str, idx + 1, push(acc, charAt(str, idx)));
+}
+
+let stringToArray = fn(str) { toArrayHelper(str, 0, []); }
+let arrayToString = fn(arr) { reduce(arr, "", fn (x, y) { y + x})}
+
+let reverse = fn (arr) {
+	reduce(arr, [], fn (val, acc) {
+		cons(acc, val);
+	});
+}
+
+let stringSplit = fn (str, delim) {
+	reverse(reduce(stringToArray(str), [""], fn (char, acc) {
+		if (char != delim) {
+			let val = cons(tail(acc), head(acc) + char);
+			return val;
+		} else {
+			cons(acc, "");
+		}
+	}));
+}
+
+let map = fn (arr, f) {
+	if (len(arr) == 0) { return arr; }
+	if (len(arr) == 1) { return [f(arr[0])] };
+	cons(map(tail(arr), f), f(head(arr)));
+};
+
+let trimComma = fn (str) {
+	arrayToString(filter(stringToArray(str), fn (x) { x != "," }));
+};
+
+let empty = fn () { {"green": 0, "red": 0, "blue": 0} } 
+
+let colorReduce = fn (arr) {
+	if (len(arr) == 0) { return empty() }
+	let num = parseInt(head(arr));
+	let color = head(tail(arr));
+
+	let next = colorReduce(tail(tail(arr)));
+	{
+		"green": next["green"],
+		"red": next["red"],
+		"blue": next["blue"],
+		color: num
+	}
+}
+
+let parseGame = fn(game) {
+	let parts = tail(stringSplit(game, " "));
+	let dict = colorReduce(map(parts, trimComma));
+}
+
+let parseGames = fn (line) {
+	let parts = stringSplit(line, ";");
+	let allGameValues = map(parts, parseGame)
+	allGameValues;
+};
+
+let parseLine = fn (line) {
+	let colonParts = stringSplit(line, ":");
+	let gameStr = colonParts[0];
+	let gameNum = parseInt(stringSplit(gameStr, " ")[1]);
+	let games = parseGames(colonParts[1]);
+	[gameNum, games]
+}
+
+let gameValid = fn(colors) {
+	let redValid = (12 - colors["red"]) > -1;
+	let greenValid = (13 - colors["green"]) > -1;
+	let blueValid = (14 - colors["blue"]) > -1;
+	all([redValid, greenValid, blueValid]);
+}
+
+let filter_valid = fn (gamePair) {
+	let games = gamePair[1];
+	all(map(games, gameValid));
+}
+
+let inputData = readLines("./examples/testdata/cube.txt");
+let cleanData = filter(inputData, fn (x) { x != "" });
+let gameData = map(cleanData, parseLine);
+let validGames = filter(gameData, filter_valid);
+let validGameSum = reduce(validGames, 0, fn (game, acc) {
+	game[0] + acc
+});
+
+validGameSum;
