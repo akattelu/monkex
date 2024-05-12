@@ -32,7 +32,8 @@ defmodule Monkex.AST.BlockStatement do
            {%ReturnValue{}, _} = val -> {:halt, val}
            val -> {:cont, val}
          end
-       end) |> elem(0), env}
+       end)
+       |> elem(0), env}
     end
   end
 end
