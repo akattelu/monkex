@@ -205,24 +205,28 @@ defmodule Monkex.Object.Builtin do
   alias Monkex.Object.Integer
   alias Monkex.Object.String, as: StringObj
   alias Monkex.Object.Null
+  alias Monkex.Object.Error
   defstruct [:param_count, :handler]
 
-  def len([%Array{items: items} | _]), do: length(items) |> Integer.from()
-  def len([%StringObj{value: value} | _]), do: String.length(value) |> Integer.from()
+  def read([%StringObj{value: path}]) do
+    case File.read(path) do
+      {:ok, data} -> StringObj.from(data)
+      {:error, _} -> Error.with_message("could not read file #{path}")
+    end
+  end
 
   def puts([obj | _]) do
     IO.puts("#{obj}")
     Null.object()
   end
 
-  def char_at([%StringObj{value: str} | [%Integer{value: int} | _]]) do
-    str |> String.at(int) |> String.Chars.to_string() |> StringObj.from()
-  end
+  def len([%StringObj{value: value} | _]), do: String.length(value) |> Integer.from()
+  def len([%Array{items: items} | _]), do: length(items) |> Integer.from()
 
-  def push([%Array{} = arr | [val | _]]) do
-    Array.push(arr, val)
-  end
+  def char_at([%StringObj{value: str} | [%Integer{value: int} | _]]),
+    do: str |> String.at(int) |> String.Chars.to_string() |> StringObj.from()
 
+  def push([%Array{} = arr | [val | _]]), do: Array.push(arr, val)
   def head([%Array{} = arr | _]), do: Array.head(arr)
   def tail([%Array{} = arr | _]), do: Array.tail(arr)
   def last([%Array{} = arr | _]), do: Array.last(arr)

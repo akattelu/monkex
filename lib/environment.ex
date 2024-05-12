@@ -25,46 +25,15 @@ defmodule Monkex.Environment do
 
   def with_builtins(env) do
     [
-      {"len",
-       %Builtin{
-         param_count: 1,
-         handler: &Builtin.len/1
-       }},
-      {"head",
-       %Builtin{
-         param_count: 1,
-         handler: &Builtin.head/1
-       }},
-      {"tail",
-       %Builtin{
-         param_count: 1,
-         handler: &Builtin.tail/1
-       }},
-      {"last",
-       %Builtin{
-         param_count: 1,
-         handler: &Builtin.last/1
-       }},
-      {"puts",
-       %Builtin{
-         param_count: 1,
-         handler: &Builtin.puts/1
-       }},
-      {"charAt",
-       %Builtin{
-         param_count: 2,
-         handler: &Builtin.char_at/1
-       }},
-      {"cons",
-       %Builtin{
-         param_count: 2,
-         handler: &Builtin.cons/1
-       }},
-      {"push",
-       %Builtin{
-         param_count: 2,
-         handler: &Builtin.push/1
-       }}
+      {"len", %Builtin{param_count: 1, handler: &Builtin.len/1}},
+      {"head", %Builtin{param_count: 1, handler: &Builtin.head/1}},
+      {"tail", %Builtin{param_count: 1, handler: &Builtin.tail/1}},
+      {"last", %Builtin{param_count: 1, handler: &Builtin.last/1}},
+      {"puts", %Builtin{param_count: 1, handler: &Builtin.puts/1}},
+      {"charAt", %Builtin{param_count: 2, handler: &Builtin.char_at/1}},
+      {"cons", %Builtin{param_count: 2, handler: &Builtin.cons/1}},
+      {"push", %Builtin{param_count: 2, handler: &Builtin.push/1}},
+      {"read", %Builtin{param_count: 1, handler: &Builtin.read/1}}
     ]
     |> Enum.reduce(env, fn {name, builtin}, acc ->
       Environment.set(acc, name, builtin)

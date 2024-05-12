@@ -405,4 +405,21 @@ defmodule EvaluatorTest do
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
   end
+
+  @tag :tmp_dir
+  test "read builtin", %{tmp_dir: tmp_dir} do
+    :ok = File.write("#{tmp_dir}/f1.txt", "hello world")
+
+    [
+      {~s(let data = read("#{tmp_dir}/f1.txt"\); data;), "hello world"}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+
+    [
+      {~s(let data = read("#{tmp_dir}/f2.txt"\); data;), "could not read file #{tmp_dir}/f2.txt"}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&expect_error/1)
+  end
 end
