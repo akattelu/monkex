@@ -8,7 +8,13 @@ defmodule Monkex.MixProject do
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       escript: [main_module: Monkex.CLI],
-      deps: []
+      deps: deps()
+    ]
+  end
+
+  defp deps do
+    [
+      {:benchee, "~> 1.0", only: :dev}
     ]
   end
 end

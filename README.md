@@ -140,24 +140,24 @@ You can input a newline or C-d to exit the REPL
 1. `cons/1`
 1. `puts/1`
 
-# Developing
+## Developing
 
 MonkEx depends on elixir and mix
 
-## Run Tests
+### Run Tests
 
 ```sh
 mix test
 ```
 
-## Compile to standalone escript
+### Compile to standalone escript
 ```sh
 mix escript.build
 ./monkex ./examples/fib.mx
 # 55
 ```
 
-## Launch REPL
+### Launch REPL
 
 ```sh
 mix repl
@@ -165,9 +165,56 @@ mix repl --lex
 mix repl --parse
 ```
 
-## Evaluate a file 
+### Evaluate a file 
 ```sh
 mix mx ./examples/fib.mx
 # 55
+```
+
+## Benchmarking
+
+This repo uses https://github.com/bencheeorg/benchee for benchmarking. You can run benchmarks with `mix run bench/bench.exs`
+
+Here are some results from my machine:
+
+```sh
+monkex main* 28s λ  mix run ./bench/bench.exs
+Operating System: macOS
+CPU Information: Apple M2 Pro
+Number of Available Cores: 10
+Available memory: 32 GB
+Elixir 1.16.2
+Erlang 26.2.4
+JIT enabled: true
+                                                                                                                          
+Benchmark suite executing with the following configuration:
+warmup: 2 s
+time: 5 s
+memory time: 0 ns
+reduction time: 0 ns
+parallel: 1
+inputs: none specified
+Estimated total run time: 28 s
+                                                                                                                          
+Benchmarking evaluate.fib10 ...
+Benchmarking evaluate.string_split ...
+Benchmarking parse ...
+Benchmarking tokenize ...
+Calculating statistics...
+Formatting results...
+                                                                                                                          
+Name                            ips        average  deviation         median         99th %
+evaluate.string_split        6.30 K       0.159 ms     ±5.35%       0.158 ms       0.194 ms
+evaluate.fib10               4.12 K        0.24 ms     ±3.13%        0.24 ms        0.27 ms
+parse                       0.161 K        6.20 ms     ±3.49%        6.17 ms        6.68 ms
+tokenize                    0.157 K        6.37 ms     ±8.06%        6.15 ms        7.88 ms
+                                                                                                                          
+Extended statistics:
+                                                                                                                          
+Name                          minimum        maximum    sample size                     mode
+evaluate.string_split        0.149 ms        0.30 ms        31.43 K                 0.158 ms
+evaluate.fib10                0.24 ms        0.57 ms        20.58 K         0.24 ms, 0.24 ms
+parse                         6.04 ms       10.51 ms            8076.19 ms, 6.16 ms, 6.13 ms
+tokenize                      5.82 ms       12.66 ms            786                  6.04 ms
 ```
 
