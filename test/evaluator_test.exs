@@ -259,8 +259,8 @@ defmodule EvaluatorTest do
       {~s(charAt("hello", 0\)), "h"},
       {~s(charAt("hello", 3\)), "l"},
       {"head([1, 2, 3])", 1},
-      {"tail([1, 2, 3])[1]",3},
-      {"last([1, 2, 3])",3},
+      {"tail([1, 2, 3])[1]", 3},
+      {"last([1, 2, 3])", 3},
       {~s(len("hello"\)), 5},
       {"let arr = [1]; let next = push(arr, 2); next[1];", 2}
     ]
@@ -384,6 +384,22 @@ defmodule EvaluatorTest do
        };
        fibonacci(10);
        """, 55}
+    ]
+    |> Enum.map(&eval_input/1)
+    |> Enum.map(&test_literal/1)
+  end
+
+  test "block scope env persistence" do
+    [
+      {
+        """
+        if (1 + 1 == 2) { 
+          let x = 10;
+          x + 5;
+        }
+        """,
+        15
+      }
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
