@@ -2,6 +2,8 @@
 
 Elixir implementation of the Monkey programming language
 
+<img src="https://github.com/akattelu/monkex/assets/12012201/1ca3de7e-e41d-418a-be30-67a57b54c47b" width=300 height=300 />
+
 ## Examples
 
 ```
