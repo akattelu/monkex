@@ -1,4 +1,4 @@
-defmodule Monkex.Bytecode do
+defmodule Monkex.Opcode do
   @doc """
   Helpers for converting to and from binaries
   """

@@ -1,5 +1,5 @@
-defmodule BytecodeTest do
-  alias Monkex.Bytecode, as: Code
+defmodule OpcodeTest do
+  alias Monkex.Opcode, as: Code
   use ExUnit.Case, async: true
 
   @op_constant <<1::8>>
