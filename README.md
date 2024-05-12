@@ -49,6 +49,9 @@ You can run `monkex` against a .mx file to evaluate it
 
 ./monkex ./examples/string_split.mx
 # ["hello", "world", "again"]
+
+./monkex ./examples/cube.mx # advent of code 2023 day 2 part 1
+# 3059
 ```
 
 ## REPL
@@ -137,8 +140,12 @@ You can input a newline or C-d to exit the REPL
 1. `last/1`
 1. `len/1`
 1. `push/2`
-1. `cons/1`
+1. `cons/2`
 1. `puts/1`
+1. `read/1`
+1. `readLines/1`
+1. `parseInt/1`
+1. `charAt/2`
 
 ## Developing
 

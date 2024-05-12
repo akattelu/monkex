@@ -110,8 +110,6 @@ let inputData = readLines("./examples/testdata/cube.txt");
 let cleanData = filter(inputData, fn (x) { x != "" });
 let gameData = map(cleanData, parseLine);
 let validGames = filter(gameData, filter_valid);
-let validGameSum = reduce(validGames, 0, fn (game, acc) {
-	game[0] + acc
-});
+let validGameSum = reduce(validGames, 0, fn (game, acc) { game[0] + acc });
 
 validGameSum;
