@@ -157,6 +157,10 @@ defmodule Monkex.Object.Array do
     end
   end
 
+  def push(%Array{items: items}, obj) do
+    (items ++ [obj]) |> Array.from()
+  end
+
   defimpl Monkex.Object, for: Array do
     def type(_), do: :array
   end
@@ -210,5 +214,9 @@ defmodule Monkex.Object.Builtin do
 
   def char_at([%StringObj{value: str} | [%Integer{value: int} | _]]) do
     str |> String.at(int) |> String.Chars.to_string() |> StringObj.from()
+  end
+
+  def push([%Array{} = arr | [val | _]]) do
+    Array.push(arr, val)
   end
 end

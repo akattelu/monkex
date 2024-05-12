@@ -37,6 +37,10 @@ defmodule Monkex.Environment do
       param_count: 2,
       handler: &Builtin.char_at/1
     })
+    |> Environment.set("push", %Builtin{
+      param_count: 2,
+      handler: &Builtin.push/1
+    })
   end
 
   def merge(%Environment{store: base}, %Environment{store: other}) do
