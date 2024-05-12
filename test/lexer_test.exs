@@ -1,5 +1,5 @@
 defmodule LexerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Monkex.Lexer
 
   test "lex simple number expr with eof" do

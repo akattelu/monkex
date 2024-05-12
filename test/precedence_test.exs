@@ -1,5 +1,5 @@
 defmodule PrecedenceTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Monkex.Parser.Precedence
 
   test "precedence compare" do

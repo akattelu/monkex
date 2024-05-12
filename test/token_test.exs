@@ -1,5 +1,5 @@
 defmodule TokenTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Monkex.Token
 
   test "is digit" do

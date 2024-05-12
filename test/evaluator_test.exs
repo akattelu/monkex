@@ -1,5 +1,5 @@
 defmodule EvaluatorTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Monkex.Object.Dictionary
   alias Monkex.Object
   alias Monkex.Object.Node

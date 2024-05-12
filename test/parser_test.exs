@@ -1,5 +1,5 @@
 defmodule ParserTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Monkex.AST.BlockStatement
   alias Monkex.AST.Expression
   alias Monkex.AST.Statement
