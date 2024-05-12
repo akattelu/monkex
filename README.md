@@ -2,9 +2,7 @@
 
 Elixir implementation of the Monkey programming language
 
-# Features
-
-Example:
+## Examples
 
 ```
 let fibonacci = fn(x) {
@@ -20,53 +18,80 @@ let fibonacci = fn(x) {
 };
 ```
 
+See more [examples](./examples)
+
+## Features
+
+1. Booleans, integers, and strings as primitive data types
+1. Arrays and dictionaries and data structures
+1. Functions as values, recursion, and higher order functions
+1. Variable binding with `let` and returning values with `return`
+1. Conditional statements with `if`/`else`
+1. Dynamic typing
+1. Evaluation via REPL or `.mx` files
+
+
+## Usage
+
+You can build `monkex` into a standalone escript
+
+```
+mix escript.build
+./monkex
+```
+
+## Evaluating a file
+
+You can run `monkex` against a .mx file to evaluate it
+```sh
+./monkex ./examples/fib.mx
+# 55
+
+./monkex ./examples/string_split.mx
+# ["hello", "world", "again"]
+```
+
 ## REPL
 
-MonkEx features a functional REPL
+The REPL is a good way to play around with the language and its features. Running `monkex` without arguments starts the REPL.
 
-To start the REPL:
-
-```sh
-mix repl
 ```
-
-The REPL is a good way to play around with the language and its features:
-
-```sh
-$ mix repl
-Hello aakash, this is MonkEx
-Feel free to type in some commands!
-                                                                                                                                                  
->> let x = 3;
+monkex main* λ  ./monkex
+>> let a = 3;
 3
->> x + 5;
+>> a + 5;
 8
->> let add_three = fn(y) { x + y };
-fn(y) { (x + y) }
->> add_three(10);
+>> let addTen = fn (x) { x + 10 };
+fn(x) { (x + 10) }
+>> addTen(a);
 13
-
+>> let arr = [20, "hello", true];
+[20, "hello", true]
+>> let dict = {"hello": 42};
+{"hello": 42}
+>> dict[arr[1]];
+42
+>> addTen(dict[arr[1]]);
+52
+>> ⏎
 ```
 
-The REPL also outputs parser errors and runtime errors: 
+The REPL also provides error messages in case of parsing or runtime failures:
 
 ```sh
-$ mix repl
-Hello aakash, this is MonkEx
-Feel free to type in some commands!
-
->> let a 3;
+monkex main* 2s λ  ./monkex
+>> let a 3
 
 Woops! We ran into some monkey business here!
             __,__
    .--.  .-"     "-.  .--.
   / .. \/  .-. .-.  \/ .. \
  | |  '|  /   Y   \  |'  | |
- | \   \  \ x | x /  /   / |
+ | \   \  \ X___X /  /   / |
   \ '- ,\.-"""""""-./, -' /
    ''-' /_   ^ ^   _\ '-''
-       |  \._   _./  |
-       \   \ '~' /   /
+       |  \._____./  |
+       \   \     /   /
         '._ '-=-' _.'
            '-----'
 
@@ -76,48 +101,44 @@ Here are the parser errors:
 3
 >> a + b;
 Error: identifier not found: b
-
 ```
 
-The REPL can also be run in lexer (`--lex`) or parser (`--parse`) mode for debugging purposes:
+
+The REPL can also take the `--lex` or `--parse` args to run the REPL as intermediate phases of the interpreter:
 
 ```sh
-$ mix repl --lex
-Hello aakash, this is MonkEx
-Feel free to type in some commands!
-                                                                                                                                                  
->> a + b;
-%Monkex.Token{type: :ident, literal: "a"}
-%Monkex.Token{type: :plus, literal: "+"}
-%Monkex.Token{type: :ident, literal: "b"}
-%Monkex.Token{type: :semicolon, literal: ";"}
->> fn (a) { a + 5 } ;
-%Monkex.Token{type: :function, literal: "fn"}
-%Monkex.Token{type: :lparen, literal: "("}
-%Monkex.Token{type: :ident, literal: "a"}
-%Monkex.Token{type: :rparen, literal: ")"}
-%Monkex.Token{type: :lbrace, literal: "{"}
-%Monkex.Token{type: :ident, literal: "a"}
-%Monkex.Token{type: :plus, literal: "+"}
-%Monkex.Token{type: :int, literal: "5"}
-%Monkex.Token{type: :rbrace, literal: "}"}
-%Monkex.Token{type: :semicolon, literal: ";"}
+monkex main* 2s λ  ./monkex --lex
+>> let a = 1 + 2;
+token type: let, literal: let
+token type: ident, literal: a
+token type: assign, literal: =
+token type: int, literal: 1
+token type: plus, literal: +
+token type: int, literal: 2
+token type: semicolon, literal: ;
+>> ⏎
 ```
+
 ```sh
-$ mix repl --parse
-Hello aakash, this is MonkEx
-Feel free to type in some commands!
-                                                                                                                                                  
->> a + b;
-(a + b)
->> fn (a) { a + 5 };
-fn (a) { (a + 5) }
->> a + b + c;
-((a + b) + c)
+monkex main* 8s λ  ./monkex --parse
+>> let a = 1 + 2 -3;
+let a = ((1 + 2) - 3);
+>> ⏎
 ```
 
 You can input a newline or C-d to exit the REPL
 
+
+## Programming in MonkEx
+
+### List of builtin functions
+1. `head/1`
+1. `tail/1`
+1. `last/1`
+1. `len/1`
+1. `push/2`
+1. `cons/1`
+1. `puts/1`
 
 # Developing
 
@@ -129,12 +150,24 @@ MonkEx depends on elixir and mix
 mix test
 ```
 
-<!-- 
-# Learnings
+## Compile to standalone escript
+```sh
+mix escript.build
+./monkex ./examples/fib.mx
+# 55
+```
 
+## Launch REPL
 
-## Evaluator
+```sh
+mix repl
+mix repl --lex
+mix repl --parse
+```
 
-Having an immutable environment helped a lot when supporting closures. You can see the implementation in [the call expression AST node](./lib/ast/call_expression.ex)
+## Evaluate a file 
+```sh
+mix mx ./examples/fib.mx
+# 55
+```
 
--->
