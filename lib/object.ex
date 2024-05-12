@@ -161,6 +161,7 @@ defmodule Monkex.Object.Array do
   def head(%Array{items: items}), do: items |> hd
   def tail(%Array{items: items}), do: items |> tl |> Array.from()
   def last(%Array{items: items}), do: items |> List.last()
+  def cons(%Array{items: items}, item), do: [item | items] |> Array.from()
 
   defimpl Monkex.Object, for: Array do
     def type(_), do: :array
@@ -225,4 +226,5 @@ defmodule Monkex.Object.Builtin do
   def head([%Array{} = arr | _]), do: Array.head(arr)
   def tail([%Array{} = arr | _]), do: Array.tail(arr)
   def last([%Array{} = arr | _]), do: Array.last(arr)
+  def cons([%Array{} = arr | [obj | _]]), do: Array.cons(arr, obj)
 end

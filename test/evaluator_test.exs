@@ -261,6 +261,7 @@ defmodule EvaluatorTest do
       {"head([1, 2, 3])", 1},
       {"tail([1, 2, 3])[1]", 3},
       {"last([1, 2, 3])", 3},
+      {"cons([1, 2, 3], 0)[0];", 0},
       {~s(len("hello"\)), 5},
       {"let arr = [1]; let next = push(arr, 2); next[1];", 2}
     ]

@@ -55,6 +55,11 @@ defmodule Monkex.Environment do
          param_count: 2,
          handler: &Builtin.char_at/1
        }},
+      {"cons",
+       %Builtin{
+         param_count: 2,
+         handler: &Builtin.cons/1
+       }},
       {"push",
        %Builtin{
          param_count: 2,
