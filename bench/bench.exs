@@ -34,6 +34,7 @@ env = Monkex.Environment.new() |> Monkex.Environment.with_builtins()
 
 {:ok, fib_string} = File.read("./examples/fib.mx")
 {:ok, split_string} = File.read("./examples/string_split.mx")
+{:ok, cube_string} = File.read("./examples/cube.mx")
 
 {_, parsed_fib} =
   File.read("./examples/fib.mx")
@@ -56,7 +57,8 @@ Benchee.run(
     "evaluate.string_split" => fn -> Bench.eval(parsed_string_split, env) end,
     "evaluate.fib10" => fn -> Bench.eval(parsed_fib, env) end,
     "parse_and_evaluate.string_split" => fn -> Bench.parse_and_eval(split_string, env) end,
-    "parse_and_evaluate.fib10" => fn -> Bench.parse_and_eval(fib_string, env) end
+    "parse_and_evaluate.fib10" => fn -> Bench.parse_and_eval(fib_string, env) end,
+    "parse_and_evaluate.cube" => fn -> Bench.parse_and_eval(cube_string, env) end
   },
   formatters: [{Benchee.Formatters.Console, extended_statistics: false, comparison: false}]
 )
