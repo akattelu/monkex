@@ -1,5 +1,5 @@
 defmodule OpcodeTest do
-  alias Monkex.Opcode.Instructions
+  alias Monkex.Instructions
   alias Monkex.Opcode, as: Code
   use ExUnit.Case, async: true
 
@@ -16,7 +16,7 @@ defmodule OpcodeTest do
     0006 OpConstant 65535
     """
 
-    concatted = Enum.reduce(actual, Instructions.new(), &Instructions.concat/2)
+    concatted = Instructions.merge(actual)
     assert "#{concatted}" == expected
   end
 
@@ -33,7 +33,7 @@ defmodule OpcodeTest do
       {:constant, [65534], <<1::8, 255::8, 254::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
-      instr = Code.make(opcode, operands) |> Code.Instructions.raw()
+      %Instructions{raw: instr}= Code.make(opcode, operands)
       assert byte_size(instr) == byte_size(expected)
     end)
   end

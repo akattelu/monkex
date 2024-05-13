@@ -1,6 +1,6 @@
 defmodule Monkex.Compiler do
   alias __MODULE__
-  alias Monkex.Opcode.Instructions
+  alias Monkex.Instructions
 
   defmodule Bytecode do
     @enforce_keys [:instructions, :constants]

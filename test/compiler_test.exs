@@ -3,16 +3,13 @@ defmodule CompilerTest do
   alias Monkex.Compiler
   alias Monkex.Lexer
   alias Monkex.Opcode
-  alias Monkex.Opcode.Instructions
+  alias Monkex.Instructions
 
   use ExUnit.Case, async: true
 
   def assert_instructions(actual, expected_list) do
-    concatted = Enum.reduce(expected_list, Instructions.new(), &Instructions.concat/2)
-    if concatted != actual do
-      IO.puts("expected: #{concatted}, got: #{actual}")
-      assert concatted == actual
-    end
+    concatted = Instructions.merge(expected_list)
+    assert concatted == actual, "expected:\n#{concatted}\nactual:\n\n#{actual}"
   end
 
   def assert_constants([], []), do: nil
