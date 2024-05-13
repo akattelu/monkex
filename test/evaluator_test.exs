@@ -416,6 +416,7 @@ defmodule EvaluatorTest do
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&test_literal/1)
+
     [
       {~s(let data = readLines("#{tmp_dir}/f1.txt"\); data;), ["hello", "world"]}
     ]
@@ -424,7 +425,8 @@ defmodule EvaluatorTest do
 
     [
       {~s(let data = read("#{tmp_dir}/f2.txt"\); data;), "could not read file #{tmp_dir}/f2.txt"},
-      {~s(let data = readLines("#{tmp_dir}/f2.txt"\); data;), "could not read file #{tmp_dir}/f2.txt"}
+      {~s(let data = readLines("#{tmp_dir}/f2.txt"\); data;),
+       "could not read file #{tmp_dir}/f2.txt"}
     ]
     |> Enum.map(&eval_input/1)
     |> Enum.map(&expect_error/1)

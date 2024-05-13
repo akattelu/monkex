@@ -1,5 +1,6 @@
 defmodule Monkex.Opcode do
   alias Monkex.Instructions
+
   defmodule Bytes do
     @moduledoc """
     Helpers for working with bytes and packing
@@ -57,4 +58,3 @@ defmodule Monkex.Opcode do
     |> Instructions.from()
   end
 end
-

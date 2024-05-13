@@ -15,6 +15,7 @@ defmodule Monkex.AST.ExpressionStatement do
   end
 
   defimpl Node, for: ExpressionStatement do
+    def compile(compiler, _node), do: compiler
     def eval(%ExpressionStatement{expression: expression}, env), do: Node.eval(expression, env)
   end
 end

@@ -14,7 +14,7 @@ defmodule Monkex.Compiler do
 
   def new() do
     %Compiler{
-      instructions: Instructions.new,
+      instructions: Instructions.new(),
       constants: []
     }
   end

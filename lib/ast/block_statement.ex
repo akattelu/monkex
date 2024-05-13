@@ -21,6 +21,7 @@ defmodule Monkex.AST.BlockStatement do
   end
 
   defimpl Node, for: BlockStatement do
+    def compile(compiler, _node), do: compiler
     def eval(%BlockStatement{statements: []}, env), do: {Null.object(), env}
     def eval(%BlockStatement{statements: [s | []]}, env), do: Node.eval(s, env)
 

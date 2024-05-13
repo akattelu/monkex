@@ -34,6 +34,7 @@ defmodule Monkex.AST.DictionaryLiteral do
   defimpl Node, for: DictionaryLiteral do
     alias Monkex.Object.Error
     alias Monkex.Object
+    def compile(compiler, _node), do: compiler
 
     defp check_string(%Object.String{}), do: :ok
     defp check_string(other), do: {:error, "expected string as key, got #{Object.type(other)}"}

@@ -16,6 +16,7 @@ defmodule Monkex.AST.StringLiteral do
   end
 
   defimpl Node, for: StringLiteral do
+    def compile(compiler, _node), do: compiler
     def eval(%StringLiteral{value: value}, env), do: {Object.String.from(value), env}
   end
 end

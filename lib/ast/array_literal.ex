@@ -17,6 +17,8 @@ defmodule Monkex.AST.ArrayLiteral do
   end
 
   defimpl Node, for: ArrayLiteral do
+    def compile(compiler, _node), do: compiler
+
     def eval(%ArrayLiteral{items: items}, env) do
       {Enum.reduce_while(items, [], fn expr, acc ->
          case Node.eval(expr, env) do

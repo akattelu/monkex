@@ -5,6 +5,7 @@ end
 
 defprotocol Monkex.Object.Node do
   def eval(node, env)
+  def compile(compiler, node)
 end
 
 defmodule Monkex.Object.Integer do
@@ -227,7 +228,8 @@ defmodule Monkex.Object.Builtin do
     Null.object()
   end
 
-  def parse_int([%StringObj{value: value} | _]), do: value |> String.to_integer() |> Integer.from
+  def parse_int([%StringObj{value: value} | _]),
+    do: value |> String.to_integer() |> Integer.from()
 
   def len([%StringObj{value: value} | _]), do: String.length(value) |> Integer.from()
   def len([%Array{items: items} | _]), do: length(items) |> Integer.from()

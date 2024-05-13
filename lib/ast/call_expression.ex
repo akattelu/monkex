@@ -25,6 +25,8 @@ defmodule Monkex.AST.CallExpression do
   end
 
   defimpl Node, for: CallExpression do
+    def compile(compiler, _node), do: compiler
+
     defp args_match(params, args) do
       if length(params) == length(args) do
         :ok

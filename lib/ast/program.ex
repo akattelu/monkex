@@ -23,6 +23,7 @@ defmodule Monkex.AST.Program do
   end
 
   defimpl Node, for: Program do
+    def compile(compiler, _node), do: compiler
     def eval(%Program{statements: []}, env), do: {Null.object(), env}
 
     def eval(%Program{statements: [s | []]}, env) do

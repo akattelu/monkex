@@ -25,6 +25,7 @@ defmodule Monkex.AST.IfExpression do
     alias Monkex.Object.Boolean
     alias Monkex.Object.Integer
     alias Monkex.Object.Error
+    def compile(compiler, _node), do: compiler
     def eval(%Error{} = err, env), do: {err, env}
 
     def eval(

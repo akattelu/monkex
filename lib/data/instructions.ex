@@ -5,7 +5,7 @@ defmodule Monkex.Instructions do
 
   @moduledoc """
   A wrapper for working with a list of bytes
-  This is what the `make` function of `Opcode` should return 
+  This is what `Opcode.make` should return 
   Helps with disassembling bytes back to human readable opcodes and operands
   """
 

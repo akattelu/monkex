@@ -33,7 +33,7 @@ defmodule OpcodeTest do
       {:constant, [65534], <<1::8, 255::8, 254::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
-      %Instructions{raw: instr}= Code.make(opcode, operands)
+      %Instructions{raw: instr} = Code.make(opcode, operands)
       assert byte_size(instr) == byte_size(expected)
     end)
   end

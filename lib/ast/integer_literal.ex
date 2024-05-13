@@ -16,6 +16,7 @@ defmodule Monkex.AST.IntegerLiteral do
   end
 
   defimpl Node, for: IntegerLiteral do
+    def compile(compiler, _node), do: compiler
     def eval(%IntegerLiteral{value: value}, env), do: {Integer.from(value), env}
   end
 end

@@ -18,6 +18,7 @@ defmodule Monkex.AST.ReturnStatement do
 
   defimpl Node, for: ReturnStatement do
     alias Monkex.Object.ReturnValue
+    def compile(compiler, _node), do: compiler
 
     def eval(%ReturnStatement{return_value: expr}, env) do
       {case Node.eval(expr, env) |> elem(0) do
