@@ -42,7 +42,7 @@ defmodule Monkex.Compiler do
   def with_instruction(%Compiler{instructions: instructions} = compiler, instruction) do
     {%Compiler{
        compiler
-       | instructions: Instructions.concat(instruction, instructions) 
+       | instructions: Instructions.concat(instruction, instructions)
      }, Instructions.length(instructions)}
   end
 

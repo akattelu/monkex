@@ -24,6 +24,7 @@ defmodule Monkex.AST.Program do
 
   defimpl Node, for: Program do
     def compile(%Program{statements: []}, compiler), do: {:ok, compiler}
+
     def compile(%Program{statements: [s | rest]}, compiler) do
       case Node.compile(s, compiler) do
         {:ok, c} -> compile(%Program{statements: rest}, c)
