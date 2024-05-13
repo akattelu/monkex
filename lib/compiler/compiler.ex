@@ -1,4 +1,6 @@
 defmodule Monkex.Compiler do
+  alias Monkex.Object.Node
+  alias Monkex.Opcode
   alias __MODULE__
   alias Monkex.Instructions
 
@@ -19,8 +21,8 @@ defmodule Monkex.Compiler do
     }
   end
 
-  def compile(compiler, _node) do
-    {:ok, compiler}
+  def compile(compiler, node) do
+    Node.compile(node, compiler)
   end
 
   def bytecode(%Compiler{instructions: i, constants: c}) do
@@ -28,5 +30,24 @@ defmodule Monkex.Compiler do
       instructions: i,
       constants: c
     }
+  end
+
+  def with_constant(%Compiler{constants: constants} = compiler, constant) do
+    {%Compiler{
+       compiler
+       | constants: constants ++ [constant]
+     }, length(constants)}
+  end
+
+  def with_instruction(%Compiler{instructions: instructions} = compiler, instruction) do
+    {%Compiler{
+       compiler
+       | instructions: Instructions.concat(instruction, instructions) 
+     }, Instructions.length(instructions)}
+  end
+
+  def emit(compiler, opcode, operands) do
+    code = Opcode.make(opcode, operands)
+    Compiler.with_instruction(compiler, code)
   end
 end

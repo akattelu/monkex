@@ -15,6 +15,7 @@ defmodule Monkex.Instructions do
   def new(), do: %Instructions{raw: <<>>}
   def from(bytes), do: %Instructions{raw: bytes}
   def raw(%Instructions{raw: raw}), do: raw
+  def add(%Instructions{raw: raw}, next), do: (raw <> next) |> from
 
   def concat(%Instructions{raw: first}, %Instructions{raw: second}),
     do: (second <> first) |> from
@@ -22,6 +23,8 @@ defmodule Monkex.Instructions do
   def merge(raw_list) do
     Enum.reduce(raw_list, Instructions.new(), &Instructions.concat/2)
   end
+
+  def length(%Instructions{raw: raw}), do: byte_size(raw)
 
   defimpl String.Chars, for: Instructions do
     defp reduce(<<>>, acc, _), do: acc
