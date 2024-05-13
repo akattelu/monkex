@@ -5,7 +5,14 @@ end
 
 defprotocol Monkex.Object.Node do
   def eval(node, env)
-  def compile(compiler, node)
+
+  @fallback_to_any true
+  def compile(node, compiler)
+end
+
+defimpl Monkex.Object.Node, for: Any do
+  def eval(_node, _env), do: raise("not implemented")
+  def compile(_node, _compiler), do: raise("not implemented")
 end
 
 defmodule Monkex.Object.Integer do

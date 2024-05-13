@@ -17,7 +17,7 @@ defmodule Monkex.AST.Identifier do
   end
 
   defimpl Node, for: Identifier do
-    def compile(compiler, _node), do: compiler
+    def compile(_node, compiler), do: compiler
 
     def eval(%Identifier{symbol_name: symbol_name}, env) do
       case Environment.get(env, symbol_name) do

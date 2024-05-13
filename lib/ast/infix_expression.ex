@@ -23,7 +23,14 @@ defmodule Monkex.AST.InfixExpression do
   defimpl Node, for: InfixExpression do
     @boolean_result_operators ["==", "!=", ">", "<"]
 
-    def compile(compiler, _node), do: compiler
+    def compile(%InfixExpression{left: left, right: right}, compiler) do
+      with {:ok, left_c} <- Node.compile(left, compiler),
+           {:ok, right_c} <- Node.compile(right, left_c) do
+        {:ok, right_c}
+      else
+        err -> err
+      end
+    end
 
     def fn_from_operator("+"), do: &(&1 + &2)
     def fn_from_operator("*"), do: &(&1 * &2)

@@ -19,7 +19,7 @@ defmodule Monkex.AST.LetStatement do
   end
 
   defimpl Node, for: LetStatement do
-    def compile(compiler, _node), do: compiler
+    def compile(_node, compiler), do: compiler
 
     def eval(%LetStatement{name: %Identifier{symbol_name: name}, value: value}, env) do
       case Node.eval(value, env) do

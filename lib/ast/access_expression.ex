@@ -24,7 +24,7 @@ defmodule Monkex.AST.AccessExpression do
   end
 
   defimpl Node, for: AccessExpression do
-    def compile(compiler, _node), do: compiler
+    def compile(_node, compiler), do: compiler
 
     defp is_indexable(obj) do
       case obj do

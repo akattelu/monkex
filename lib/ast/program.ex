@@ -23,7 +23,14 @@ defmodule Monkex.AST.Program do
   end
 
   defimpl Node, for: Program do
-    def compile(compiler, _node), do: compiler
+    def compile(%Program{statements: []}, compiler), do: {:ok, compiler}
+    def compile(%Program{statements: [s | rest]}, compiler) do
+      case Node.compile(s, compiler) do
+        {:ok, c} -> compile(%Program{statements: rest}, c)
+        error -> error
+      end
+    end
+
     def eval(%Program{statements: []}, env), do: {Null.object(), env}
 
     def eval(%Program{statements: [s | []]}, env) do

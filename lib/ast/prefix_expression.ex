@@ -21,7 +21,7 @@ defmodule Monkex.AST.PrefixExpression do
     alias Monkex.Object.Null
     alias Monkex.Object.Error
 
-    def compile(compiler, _node), do: compiler
+    def compile(_node, compiler), do: compiler
 
     def eval(%PrefixExpression{operator: "!", right: right}, env) do
       {case Node.eval(right, env) |> elem(0) do
