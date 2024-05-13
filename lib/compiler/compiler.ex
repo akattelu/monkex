@@ -1,5 +1,6 @@
 defmodule Monkex.Compiler do
   alias __MODULE__
+  alias Monkex.Opcode.Instructions
 
   defmodule Bytecode do
     @enforce_keys [:instructions, :constants]
@@ -13,13 +14,13 @@ defmodule Monkex.Compiler do
 
   def new() do
     %Compiler{
-      instructions: <<>>,
+      instructions: Instructions.new,
       constants: []
     }
   end
 
-  def compile(_compiler, _node) do
-    nil
+  def compile(compiler, _node) do
+    {:ok, compiler}
   end
 
   def bytecode(%Compiler{instructions: i, constants: c}) do
