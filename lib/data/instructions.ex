@@ -43,7 +43,7 @@ defmodule Monkex.Instructions do
              %Definition{name: name, operand_widths: widths} =
                Definition.lookup_from_code(first),
              offset_length = Enum.sum(widths) + 1,
-             offset_string = offset |> Integer.to_string() |> String.pad_leading(4, "0"),
+             offset_string = offset |> Integer.to_string() |> String.pad_leading(4, "0") ,
              {int, rest} = Bytes.from_big_binary(rest, widths) do
           {
             {offset + offset_length, "#{str}#{offset_string} #{name} #{Enum.join(int, " ")}\n"},

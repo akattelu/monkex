@@ -6,11 +6,12 @@ defmodule Monkex.Opcode do
     Helpers for working with bytes and packing
     """
     def to_big_binary(operand, size), do: <<operand::big-integer-size(size)-unit(8)>>
-    def from_big_binary(<<>>, _), do: []
-    def from_big_binary(_, []), do: []
+    def from_big_binary(<<>>, acc), do: {acc, <<>>}
+    def from_big_binary(rest, []), do: {[], rest}
 
     def from_big_binary(<<int::big-integer-size(2)-unit(8), rest::binary>>, [2 | widths]) do
-      {[int | from_big_binary(rest, widths)], rest}
+      {value,  next_rest} = from_big_binary(rest, widths)
+      {[int | value], next_rest}
     end
   end
 
@@ -39,7 +40,8 @@ defmodule Monkex.Opcode do
 
     def all() do
       %{
-        :constant => %Definition{name: "OpConstant", opcode: <<1::8>>, operand_widths: [2]}
+        :constant => %Definition{name: "OpConstant", opcode: <<1::8>>, operand_widths: [2]},
+        :add => %Definition{name: "OpAdd", opcode: <<2::8>>, operand_widths: []}
       }
     end
   end
