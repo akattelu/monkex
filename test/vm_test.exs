@@ -21,8 +21,7 @@ defmodule VMTest do
     [
       {"1", 1},
       {"2", 2},
-      # FIXME
-      {"1 + 2", 2}
+      {"1 + 2", 3}
     ]
     |> Enum.map(&vm_test/1)
   end

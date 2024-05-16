@@ -6,6 +6,7 @@ defmodule Monkex.AST.InfixExpression do
   alias Monkex.AST.Expression
   alias Monkex.Object.Integer
   alias Monkex.Object.Boolean
+  alias Monkex.Compiler
   alias Monkex.Object.String, as: StringObj
 
   @enforce_keys [:token, :left, :operator, :right]
@@ -23,10 +24,15 @@ defmodule Monkex.AST.InfixExpression do
   defimpl Node, for: InfixExpression do
     @boolean_result_operators ["==", "!=", ">", "<"]
 
-    def compile(%InfixExpression{left: left, right: right}, compiler) do
+    defp opcode_from_operator("+"), do: {:ok, :add}
+    defp opcode_from_operator(op), do: {:error, "unknown operator: #{op}"}
+
+    def compile(%InfixExpression{left: left, right: right, operator: operator}, compiler) do
       with {:ok, left_c} <- Node.compile(left, compiler),
-           {:ok, right_c} <- Node.compile(right, left_c) do
-        {:ok, right_c}
+           {:ok, right_c} <- Node.compile(right, left_c),
+           {:ok, op} <- opcode_from_operator(operator),
+           {final, _} <- Compiler.emit(right_c, op, []) do
+        {:ok, final}
       else
         err -> err
       end

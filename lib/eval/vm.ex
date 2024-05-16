@@ -1,6 +1,7 @@
 defmodule Monkex.VM do
   alias Monkex.Instructions
   alias Monkex.Compiler.Bytecode
+  alias Monkex.Object.Integer
   alias __MODULE__
 
   @moduledoc """
@@ -40,6 +41,10 @@ defmodule Monkex.VM do
         # TODO: make this list access faster
         obj = Enum.at(constants, int)
         run_raw(next, [obj | stack], constants)
+      <<2::8>> ->
+        [%Integer{value: right}| [%Integer{value: left}| rest_stack]] = stack
+        pushed = [ right + left |> Integer.from | rest_stack]
+        run_raw(rest, pushed, constants)
     end
   end
 end
