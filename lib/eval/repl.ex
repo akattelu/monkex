@@ -2,6 +2,8 @@ defmodule Monkex.REPL do
   alias Monkex.Lexer
   alias Monkex.Parser
   alias Monkex.Object.Node
+  alias Monkex.Compiler
+  alias Monkex.VM
 
   @monkey_face ~S"""
               __,__
@@ -81,6 +83,41 @@ defmodule Monkex.REPL do
 
       # loop
       start_parser()
+    else
+      {:end} -> nil
+    end
+  end
+
+  def start_compiler_and_vm(compiler) do
+    with input <- IO.gets(">> "),
+         {:ok, line} <- get_line(input),
+         # parse
+         {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program() do
+      if parser.errors != [] do
+        IO.puts("\nWoops! We ran into some monkey business here!")
+        IO.puts(@monkey_face)
+        IO.puts("Here are the parser errors:")
+
+        parser.errors
+        |> Enum.each(fn err ->
+          IO.puts("\t - #{err}")
+        end)
+
+        # loop with old env
+        start_compiler_and_vm(compiler)
+      else
+        # eval 
+        {:ok, c} = Node.compile(program ,compiler)
+
+        vm = c |> Compiler.bytecode |> VM.new()
+
+        {:ok, result } = VM.run(vm)
+        # print
+        result |> VM.stack_top() |> IO.puts
+
+        # loop with new env
+        start_compiler_and_vm(c)
+      end
     else
       {:end} -> nil
     end

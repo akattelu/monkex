@@ -169,9 +169,10 @@ mix escript.build
 ### Launch REPL
 
 ```sh
-mix repl
-mix repl --lex
-mix repl --parse
+mix repl # evaluate with tree-walking interpreter
+mix repl --lex # output tokens
+mix repl --parse # output string representation of AST
+mix repl --vm # evaluate with compilation + bytecode vm
 ```
 
 ### Evaluate a file 
