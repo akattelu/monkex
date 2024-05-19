@@ -28,7 +28,20 @@ defmodule Monkex.AST.InfixExpression do
     defp opcode_from_operator("-"), do: {:ok, :sub}
     defp opcode_from_operator("*"), do: {:ok, :mul}
     defp opcode_from_operator("/"), do: {:ok, :div}
+    defp opcode_from_operator("=="), do: {:ok, :equal}
+    defp opcode_from_operator("!="), do: {:ok, :not_equal}
+    defp opcode_from_operator(">"), do: {:ok, :greater_than}
     defp opcode_from_operator(op), do: {:error, "unknown operator: #{op}"}
+
+    def compile(%InfixExpression{left: left, right: right, operator: "<"}, compiler) do
+      with {:ok, right_c} <- Node.compile(right, compiler),
+           {:ok, left_c} <- Node.compile(left, right_c),
+           {final, _} <- Compiler.emit(left_c, :greater_than, []) do
+        {:ok, final}
+      else
+        err -> err
+      end
+    end
 
     def compile(%InfixExpression{left: left, right: right, operator: operator}, compiler) do
       with {:ok, left_c} <- Node.compile(left, compiler),

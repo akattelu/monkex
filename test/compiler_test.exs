@@ -73,4 +73,51 @@ defmodule CompilerTest do
     ]
     |> Enum.map(&compiler_test/1)
   end
+
+  test "comparison operators" do
+    [
+      {"1 > 2;", [1, 2],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:greater_than, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"1 < 2;", [2, 1],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:greater_than, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"1 == 2;", [1, 2],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:equal, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"1 != 2;", [1, 2],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:not_equal, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"true == true;", [],
+       [
+         Opcode.make(:true, []),
+         Opcode.make(:true, []),
+         Opcode.make(:equal, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"true != false;", [],
+       [
+         Opcode.make(:true, []),
+         Opcode.make(:false, []),
+         Opcode.make(:not_equal, []),
+         Opcode.make(:pop, [])
+       ]},
+    ] |> Enum.map(&compiler_test/1)
+  end
 end
