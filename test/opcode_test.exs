@@ -40,6 +40,14 @@ defmodule OpcodeTest do
         """
       },
       {
+        [Code.make(:equal, []), Code.make(:not_equal, []), Code.make(:greater_than, [])],
+        """
+        0000 OpEqual
+        0001 OpNotEqual
+        0002 OpGreaterThan
+        """
+      },
+      {
         [Code.make(true, []), Code.make(false, [])],
         """
         0000 OpTrue
@@ -72,7 +80,10 @@ defmodule OpcodeTest do
       {:mul, [], <<5::8>>},
       {:div, [], <<6::8>>},
       {true, [], <<7::8>>},
-      {false, [], <<8::8>>}
+      {false, [], <<8::8>>},
+      {:equal, [], <<9::8>>},
+      {:not_equal, [], <<10::8>>},
+      {:greater_than, [], <<11::8>>},
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)

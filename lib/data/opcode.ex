@@ -51,7 +51,10 @@ defmodule Monkex.Opcode do
         :mul => %Definition{name: "OpMul", opcode: <<5::8>>, operand_widths: []},
         :div => %Definition{name: "OpDiv", opcode: <<6::8>>, operand_widths: []},
         true => %Definition{name: "OpTrue", opcode: <<7::8>>, operand_widths: []},
-        false => %Definition{name: "OpFalse", opcode: <<8::8>>, operand_widths: []}
+        false => %Definition{name: "OpFalse", opcode: <<8::8>>, operand_widths: []},
+        :equal => %Definition{name: "OpEqual", opcode: <<9::8>>, operand_widths: []},
+        :not_equal => %Definition{name: "OpNotEqual", opcode: <<10::8>>, operand_widths: []},
+        :greater_than => %Definition{name: "OpGreaterThan", opcode: <<11::8>>, operand_widths: []},
       }
     end
   end
