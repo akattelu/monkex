@@ -19,6 +19,10 @@ defmodule Monkex.Opcode do
     @enforce_keys [:name, :opcode, :operand_widths]
     defstruct name: nil, opcode: <<>>, operand_widths: []
 
+    @moduledoc """
+    Holds definitions of all opcodes and functionality to look them up
+    """
+
     def lookup(code) do
       # be explicit
       case Map.fetch(all(), code) do
@@ -46,6 +50,8 @@ defmodule Monkex.Opcode do
         :sub => %Definition{name: "OpSub", opcode: <<4::8>>, operand_widths: []},
         :mul => %Definition{name: "OpMul", opcode: <<5::8>>, operand_widths: []},
         :div => %Definition{name: "OpDiv", opcode: <<6::8>>, operand_widths: []},
+        :true => %Definition{name: "OpTrue", opcode: <<7::8>>, operand_widths: []},
+        :false => %Definition{name: "OpFalse", opcode: <<8::8>>, operand_widths: []},
       }
     end
   end
