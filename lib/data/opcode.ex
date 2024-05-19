@@ -10,7 +10,7 @@ defmodule Monkex.Opcode do
     def from_big_binary(rest, []), do: {[], rest}
 
     def from_big_binary(<<int::big-integer-size(2)-unit(8), rest::binary>>, [2 | widths]) do
-      {value,  next_rest} = from_big_binary(rest, widths)
+      {value, next_rest} = from_big_binary(rest, widths)
       {[int | value], next_rest}
     end
   end
@@ -50,8 +50,8 @@ defmodule Monkex.Opcode do
         :sub => %Definition{name: "OpSub", opcode: <<4::8>>, operand_widths: []},
         :mul => %Definition{name: "OpMul", opcode: <<5::8>>, operand_widths: []},
         :div => %Definition{name: "OpDiv", opcode: <<6::8>>, operand_widths: []},
-        :true => %Definition{name: "OpTrue", opcode: <<7::8>>, operand_widths: []},
-        :false => %Definition{name: "OpFalse", opcode: <<8::8>>, operand_widths: []},
+        true => %Definition{name: "OpTrue", opcode: <<7::8>>, operand_widths: []},
+        false => %Definition{name: "OpFalse", opcode: <<8::8>>, operand_widths: []}
       }
     end
   end

@@ -107,13 +107,13 @@ defmodule Monkex.REPL do
         start_compiler_and_vm(compiler)
       else
         # eval 
-        {:ok, c} = Node.compile(program ,compiler)
+        {:ok, c} = Node.compile(program, compiler)
 
-        vm = c |> Compiler.bytecode |> VM.new()
+        vm = c |> Compiler.bytecode() |> VM.new()
 
-        {:ok, result } = VM.run(vm)
+        {:ok, result} = VM.run(vm)
         # print
-        result |> VM.stack_top() |> IO.puts
+        result |> VM.stack_top() |> IO.puts()
 
         # loop with new env
         start_compiler_and_vm(c)

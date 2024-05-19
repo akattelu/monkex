@@ -40,12 +40,12 @@ defmodule OpcodeTest do
         """
       },
       {
-        [Code.make(:true, []), Code.make(:false, [])],
+        [Code.make(true, []), Code.make(false, [])],
         """
         0000 OpTrue
         0001 OpFalse
         """
-      },
+      }
     ]
     |> Enum.map(fn {actual, expected} ->
       concatted = Instructions.merge(actual)
@@ -71,8 +71,8 @@ defmodule OpcodeTest do
       {:sub, [], <<4::8>>},
       {:mul, [], <<5::8>>},
       {:div, [], <<6::8>>},
-      {:true, [], <<7::8>>},
-      {:false, [], <<8::8>>},
+      {true, [], <<7::8>>},
+      {false, [], <<8::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)
