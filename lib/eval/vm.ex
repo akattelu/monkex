@@ -56,6 +56,8 @@ defmodule Monkex.VM do
 
   @type t() :: %VM{}
 
+  defguard is_arithmetic_operator(first) when first >= <<3::8>> and first <= <<6::8>>
+
   @spec operation(<<_::8>>) :: (any(), any() -> any())
   defp operation(<<3::8>>), do: fn a, b -> a + b end
   defp operation(<<4::8>>), do: fn a, b -> a - b end
@@ -96,7 +98,7 @@ defmodule Monkex.VM do
   defp run_raw(<<>>, stack, constants), do: {:ok, stack, constants}
 
   defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants)
-       when first >= <<3::8>> and first <= <<6::8>> do
+       when is_arithmetic_operator(first) do
     arithmetic_op(first, rest, stack, constants)
   end
 
