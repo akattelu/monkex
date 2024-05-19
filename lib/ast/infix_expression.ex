@@ -25,6 +25,9 @@ defmodule Monkex.AST.InfixExpression do
     @boolean_result_operators ["==", "!=", ">", "<"]
 
     defp opcode_from_operator("+"), do: {:ok, :add}
+    defp opcode_from_operator("-"), do: {:ok, :sub}
+    defp opcode_from_operator("*"), do: {:ok, :mul}
+    defp opcode_from_operator("/"), do: {:ok, :div}
     defp opcode_from_operator(op), do: {:error, "unknown operator: #{op}"}
 
     def compile(%InfixExpression{left: left, right: right, operator: operator}, compiler) do

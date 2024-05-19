@@ -41,8 +41,11 @@ defmodule Monkex.Opcode do
     def all() do
       %{
         :constant => %Definition{name: "OpConstant", opcode: <<1::8>>, operand_widths: [2]},
-        :add => %Definition{name: "OpAdd", opcode: <<2::8>>, operand_widths: []},
-        :pop => %Definition{name: "OpPop", opcode: <<3::8>>, operand_widths: []},
+        :pop => %Definition{name: "OpPop", opcode: <<2::8>>, operand_widths: []},
+        :add => %Definition{name: "OpAdd", opcode: <<3::8>>, operand_widths: []},
+        :sub => %Definition{name: "OpSub", opcode: <<4::8>>, operand_widths: []},
+        :mul => %Definition{name: "OpMul", opcode: <<5::8>>, operand_widths: []},
+        :div => %Definition{name: "OpDiv", opcode: <<6::8>>, operand_widths: []},
       }
     end
   end

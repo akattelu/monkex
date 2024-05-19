@@ -19,7 +19,8 @@ defmodule Monkex.VM do
     @type t() :: %Stack{}
 
     @spec new() :: t()
-    def new(), do: %Stack{store: %{}, sp: -1} # start at -1 so pushing points to a valid element
+    # start at -1 so pushing points to a valid element
+    def new(), do: %Stack{store: %{}, sp: -1}
 
     @spec top(t()) :: any()
     def top(%Stack{store: store, sp: sp}), do: Map.get(store, sp, nil)
@@ -54,6 +55,11 @@ defmodule Monkex.VM do
 
   @type t() :: %VM{}
 
+  @spec operation(<<_::8>>) :: (any(), any() -> any())
+  defp operation(<<3::8>>), do: fn a, b -> a + b end
+  defp operation(<<4::8>>), do: fn a, b -> a - b end
+  defp operation(<<5::8>>), do: fn a, b -> a * b end
+  defp operation(<<6::8>>), do: fn a, b -> a / b end
 
   @spec new(Bytecode.t()) :: t()
   def new(%Bytecode{constants: constants, instructions: instructions}) do
@@ -78,9 +84,21 @@ defmodule Monkex.VM do
      }}
   end
 
-  def run_raw(<<>>, stack, constants), do: {:ok, stack, constants}
+  def arithmetic_op(opcode, rest, stack, constants) do
+    f = operation(opcode)
+    {s, %Integer{value: right}} = Stack.pop(stack)
+    {after_pop, %Integer{value: left}} = Stack.pop(s)
+    pushed = Stack.push(after_pop, f.(left, right)|> Integer.from())
+    run_raw(rest, pushed, constants)
+  end
 
-  def run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants) do
+  defp run_raw(<<>>, stack, constants), do: {:ok, stack, constants}
+
+  defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants) when first >= <<3::8>> and first <= <<6::8>> do
+    arithmetic_op(first, rest, stack, constants)
+  end
+
+  defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants) do
     case first do
       <<1::8>> ->
         <<int::big-integer-size(2)-unit(8), next::binary>> = rest
@@ -89,12 +107,6 @@ defmodule Monkex.VM do
         run_raw(next, Stack.push(stack, obj), constants)
 
       <<2::8>> ->
-        {s, %Integer{value: right}} = Stack.pop(stack)
-        {after_pop, %Integer{value: left}} = Stack.pop(s)
-        pushed = Stack.push(after_pop, (right + left) |> Integer.from)
-        run_raw(rest, pushed, constants)
-
-      <<3::8>> ->
         run_raw(rest, Stack.pop(stack) |> elem(0), constants)
     end
   end

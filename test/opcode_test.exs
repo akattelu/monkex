@@ -16,11 +16,21 @@ defmodule OpcodeTest do
        0006 OpConstant 65535
        """},
       {
-        [Code.make(:add, []), Code.make(:constant, [2]), Code.make(:constant, [65535])],
+        [
+          Code.make(:add, []),
+          Code.make(:constant, [2]),
+          Code.make(:constant, [65535]),
+          Code.make(:sub, []),
+          Code.make(:mul, []),
+          Code.make(:div, [])
+        ],
         """
         0000 OpAdd
         0001 OpConstant 2
         0004 OpConstant 65535
+        0007 OpSub
+        0008 OpMul
+        0009 OpDiv
         """
       },
       {
@@ -29,7 +39,6 @@ defmodule OpcodeTest do
         0000 OpPop
         """
       }
-
     ]
     |> Enum.map(fn {actual, expected} ->
       concatted = Instructions.merge(actual)
@@ -50,7 +59,11 @@ defmodule OpcodeTest do
   test "make" do
     [
       {:constant, [65534], <<1::8, 255::8, 254::8>>},
-      {:add, [], <<2::8>>}
+      {:pop, [], <<2::8>>},
+      {:add, [], <<3::8>>},
+      {:sub, [], <<4::8>>},
+      {:mul, [], <<5::8>>},
+      {:div, [], <<6::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)
