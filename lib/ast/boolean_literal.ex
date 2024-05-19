@@ -16,7 +16,11 @@ defmodule Monkex.AST.BooleanLiteral do
   end
 
   defimpl Node, for: BooleanLiteral do
-    def compile(_node, compiler), do: compiler
+    alias Monkex.Compiler
+    def compile(%BooleanLiteral{value: value}, compiler) do
+      {c, _ } = Compiler.emit(compiler, value, [])
+      {:ok, c}
+    end
     def eval(%BooleanLiteral{value: value}, env), do: {Boolean.from(value), env}
   end
 end

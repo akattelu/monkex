@@ -33,5 +33,15 @@ defmodule VMTest do
       {"5 * (2 + 10)", 60}
     ]
     |> Enum.map(&vm_test/1)
+
   end
+  test "boolean literals" do
+    [
+      {"true", true},
+      {"false", false},
+    ]
+    |> Enum.map(&vm_test/1)
+  end
+
+  
 end

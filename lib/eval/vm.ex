@@ -1,4 +1,5 @@
 defmodule Monkex.VM do
+  alias Monkex.Object.Boolean
   alias __MODULE__
   alias Monkex.Instructions
   alias Monkex.Compiler.Bytecode
@@ -88,13 +89,14 @@ defmodule Monkex.VM do
     f = operation(opcode)
     {s, %Integer{value: right}} = Stack.pop(stack)
     {after_pop, %Integer{value: left}} = Stack.pop(s)
-    pushed = Stack.push(after_pop, f.(left, right)|> Integer.from())
+    pushed = Stack.push(after_pop, f.(left, right) |> Integer.from())
     run_raw(rest, pushed, constants)
   end
 
   defp run_raw(<<>>, stack, constants), do: {:ok, stack, constants}
 
-  defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants) when first >= <<3::8>> and first <= <<6::8>> do
+  defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants)
+       when first >= <<3::8>> and first <= <<6::8>> do
     arithmetic_op(first, rest, stack, constants)
   end
 
@@ -108,6 +110,12 @@ defmodule Monkex.VM do
 
       <<2::8>> ->
         run_raw(rest, Stack.pop(stack) |> elem(0), constants)
+
+      <<7::8>> ->
+        run_raw(rest, Stack.push(stack, Boolean.yes()), constants)
+
+      <<8::8>> ->
+        run_raw(rest, Stack.push(stack, Boolean.no()), constants)
     end
   end
 end

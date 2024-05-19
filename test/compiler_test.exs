@@ -34,10 +34,42 @@ defmodule CompilerTest do
 
   test "integer arithmetic" do
     [
-      {"1 + 2;", [1, 2], [Opcode.make(:constant, [0]), Opcode.make(:constant, [1]), Opcode.make(:add, []), Opcode.make(:pop, [])]},
-      {"1 - 2;", [1, 2], [Opcode.make(:constant, [0]), Opcode.make(:constant, [1]), Opcode.make(:sub, []), Opcode.make(:pop, [])]},
-      {"1 * 2;", [1, 2], [Opcode.make(:constant, [0]), Opcode.make(:constant, [1]), Opcode.make(:mul, []), Opcode.make(:pop, [])]},
-      {"2 / 1;", [2, 1], [Opcode.make(:constant, [0]), Opcode.make(:constant, [1]), Opcode.make(:div, []), Opcode.make(:pop, [])]},
+      {"1 + 2;", [1, 2],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:add, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"1 - 2;", [1, 2],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:sub, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"1 * 2;", [1, 2],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:mul, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"2 / 1;", [2, 1],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:div, []),
+         Opcode.make(:pop, [])
+       ]}
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
+
+  test "boolean literals" do
+    [
+      {"true", [], [Opcode.make(true, []), Opcode.make(:pop, [])]},
+      {"false", [], [Opcode.make(false, []), Opcode.make(:pop, [])]}
     ]
     |> Enum.map(&compiler_test/1)
   end
