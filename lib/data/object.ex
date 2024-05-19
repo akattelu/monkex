@@ -6,6 +6,8 @@ end
 defprotocol Monkex.Object.Node do
   def eval(node, env)
 
+
+  @spec compile(Monkex.Object.Node, %Monkex.Compiler{}) :: %Monkex.Compiler{}
   @fallback_to_any true
   def compile(node, compiler)
 end

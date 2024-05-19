@@ -14,7 +14,7 @@ defmodule VMTest do
     assert parser.errors == []
     {:ok, compiler} = Compiler.new() |> Compiler.compile(program)
     {:ok, final} = compiler |> Compiler.bytecode() |> VM.new() |> VM.run()
-    test_literal({VM.stack_top(final), expected})
+    test_literal({VM.stack_last_top(final), expected})
   end
 
   test "integer arithmetic" do

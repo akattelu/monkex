@@ -9,6 +9,8 @@ defmodule Monkex.Instructions do
   Helps with disassembling bytes back to human readable opcodes and operands
   """
 
+  @type t() :: %Instructions{}
+
   @enforce_keys [:raw]
   defstruct [:raw]
 
@@ -43,12 +45,14 @@ defmodule Monkex.Instructions do
              %Definition{name: name, operand_widths: widths} =
                Definition.lookup_from_code(first),
              offset_length = Enum.sum(widths) + 1,
-             offset_string = offset |> Integer.to_string() |> String.pad_leading(4, "0") ,
+             offset_string = offset |> Integer.to_string() |> String.pad_leading(4, "0"),
              {int, rest} = Bytes.from_big_binary(rest, widths) do
-          {
-            {offset + offset_length, "#{str}#{offset_string} #{name} #{Enum.join(int, " ")}\n"},
-            rest
-          }
+          if length(int) > 0 do
+            {{offset + offset_length, "#{str}#{offset_string} #{name} #{Enum.join(int, " ")}\n"},
+             rest}
+          else
+            {{offset + offset_length, "#{str}#{offset_string} #{name}\n"}, rest}
+          end
         end
       end)
       # drop offset

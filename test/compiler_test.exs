@@ -34,7 +34,7 @@ defmodule CompilerTest do
 
   test "integer arithmetic" do
     [
-      {"1 + 2", [1, 2], [Opcode.make(:constant, [0]), Opcode.make(:constant, [1]), Opcode.make(:add, [])]}
+      {"1 + 2;", [1, 2], [Opcode.make(:constant, [0]), Opcode.make(:constant, [1]), Opcode.make(:add, []), Opcode.make(:pop, [])]}
     ]
     |> Enum.map(&compiler_test/1)
   end
