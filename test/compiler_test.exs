@@ -106,18 +106,37 @@ defmodule CompilerTest do
        ]},
       {"true == true;", [],
        [
-         Opcode.make(:true, []),
-         Opcode.make(:true, []),
+         Opcode.make(true, []),
+         Opcode.make(true, []),
          Opcode.make(:equal, []),
          Opcode.make(:pop, [])
        ]},
       {"true != false;", [],
        [
-         Opcode.make(:true, []),
-         Opcode.make(:false, []),
+         Opcode.make(true, []),
+         Opcode.make(false, []),
          Opcode.make(:not_equal, []),
          Opcode.make(:pop, [])
+       ]}
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
+
+  test "prefix expressions" do
+    [
+      {"-5", [5],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:minus, []),
+         Opcode.make(:pop, [])
        ]},
-    ] |> Enum.map(&compiler_test/1)
+      {"!true", [],
+       [
+         Opcode.make(true, []),
+         Opcode.make(:bang, []),
+         Opcode.make(:pop, [])
+       ]}
+    ]
+    |> Enum.map(&compiler_test/1)
   end
 end

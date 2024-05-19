@@ -15,13 +15,24 @@ defmodule Monkex.AST.PrefixExpression do
   end
 
   defimpl Node, for: PrefixExpression do
+    alias Monkex.Compiler
     alias Monkex.Object
     alias Monkex.Object.Integer
     alias Monkex.Object.Boolean
     alias Monkex.Object.Null
     alias Monkex.Object.Error
 
-    def compile(_node, compiler), do: compiler
+    def compile(%PrefixExpression{operator: "!", right: right}, compiler) do
+      {:ok, c} = Node.compile(right, compiler)
+      {final, _} = Compiler.emit(c, :bang, [])
+      {:ok, final}
+    end
+
+    def compile(%PrefixExpression{operator: "-", right: right}, compiler) do
+      {:ok, c} = Node.compile(right, compiler)
+      {final, _} = Compiler.emit(c, :minus, [])
+      {:ok, final}
+    end
 
     def eval(%PrefixExpression{operator: "!", right: right}, env) do
       {case Node.eval(right, env) |> elem(0) do

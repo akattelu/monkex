@@ -144,6 +144,34 @@ defmodule Monkex.VM do
       # false
       <<8::8>> ->
         run_raw(rest, Stack.push(stack, Boolean.no()), constants)
+
+      # minus
+      <<12::8>> ->
+        {s, %Integer{value: value}} = Stack.pop(stack)
+        run_raw(rest, Stack.push(s, -value |> Integer.from()), constants)
+
+      # bang
+      <<13::8>> ->
+        s =
+          case Stack.pop(stack) do
+            {s, %Integer{value: value}} ->
+              Stack.push(
+                s,
+                if value == 0 do
+                  Boolean.yes()
+                else
+                  Boolean.no()
+                end
+              )
+
+            {s, %Boolean{value: true}} ->
+              Stack.push(s, Boolean.no())
+
+            {s, %Boolean{value: false}} ->
+              Stack.push(s, Boolean.yes())
+          end
+
+        run_raw(rest, s, constants)
     end
   end
 end

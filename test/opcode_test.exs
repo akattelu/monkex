@@ -53,6 +53,13 @@ defmodule OpcodeTest do
         0000 OpTrue
         0001 OpFalse
         """
+      },
+      {
+        [Code.make(:minus, []), Code.make(:bang, [])],
+        """
+        0000 OpMinus
+        0001 OpBang
+        """
       }
     ]
     |> Enum.map(fn {actual, expected} ->
@@ -84,6 +91,8 @@ defmodule OpcodeTest do
       {:equal, [], <<9::8>>},
       {:not_equal, [], <<10::8>>},
       {:greater_than, [], <<11::8>>},
+      {:minus, [], <<12::8>>},
+      {:bang, [], <<13::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)
