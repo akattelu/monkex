@@ -57,12 +57,16 @@ defmodule Monkex.VM do
   @type t() :: %VM{}
 
   defguard is_arithmetic_operator(first) when first >= <<3::8>> and first <= <<6::8>>
+  defguard is_comparison_operator(first) when first >= <<9::8>> and first <= <<11::8>>
 
   @spec operation(<<_::8>>) :: (any(), any() -> any())
   defp operation(<<3::8>>), do: fn a, b -> a + b end
   defp operation(<<4::8>>), do: fn a, b -> a - b end
   defp operation(<<5::8>>), do: fn a, b -> a * b end
   defp operation(<<6::8>>), do: fn a, b -> a / b end
+  defp operation(<<9::8>>), do: fn a, b -> a == b end
+  defp operation(<<10::8>>), do: fn a, b -> a != b end
+  defp operation(<<11::8>>), do: fn a, b -> a > b end
 
   @spec new(Bytecode.t()) :: t()
   def new(%Bytecode{constants: constants, instructions: instructions}) do
@@ -95,27 +99,49 @@ defmodule Monkex.VM do
     run_raw(rest, pushed, constants)
   end
 
+  def type_check(%Integer{}, %Integer{}), do: :ok
+  def type_check(%Boolean{}, %Boolean{}), do: :ok
+  def type_check(_, _), do: {:error, "type mismatch"}
+
+  def comparison_op(opcode, rest, stack, constants) do
+    f = operation(opcode)
+    {s, right} = Stack.pop(stack)
+    {after_pop, left} = Stack.pop(s)
+
+    with :ok <- type_check(right, left) do
+      pushed = Stack.push(after_pop, f.(left, right) |> Boolean.from())
+      run_raw(rest, pushed, constants)
+    end
+  end
+
   defp run_raw(<<>>, stack, constants), do: {:ok, stack, constants}
 
   defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants)
-       when is_arithmetic_operator(first) do
-    arithmetic_op(first, rest, stack, constants)
-  end
+       when is_arithmetic_operator(first),
+       do: arithmetic_op(first, rest, stack, constants)
+
+  defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants)
+       when is_comparison_operator(first),
+       do: comparison_op(first, rest, stack, constants)
 
   defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants) do
     case first do
+      # constant
       <<1::8>> ->
         <<int::big-integer-size(2)-unit(8), next::binary>> = rest
         # TODO: make this list access faster
         obj = Enum.at(constants, int)
         run_raw(next, Stack.push(stack, obj), constants)
 
+      # push
       <<2::8>> ->
         run_raw(rest, Stack.pop(stack) |> elem(0), constants)
 
+      # true
       <<7::8>> ->
         run_raw(rest, Stack.push(stack, Boolean.yes()), constants)
 
+      # false
       <<8::8>> ->
         run_raw(rest, Stack.push(stack, Boolean.no()), constants)
     end
