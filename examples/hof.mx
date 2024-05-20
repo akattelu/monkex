@@ -1,0 +1,186 @@
+let sigma = fn(x, y) {
+  if (y - x == 0) {
+    x
+  } else {
+    x + sigma(x + 1, y)
+  }
+}
+
+puts(sigma(1, 4));
+
+let flip = fn(f) {
+  fn(x, y) {
+    f(y, x)
+  }
+}
+
+puts(flip(sigma)(4, 1));
+
+let isZero = fn(x) {
+  x == 0;
+}
+
+puts(isZero(1));
+puts(isZero(0));
+
+let takewhile = fn(l, p) {
+  if (len(l) == 0) {
+    l
+  } else {
+    if (p(head(l))) {
+      cons(takewhile(tail(l), p), head(l));
+    } else {
+      []
+    }
+  }
+}
+
+let test = [0, 0, 0, 1, 2];
+puts(takewhile(test, isZero));
+
+let dropwhile = fn(l, p) {
+  if (len(l) == 0) {
+    l;
+  } else {
+    if (p(head(l))) {
+      dropwhile(tail(l), p);
+    } else {
+      l
+    }
+  }
+}
+
+puts(dropwhile(test, isZero));
+
+let orderedBy = fn(p) {
+  fn (l) {
+    if (len(l) == 0) {
+      true;
+    } else {
+      if (len(tail(l)) == 0) {
+        true;
+      } else {
+        if (p(head(l), head(tail(l)))) {
+          if (orderedBy(p)(tail(l))) {
+            true;
+          } else {
+            false;
+          }
+        } else {
+          false;
+        }
+      }
+    }
+  }
+}
+
+let lessThan = fn(x, y) {
+  x < y;
+}
+
+puts(orderedBy(lessThan)([1, 2, 3, 4]));
+puts(orderedBy(lessThan)([1, 3, 2, 4]));
+
+let foldr = fn(arr, accumulator, reducer) {
+  if (len(arr) == 0) {
+    accumulator;
+  } else {
+    foldr(tail(arr), reducer(accumulator, head(arr)), reducer);
+  }
+}
+
+let plus = fn(x, y) {
+  x + y;
+}
+
+let test = [5, 1, 3, 2, 4];
+
+puts(foldr(test, 0, plus));
+
+let foldl = fn(arr, accumulator, reducer) {
+  if (len(arr) == 0) {
+    accumulator
+  } else {
+    reducer(foldl(tail(arr), accumulator, reducer), head(arr));
+  }
+}
+
+puts(foldl(test, 0, plus));
+
+let str = ["a", "b", "c", "d"];
+
+puts(foldl(str, [], cons));
+puts(foldr(str, [], cons));
+
+let accumulate = fn(f) {
+  fn(x) {
+    foldl(tail(x), head(x), f);
+  }
+}
+
+let sum = accumulate(plus);
+
+puts(sum(test));
+
+let multiply = fn(x, y) {
+  x * y;
+}
+
+let product = accumulate(multiply);
+
+puts(product(test));
+
+let append = fn(xs, ys) {
+  foldl(xs, ys, cons);
+}
+
+let strTwo = ["e", "f", "g", "h"];
+
+puts(append(str, strTwo));
+
+let reverse = fn(l) {
+  foldr(l, [], cons);
+}
+
+puts(reverse(strTwo));
+
+let map = fn(arr, f) {
+  foldl(arr, [], fn(arrPrime, x) { cons(arrPrime, f(x)) })
+}
+
+let plusTen = fn(x) {
+  x + 10;
+}
+
+puts(map(test, plusTen));
+
+let filter = fn(arr, p) {
+  foldl(arr, [], fn(filtered, x) { if (p(x)) { cons(filtered, x) } else { filtered } });
+}
+
+let greaterThanThree = fn(x) {
+  x > 3;
+}
+
+puts(filter(test, greaterThanThree));
+
+let prefixOf = fn(xs, ys) {
+  if (len(xs) == 0) {
+    true;
+  } else {
+    if (len(ys) == 0) {
+      false;
+    } else {
+      if (head(xs) == head(ys)) {
+        prefixOf(tail(xs), tail(ys));
+      } else {
+        false;
+      }
+    }
+  }
+}
+
+let small = [9, 10, 11];
+let big = [9, 10, 11, 12, 13, 14];
+
+puts(prefixOf(small, big));
