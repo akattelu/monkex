@@ -17,6 +17,7 @@ defimpl Monkex.Object.Node, for: Any do
 end
 
 defmodule Monkex.Object.Integer do
+  @moduledoc "Internal object representation for an integer"
   alias __MODULE__
   @enforce_keys [:value]
   defstruct [:value]
@@ -33,6 +34,7 @@ defmodule Monkex.Object.Integer do
 end
 
 defmodule Monkex.Object.Boolean do
+  @moduledoc "Internal object representation for a boolean"
   alias __MODULE__
   @enforce_keys [:value]
   defstruct [:value]
@@ -52,6 +54,7 @@ defmodule Monkex.Object.Boolean do
 end
 
 defmodule Monkex.Object.Null do
+  @moduledoc "Internal object representation for NULL"
   alias __MODULE__
   defstruct []
 
@@ -69,6 +72,7 @@ defmodule Monkex.Object.Null do
 end
 
 defmodule Monkex.Object.ReturnValue do
+  @moduledoc "Internal object representation for a return value that needs to be propagated up"
   alias __MODULE__
 
   @enforce_keys [:value]
@@ -90,6 +94,7 @@ defmodule Monkex.Object.ReturnValue do
 end
 
 defmodule Monkex.Object.Error do
+  @moduledoc "Internal object representation for an interpreter error"
   alias __MODULE__
 
   @enforce_keys [:message]
@@ -107,6 +112,7 @@ defmodule Monkex.Object.Error do
 end
 
 defmodule Monkex.Object.Function do
+  @moduledoc "Internal object representation for a function"
   alias __MODULE__
 
   @enforce_keys [:params, :body, :env]
@@ -131,6 +137,7 @@ defmodule Monkex.Object.Function do
 end
 
 defmodule Monkex.Object.String do
+  @moduledoc "Internal object representation for a string"
   alias __MODULE__, as: ObjString
   @enforce_keys [:value]
   defstruct [:value]
@@ -147,6 +154,7 @@ defmodule Monkex.Object.String do
 end
 
 defmodule Monkex.Object.Array do
+  @moduledoc "Internal object representation for an array"
   alias __MODULE__
   alias Monkex.Object.Null
   @enforce_keys [:items]
@@ -182,6 +190,7 @@ defmodule Monkex.Object.Array do
 end
 
 defmodule Monkex.Object.Dictionary do
+  @moduledoc "Internal object representation for a dictionary"
   alias __MODULE__
   alias Monkex.Object.Null
   @enforce_keys [:map]
@@ -210,6 +219,7 @@ defmodule Monkex.Object.Dictionary do
 end
 
 defmodule Monkex.Object.Builtin do
+  @moduledoc "Internal object representation for a builtin function implemented in elixir"
   alias Monkex.Object.Array
   alias Monkex.Object.Integer
   alias Monkex.Object.String, as: StringObj
