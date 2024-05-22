@@ -1,4 +1,5 @@
 defmodule Monkex.Parser do
+  @moduledoc "Monkex parser"
   alias Monkex.Lexer
   alias Monkex.AST
   alias Monkex.Parser.Precedence

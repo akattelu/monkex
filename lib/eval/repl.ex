@@ -1,4 +1,8 @@
 defmodule Monkex.REPL do
+  @moduledoc """
+  Functions for running read-eval-print-loops
+  Allows running the REPL in different modes, like lexer, parser, interpreter, vm
+  """
   alias Monkex.Lexer
   alias Monkex.Parser
   alias Monkex.Object.Node

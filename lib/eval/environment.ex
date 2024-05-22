@@ -1,4 +1,9 @@
 defmodule Monkex.Environment do
+  @moduledoc """ 
+  Environment and scope representation for the Monkex interpreter
+  Stores identifiers (keys) and objects (values)
+  """
+
   alias __MODULE__
   alias Monkex.Object.Builtin
 

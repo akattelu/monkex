@@ -1,4 +1,5 @@
 defmodule Monkex do
+  @moduledoc false
   alias Monkex.Object
   alias Monkex.Environment
   alias Monkex.Lexer
@@ -27,6 +28,7 @@ defmodule Monkex do
 end
 
 defmodule Monkex.CLI do
+  @moduledoc "Entrypoint methods for interacting with the monkex via CLI"
   def main(args) do
     # args = System.argv()
 

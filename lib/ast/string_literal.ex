@@ -1,4 +1,7 @@
 defmodule Monkex.AST.StringLiteral do
+  @moduledoc """
+  AST Node for a string literal like `"hello world"`
+  """
   alias __MODULE__
   alias Monkex.AST.Expression
   alias Monkex.Object

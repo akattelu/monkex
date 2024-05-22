@@ -1,4 +1,6 @@
 defmodule Monkex.Lexer do
+  @moduledoc "Monkex tokenizer"
+
   alias __MODULE__
   alias Monkex.Token
 

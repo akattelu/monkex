@@ -1,4 +1,6 @@
 defmodule Monkex.Token do
+  @moduledoc "Representation of a single lexed token"
+
   alias __MODULE__
   @enforce_keys [:type, :literal]
   defstruct [:type, :literal]

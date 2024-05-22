@@ -1,4 +1,7 @@
 defmodule Monkex.AST.IntegerLiteral do
+  @moduledoc """
+  AST Node for an integer literal like `42`
+  """
   alias __MODULE__
   alias Monkex.AST.Expression
   alias Monkex.Object.Node

@@ -1,4 +1,7 @@
 defmodule Monkex.AST.InfixExpression do
+  @moduledoc """
+  AST Node for an infix expression like `1 + 2` or `(1 > 2) == false`
+  """
   alias __MODULE__
   alias Monkex.Object
   alias Monkex.Object.Node

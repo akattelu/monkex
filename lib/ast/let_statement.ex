@@ -1,4 +1,7 @@
 defmodule Monkex.AST.LetStatement do
+  @moduledoc """
+  AST Node for a let statement like `let x = 2;`
+  """
   alias __MODULE__
   alias Monkex.AST.Statement
   alias Monkex.Object.Node

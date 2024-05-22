@@ -1,4 +1,7 @@
 defmodule Monkex.AST.PrefixExpression do
+  @moduledoc """
+  AST Node for a prefix expression like `-5` or `!true`
+  """
   alias __MODULE__
   alias Monkex.AST.Expression
   alias Monkex.Object.Node

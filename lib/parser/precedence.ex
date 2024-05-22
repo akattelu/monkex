@@ -1,4 +1,8 @@
 defmodule Monkex.Parser.Precedence do
+  @moduledoc """
+  Utilities for comparing and getting parser expression precedence
+  Useful for Monkex's Pratt parser
+  """
   alias Monkex.Token
 
   @precedence [:lowest, :equals, :lessgreater, :sum, :product, :prefix, :access, :call]

@@ -1,4 +1,18 @@
 defmodule Monkex.AST.Program do
+  @moduledoc """
+  AST Node for a full Monkex program 
+  Consists of a list of statements
+
+  Example:
+    ```
+      let x = 2;
+      if (x > 0) {
+        puts(x);
+      } else {
+        puts("not positive")
+      }
+    ```
+  """
   alias __MODULE__
   alias Monkex.AST.Statement
   alias Monkex.Object.Node

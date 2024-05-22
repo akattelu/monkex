@@ -1,4 +1,7 @@
 defmodule Monkex.AST.IfExpression do
+  @moduledoc """
+  AST Node for an if expression like `if (1 > 2) { 1 } else { 2 }`
+  """
   alias __MODULE__
   alias Monkex.AST.Expression
   alias Monkex.Object.Node

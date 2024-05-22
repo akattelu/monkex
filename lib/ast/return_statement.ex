@@ -1,4 +1,7 @@
 defmodule Monkex.AST.ReturnStatement do
+  @moduledoc """
+  AST Node for a return statement like `return 2;`
+  """
   alias __MODULE__
   alias Monkex.AST.Statement
   alias Monkex.Object.Node
