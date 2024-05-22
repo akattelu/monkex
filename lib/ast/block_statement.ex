@@ -1,4 +1,7 @@
 defmodule Monkex.AST.BlockStatement do
+  @moduledoc """
+  AST Node for a block statement like `{ 1 }`
+  """
   alias __MODULE__
   alias Monkex.Object.Node
   alias Monkex.Object.ReturnValue

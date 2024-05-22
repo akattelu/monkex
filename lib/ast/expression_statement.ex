@@ -1,4 +1,8 @@
 defmodule Monkex.AST.ExpressionStatement do
+  @moduledoc """
+  AST Node for an expression statement like `1 + 2;`
+  """
+
   alias __MODULE__
   alias Monkex.AST.Statement
   alias Monkex.Object.Node

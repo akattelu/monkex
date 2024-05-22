@@ -1,4 +1,7 @@
 defmodule Monkex.AST.Pair do
+  @moduledoc """
+  Representation of a key/value pair in a dictionary
+  """
   alias __MODULE__
 
   @enforce_keys [:token, :key, :value]
@@ -10,6 +13,9 @@ defmodule Monkex.AST.Pair do
 end
 
 defmodule Monkex.AST.DictionaryLiteral do
+  @moduledoc """
+  AST Node for an dictionary literal like `{ "a": 1, "b": true, "c": "hello" }`
+  """
   alias __MODULE__
   alias Monkex.Object.Node
   alias Monkex.AST.Expression

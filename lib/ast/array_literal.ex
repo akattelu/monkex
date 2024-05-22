@@ -1,4 +1,7 @@
 defmodule Monkex.AST.ArrayLiteral do
+  @moduledoc """
+  AST Node for an array literal like `[1,2,3]`
+  """
   alias __MODULE__
   alias Monkex.Object.Node
   alias Monkex.Object.Error

@@ -1,4 +1,8 @@
 defmodule Monkex.AST.AccessExpression do
+  @moduledoc """
+  AST Node for AccessExpression such as `arr[0]`
+  """
+
   alias __MODULE__
   alias Monkex.Object
   alias Monkex.Object.Node
@@ -26,7 +30,7 @@ defmodule Monkex.AST.AccessExpression do
   defimpl Node, for: AccessExpression do
     def compile(_node, compiler), do: compiler
 
-    defp is_indexable(obj) do
+    defp indexable?(obj) do
       case obj do
         %Array{} = result -> {:ok, result}
         %Dictionary{} = result -> {:ok, result}
@@ -34,7 +38,7 @@ defmodule Monkex.AST.AccessExpression do
       end
     end
 
-    defp is_index(obj, indexable_type) do
+    defp index?(obj, indexable_type) do
       case {obj, indexable_type} do
         {%Integer{}, :array} ->
           {:ok, obj}
@@ -49,7 +53,7 @@ defmodule Monkex.AST.AccessExpression do
 
     def eval(%AccessExpression{indexable_expr: indexable_expr, index_expr: index_expr}, env) do
       with {indexable_obj, _} <- Node.eval(indexable_expr, env),
-           {:ok, %Array{} = arr} <- is_indexable(indexable_obj) do
+           {:ok, %Array{} = arr} <- indexable?(indexable_obj) do
         eval_array(index_expr, env, arr)
       else
         {:ok, %Dictionary{} = dict} -> eval_dict(index_expr, env, dict)
@@ -60,7 +64,7 @@ defmodule Monkex.AST.AccessExpression do
 
     def eval_dict(index_expr, env, dict) do
       with {index_obj, _} <- Node.eval(index_expr, env),
-           {:ok, index} <- is_index(index_obj, :dict) do
+           {:ok, index} <- index?(index_obj, :dict) do
         {Dictionary.at(dict, index), env}
       else
         {:error, msg} -> {Error.with_message(msg), env}
@@ -70,7 +74,7 @@ defmodule Monkex.AST.AccessExpression do
 
     def eval_array(index_expr, env, arr) do
       with {index_obj, _} <- Node.eval(index_expr, env),
-           {:ok, %Integer{value: index}} <- is_index(index_obj, :array),
+           {:ok, %Integer{value: index}} <- index?(index_obj, :array),
            {:ok, val} <- Array.at(arr, index) do
         {val, env}
       else

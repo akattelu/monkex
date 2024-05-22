@@ -1,4 +1,8 @@
 defmodule Monkex.AST.BooleanLiteral do
+  @moduledoc """
+  AST Node for a boolean literal like `true` or `false`
+  """
+
   alias __MODULE__
   alias Monkex.AST.Expression
   alias Monkex.Object.Node

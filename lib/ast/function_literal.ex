@@ -1,4 +1,7 @@
 defmodule Monkex.AST.FunctionLiteral do
+  @moduledoc """
+  AST Node for an function literal like `fn (x, y) { x + y }`
+  """
   alias Monkex.AST.Expression
   alias Monkex.Object.Node
   alias Monkex.Object.Function

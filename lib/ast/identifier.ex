@@ -1,4 +1,8 @@
 defmodule Monkex.AST.Identifier do
+  @moduledoc """
+  AST Node for an identifier like `foo`
+  """
+
   alias __MODULE__
   alias Monkex.AST.Expression
   alias Monkex.Object.Node

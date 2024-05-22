@@ -44,9 +44,7 @@ defmodule ParserTest do
 
     {final, program} = Parser.parse_program(parser)
 
-    if length(final.errors) != 0 do
-      assert length(final.errors |> IO.inspect()) == 0
-    end
+    assert Enum.empty?(final.errors)
 
     assert program != nil
     assert length(program.statements) == 3
@@ -71,9 +69,7 @@ defmodule ParserTest do
 
     {final, program} = Parser.parse_program(parser)
 
-    if length(final.errors) != 0 do
-      assert length(final.errors |> IO.inspect()) == 0
-    end
+    assert Enum.empty?(final.errors)
 
     assert program != nil
     assert length(program.statements) == 3

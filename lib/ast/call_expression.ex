@@ -1,4 +1,8 @@
 defmodule Monkex.AST.CallExpression do
+  @moduledoc """
+  AST Node for an function call expression like `f(1, 2, 3)`
+  """
+
   alias __MODULE__
   alias Monkex.Object.Node
   alias Monkex.AST.Expression
