@@ -51,12 +51,12 @@ defmodule Monkex.Lexer do
       l.ch == "\"" ->
         l |> read_string |> then(fn {l, str} -> {l, %Token{type: :string, literal: str}} end)
 
-      Token.is_letter(l.ch) ->
+      Token.letter?(l.ch) ->
         {lexer, identifier} = read_identifier(l)
         tok = %Token{type: Token.lookup_ident(identifier), literal: identifier}
         {lexer, tok}
 
-      Token.is_digit(l.ch) ->
+      Token.digit?(l.ch) ->
         {lexer, number} = read_digit(l)
         tok = %Token{type: :int, literal: number}
         {lexer, tok}
@@ -74,13 +74,13 @@ defmodule Monkex.Lexer do
 
   @spec read_identifier(Lexer.t()) :: {Lexer.t(), String.t()}
   defp read_identifier(initial) do
-    final = initial |> advance_while(&Token.is_letter(&1))
+    final = initial |> advance_while(&Token.letter?(&1))
     {final, String.slice(final.input, initial.position, final.position - initial.position)}
   end
 
   @spec read_digit(Lexer.t()) :: {Lexer.t(), String.t()}
   defp read_digit(initial) do
-    final = initial |> advance_while(&Token.is_digit(&1))
+    final = initial |> advance_while(&Token.digit?(&1))
     {final, String.slice(final.input, initial.position, final.position - initial.position)}
   end
 

@@ -64,11 +64,9 @@ defmodule Monkex.AST.IfExpression do
         # falsy but there is an else block
         {%Boolean{value: false}, else_expr} ->
           Node.eval(else_expr, env)
-
-        # anything else 
-        _ ->
-          {Null.object(), env}
       end
     end
+
+    def eval(_, env), do: {Null.object(), env}
   end
 end

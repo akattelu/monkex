@@ -69,14 +69,16 @@ defmodule Monkex.Opcode do
 
   @doc "make a packed binary for a given opcode and operands"
   def make(opcode, operands) do
-    with {:ok, %Definition{opcode: code, operand_widths: widths}} <- Definition.lookup(opcode) do
-      widths
-      |> Enum.zip(operands)
-      |> Enum.reduce(code, fn {width, operand}, acc ->
-        acc <> Bytes.to_big_binary(operand, width)
-      end)
-    else
-      :undefined -> <<>>
+    case Definition.lookup(opcode) do
+      {:ok, %Definition{opcode: code, operand_widths: widths}} ->
+        widths
+        |> Enum.zip(operands)
+        |> Enum.reduce(code, fn {width, operand}, acc ->
+          acc <> Bytes.to_big_binary(operand, width)
+        end)
+
+      :undefined ->
+        <<>>
     end
     |> Instructions.from()
   end

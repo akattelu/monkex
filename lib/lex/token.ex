@@ -42,19 +42,19 @@ defmodule Monkex.Token do
   def from_ch(nil), do: %Token{type: :eof, literal: ""}
   def from_ch(illegal), do: %Token{type: :illegal, literal: illegal}
 
-  @spec is_letter(String.t()) :: boolean
-  def is_letter(char) when char == "" or char == nil, do: false
+  @spec letter?(String.t()) :: boolean
+  def letter?(char) when char == "" or char == nil, do: false
 
-  def is_letter(char) do
+  def letter?(char) do
     # convert to ascii val
     ch = char |> String.to_charlist() |> hd
     (?a <= ch and ch <= ?z) or (?A <= ch and ch <= ?Z) or ch == ?_
   end
 
-  @spec is_digit(String.t()) :: boolean
-  def is_digit(char) when char == "" or char == nil, do: false
+  @spec digit?(String.t()) :: boolean
+  def digit?(char) when char == "" or char == nil, do: false
 
-  def is_digit(char) do
+  def digit?(char) do
     # convert to ascii val
     ch = char |> String.to_charlist() |> hd
     ?0 <= ch and ch <= ?9

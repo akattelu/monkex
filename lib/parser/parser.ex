@@ -497,32 +497,35 @@ defmodule Monkex.Parser do
   end
 
   def parse_expression(parser, precedence) do
-    with {:ok, prefix_fn} <- Map.fetch(parser.prefix_parse_fns, parser.current_token.type) do
-      {next, l} = prefix_fn.(parser)
-      # send in left expression and the last parser pos
-      next
-      |> reduce_while(l, fn p, left ->
-        infix_fn = Map.get(p.infix_parse_fns, p.next_token.type)
+    expression_reducer = fn p, left ->
+      infix_fn = Map.get(p.infix_parse_fns, p.next_token.type)
 
-        cond do
-          next_token_is?(p, :semicolon) ->
-            {:halt, p, left}
+      cond do
+        next_token_is?(p, :semicolon) ->
+          {:halt, p, left}
 
-          next_token_is?(p, :eof) ->
-            {:halt, p, left}
+        next_token_is?(p, :eof) ->
+          {:halt, p, left}
 
-          Precedence.compare(precedence, next_precedence(p)) >= 0 ->
-            {:halt, p, left}
+        Precedence.compare(precedence, next_precedence(p)) >= 0 ->
+          {:halt, p, left}
 
-          infix_fn == nil ->
-            {:halt, p, left}
+        infix_fn == nil ->
+          {:halt, p, left}
 
-          true ->
-            {next_p, next_l} = p |> next_token |> infix_fn.(left)
-            {:cont, next_p, next_l}
-        end
-      end)
-    else
+        true ->
+          {next_p, next_l} = p |> next_token |> infix_fn.(left)
+          {:cont, next_p, next_l}
+      end
+    end
+
+    case Map.fetch(parser.prefix_parse_fns, parser.current_token.type) do
+      {:ok, prefix_fn} ->
+        {next, l} = prefix_fn.(parser)
+        # send in left expression and the last parser pos
+        next
+        |> reduce_while(l, expression_reducer)
+
       :error ->
         {parser |> with_error("no prefix function found for #{parser.current_token.literal}"),
          nil}

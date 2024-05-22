@@ -8,7 +8,7 @@ defmodule OpcodeTest do
       {[
          Code.make(:constant, [1]),
          Code.make(:constant, [2]),
-         Code.make(:constant, [65535])
+         Code.make(:constant, [65_535])
        ],
        """
        0000 OpConstant 1
@@ -19,7 +19,7 @@ defmodule OpcodeTest do
         [
           Code.make(:add, []),
           Code.make(:constant, [2]),
-          Code.make(:constant, [65535]),
+          Code.make(:constant, [65_535]),
           Code.make(:sub, []),
           Code.make(:mul, []),
           Code.make(:div, [])
@@ -88,7 +88,7 @@ defmodule OpcodeTest do
 
   test "make" do
     [
-      {:constant, [65534], <<1::8, 255::8, 254::8>>},
+      {:constant, [65_534], <<1::8, 255::8, 254::8>>},
       {:pop, [], <<2::8>>},
       {:add, [], <<3::8>>},
       {:sub, [], <<4::8>>},
@@ -101,8 +101,8 @@ defmodule OpcodeTest do
       {:greater_than, [], <<11::8>>},
       {:minus, [], <<12::8>>},
       {:bang, [], <<13::8>>},
-      {:jump_not_truthy, [65534], <<14::8, 255::8, 254::8>>},
-      {:jump, [65534], <<15::8, 255::8, 254::8>>}
+      {:jump_not_truthy, [65_534], <<14::8, 255::8, 254::8>>},
+      {:jump, [65_534], <<15::8, 255::8, 254::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)

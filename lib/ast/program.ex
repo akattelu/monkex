@@ -33,7 +33,7 @@ defmodule Monkex.AST.Program do
 
   defimpl String.Chars, for: Monkex.AST.Program do
     def to_string(%Monkex.AST.Program{statements: statements}),
-      do: statements |> Enum.map(fn s -> "#{s}" end) |> Enum.join("")
+      do: statements |> Enum.map_join("", fn s -> "#{s}" end)
   end
 
   defimpl Node, for: Program do

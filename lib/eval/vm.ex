@@ -124,54 +124,55 @@ defmodule Monkex.VM do
        when is_comparison_operator(first),
        do: comparison_op(first, rest, stack, constants)
 
-  defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants) do
-    case first do
-      # constant
-      <<1::8>> ->
-        <<int::big-integer-size(2)-unit(8), next::binary>> = rest
-        # TODO: make this list access faster
-        obj = Enum.at(constants, int)
-        run_raw(next, Stack.push(stack, obj), constants)
-
-      # push
-      <<2::8>> ->
-        run_raw(rest, Stack.pop(stack) |> elem(0), constants)
-
-      # true
-      <<7::8>> ->
-        run_raw(rest, Stack.push(stack, Boolean.yes()), constants)
-
-      # false
-      <<8::8>> ->
-        run_raw(rest, Stack.push(stack, Boolean.no()), constants)
-
-      # minus
-      <<12::8>> ->
-        {s, %Integer{value: value}} = Stack.pop(stack)
-        run_raw(rest, Stack.push(s, -value |> Integer.from()), constants)
-
-      # bang
-      <<13::8>> ->
-        s =
-          case Stack.pop(stack) do
-            {s, %Integer{value: value}} ->
-              Stack.push(
-                s,
-                if value == 0 do
-                  Boolean.yes()
-                else
-                  Boolean.no()
-                end
-              )
-
-            {s, %Boolean{value: true}} ->
-              Stack.push(s, Boolean.no())
-
-            {s, %Boolean{value: false}} ->
-              Stack.push(s, Boolean.yes())
-          end
-
-        run_raw(rest, s, constants)
-    end
+  defp run_raw(<<1::8, rest::binary>>, stack, constants) do
+    # constant
+    <<int::big-integer-size(2)-unit(8), next::binary>> = rest
+    # make this list access faster
+    obj = Enum.at(constants, int)
+    run_raw(next, Stack.push(stack, obj), constants)
   end
+
+  # push
+  defp run_raw(<<2::8, rest::binary>>, stack, constants),
+    do: run_raw(rest, Stack.pop(stack) |> elem(0), constants)
+
+  # true
+  defp run_raw(<<7::8, rest::binary>>, stack, constants),
+    do: run_raw(rest, Stack.push(stack, Boolean.yes()), constants)
+
+  # false
+  defp run_raw(<<8::8, rest::binary>>, stack, constants),
+    do: run_raw(rest, Stack.push(stack, Boolean.no()), constants)
+
+  # minus
+  defp run_raw(<<12::8, rest::binary>>, stack, constants) do
+    {s, %Integer{value: value}} = Stack.pop(stack)
+    run_raw(rest, Stack.push(s, -value |> Integer.from()), constants)
+  end
+
+  # bang
+  defp run_raw(<<13::8, rest::binary>>, stack, constants) do
+    s =
+      case Stack.pop(stack) do
+        {s, %Integer{value: value}} ->
+          Stack.push(
+            s,
+            if value == 0 do
+              Boolean.yes()
+            else
+              Boolean.no()
+            end
+          )
+
+        {s, %Boolean{value: true}} ->
+          Stack.push(s, Boolean.no())
+
+        {s, %Boolean{value: false}} ->
+          Stack.push(s, Boolean.yes())
+      end
+
+    run_raw(rest, s, constants)
+  end
+
+  defp run_raw(_, _, _), do: nil
 end
