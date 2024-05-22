@@ -1,5 +1,5 @@
 defmodule StackTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Monkex.VM.Stack
 
   test ~c"basic operations" do

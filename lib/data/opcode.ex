@@ -56,7 +56,13 @@ defmodule Monkex.Opcode do
         :not_equal => %Definition{name: "OpNotEqual", opcode: <<10::8>>, operand_widths: []},
         :greater_than => %Definition{name: "OpGreaterThan", opcode: <<11::8>>, operand_widths: []},
         :minus => %Definition{name: "OpMinus", opcode: <<12::8>>, operand_widths: []},
-        :bang => %Definition{name: "OpBang", opcode: <<13::8>>, operand_widths: []}
+        :bang => %Definition{name: "OpBang", opcode: <<13::8>>, operand_widths: []},
+        :jump_not_truthy => %Definition{
+          name: "OpJumpNotTruthy",
+          opcode: <<14::8>>,
+          operand_widths: [2]
+        },
+        :jump => %Definition{name: "OpJump", opcode: <<15::8>>, operand_widths: [2]}
       }
     end
   end

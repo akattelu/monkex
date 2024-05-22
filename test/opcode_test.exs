@@ -60,6 +60,14 @@ defmodule OpcodeTest do
         0000 OpMinus
         0001 OpBang
         """
+      },
+      {
+        [Code.make(:jump_not_truthy, [100]), Code.make(:jump, [100]), Code.make(:pop, [])],
+        """
+        0000 OpJumpNotTruthy 100
+        0003 OpJump 100
+        0006 OpPop
+        """
       }
     ]
     |> Enum.map(fn {actual, expected} ->
@@ -92,7 +100,9 @@ defmodule OpcodeTest do
       {:not_equal, [], <<10::8>>},
       {:greater_than, [], <<11::8>>},
       {:minus, [], <<12::8>>},
-      {:bang, [], <<13::8>>}
+      {:bang, [], <<13::8>>},
+      {:jump_not_truthy, [65534], <<14::8, 255::8, 254::8>>},
+      {:jump, [65534], <<15::8, 255::8, 254::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)
