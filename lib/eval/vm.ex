@@ -80,23 +80,12 @@ defmodule Monkex.VM do
   def stack_last_top(%VM{stack: s}), do: Stack.last_popped(s)
   def stack_top(%VM{stack: s}), do: Stack.top(s)
 
-  def run(%VM{instructions: %Instructions{raw: raw}, stack: stack, constants: constants}) do
-    {:ok, s, c} = run_raw(raw, stack, constants)
-
-    {:ok,
-     %VM{
-       stack: s,
-       constants: c,
-       instructions: <<>>
-     }}
-  end
-
   def arithmetic_op(opcode, rest, stack, constants) do
     f = operation(opcode)
     {s, %Integer{value: right}} = Stack.pop(stack)
     {after_pop, %Integer{value: left}} = Stack.pop(s)
     pushed = Stack.push(after_pop, f.(left, right) |> Integer.from())
-    run_raw(rest, pushed, constants)
+    run(%VM{instructions: Instructions.from(rest), stack: pushed, constants: constants})
   end
 
   def type_check(%Integer{}, %Integer{}), do: :ok
@@ -110,48 +99,105 @@ defmodule Monkex.VM do
 
     with :ok <- type_check(right, left) do
       pushed = Stack.push(after_pop, f.(left, right) |> Boolean.from())
-      run_raw(rest, pushed, constants)
+      run(%VM{instructions: Instructions.from(rest), stack: pushed, constants: constants})
     end
   end
 
-  defp run_raw(<<>>, stack, constants), do: {:ok, stack, constants}
+  def run(%VM{instructions: %Instructions{raw: <<>>}} = vm), do: {:ok, vm}
 
-  defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants)
-       when is_arithmetic_operator(first),
-       do: arithmetic_op(first, rest, stack, constants)
+  def run(%VM{
+        instructions: %Instructions{raw: <<first::binary-size(1)-unit(8), rest::binary>>},
+        stack: stack,
+        constants: constants
+      })
+      when is_arithmetic_operator(first),
+      do: arithmetic_op(first, rest, stack, constants)
 
-  defp run_raw(<<first::binary-size(1)-unit(8), rest::binary>>, stack, constants)
-       when is_comparison_operator(first),
-       do: comparison_op(first, rest, stack, constants)
+  def run(%VM{
+        instructions: %Instructions{raw: <<first::binary-size(1)-unit(8), rest::binary>>},
+        stack: stack,
+        constants: constants
+      })
+      when is_comparison_operator(first),
+      do: comparison_op(first, rest, stack, constants)
 
-  defp run_raw(<<1::8, rest::binary>>, stack, constants) do
+  def run(%VM{
+        instructions: %Instructions{raw: <<1::8, rest::binary>>},
+        stack: stack,
+        constants: constants
+      }) do
     # constant
     <<int::big-integer-size(2)-unit(8), next::binary>> = rest
     # make this list access faster
     obj = Enum.at(constants, int)
-    run_raw(next, Stack.push(stack, obj), constants)
+
+    run(%VM{
+      instructions: Instructions.from(next),
+      stack: Stack.push(stack, obj),
+      constants: constants
+    })
   end
 
   # push
-  defp run_raw(<<2::8, rest::binary>>, stack, constants),
-    do: run_raw(rest, Stack.pop(stack) |> elem(0), constants)
+  def run(%VM{
+        instructions: %Instructions{raw: <<2::8, rest::binary>>},
+        stack: stack,
+        constants: constants
+      }),
+      do:
+        run(%VM{
+          instructions: Instructions.from(rest),
+          stack: Stack.pop(stack) |> elem(0),
+          constants: constants
+        })
 
   # true
-  defp run_raw(<<7::8, rest::binary>>, stack, constants),
-    do: run_raw(rest, Stack.push(stack, Boolean.yes()), constants)
+  def run(%VM{
+        instructions: %Instructions{raw: <<7::8, rest::binary>>},
+        stack: stack,
+        constants: constants
+      }),
+      do:
+        run(%VM{
+          instructions: Instructions.from(rest),
+          stack: Stack.push(stack, Boolean.yes()),
+          constants: constants
+        })
 
   # false
-  defp run_raw(<<8::8, rest::binary>>, stack, constants),
-    do: run_raw(rest, Stack.push(stack, Boolean.no()), constants)
+  def run(%VM{
+        instructions: %Instructions{raw: <<8::8, rest::binary>>},
+        stack: stack,
+        constants: constants
+      }),
+      do:
+        run(%VM{
+          instructions: Instructions.from(rest),
+          stack: Stack.push(stack, Boolean.no()),
+          constants: constants
+        })
 
   # minus
-  defp run_raw(<<12::8, rest::binary>>, stack, constants) do
+  def run(%VM{
+        instructions: %Instructions{raw: <<12::8, rest::binary>>},
+        stack: stack,
+        constants: constants
+      }) do
     {s, %Integer{value: value}} = Stack.pop(stack)
-    run_raw(rest, Stack.push(s, -value |> Integer.from()), constants)
+
+    run(%VM{
+      instructions: Instructions.from(rest),
+      stack: Stack.push(s, -value |> Integer.from()),
+      constants: constants
+    })
   end
 
   # bang
-  defp run_raw(<<13::8, rest::binary>>, stack, constants) do
+  def run(%VM{
+        instructions: %Instructions{raw: <<13::8, rest::binary>>},
+        stack: stack,
+        constants: constants
+      }) do
     s =
       case Stack.pop(stack) do
         {s, %Integer{value: value}} ->
@@ -171,8 +217,20 @@ defmodule Monkex.VM do
           Stack.push(s, Boolean.yes())
       end
 
-    run_raw(rest, s, constants)
+    run(%VM{instructions: Instructions.from(rest), stack: s, constants: constants})
   end
 
-  defp run_raw(_, _, _), do: nil
+  # jump not truthy
+  def run(%VM{
+        instructions: %Instructions{
+          raw: <<14::8, _pos::big-integer-size(2)-unit(8), rest::binary>>
+        },
+        stack: stack,
+        constants: constants
+      }) do
+    {s, _should_jump} = Stack.pop(stack)
+    run(%VM{instructions: Instructions.from(rest), stack: s, constants: constants})
+  end
+
+  def run(vm), do: {:ok, vm}
 end
