@@ -63,7 +63,7 @@ defmodule Monkex.Compiler do
      }, length(constants)}
   end
 
-  @doc "Add an instruction to the Compiler state and return the new Compiler"
+  @doc "Add an instruction to the Compiler state and return the new Compiler with the total length"
   @spec with_instruction(t(), Instructions.t()) :: {t(), integer()}
   def with_instruction(%Compiler{instructions: instructions} = compiler, instruction) do
     {%Compiler{
@@ -78,4 +78,28 @@ defmodule Monkex.Compiler do
     code = Opcode.make(opcode, operands)
     Compiler.with_instruction(compiler, code)
   end
+
+  @doc """
+  Remove the latest instruction that was emitted from the compiler
+  Uses the type passed in to determine the length of the instruction to be trimmed
+  """
+  @spec without_last_instruction(t(), atom()) :: t()
+  def without_last_instruction(%Compiler{instructions: instructions} = c, opcode) do
+    size = Opcode.Definition.oplength(opcode)
+    %Compiler{c | instructions: Instructions.trim(instructions, size)}
+  end
+
+  @doc "Return a compiler with instructions subsituted at the specified position"
+  @spec with_replaced_instruction(t(), integer(), Instructions.t()) :: t()
+  def with_replaced_instruction(%Compiler{instructions: instr} = c, pos, sub) do
+    %Compiler{
+      c
+      | instructions: Instructions.replace_at(instr, pos, sub)
+    }
+  end
+
+  @doc "Retrieve the byte length of the instructions inside the compiler"
+  @spec instructions_length(t()) :: integer()
+  def instructions_length(%Compiler{instructions: instructions}),
+    do: Instructions.length(instructions)
 end

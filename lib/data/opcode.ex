@@ -42,6 +42,15 @@ defmodule Monkex.Opcode do
       end
     end
 
+    @doc "returns the number of bytes that the opcode takes, or nil for an undefined opcode"
+    @spec oplength(atom()) :: integer() | nil
+    def oplength(op) do
+      case lookup(op) do
+        {:ok, %Definition{operand_widths: widths}} -> 1 + Enum.sum(widths)
+        :undefined -> nil
+      end
+    end
+
     def all() do
       %{
         :constant => %Definition{name: "OpConstant", opcode: <<1::8>>, operand_widths: [2]},

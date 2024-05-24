@@ -135,7 +135,6 @@ defmodule Monkex.REPL do
     # read
     with input <- IO.gets(">> "),
          {:ok, line} <- get_line(input) do
-
       # parse
       {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program()
 

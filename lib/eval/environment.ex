@@ -1,5 +1,5 @@
 defmodule Monkex.Environment do
-  @moduledoc """ 
+  @moduledoc """
   Environment and scope representation for the Monkex interpreter
   Stores identifiers (keys) and objects (values)
   """

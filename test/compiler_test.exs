@@ -139,4 +139,30 @@ defmodule CompilerTest do
     ]
     |> Enum.map(&compiler_test/1)
   end
+
+  test "if expressions" do
+    [
+      {"if (true) { 5 }; 500;", [5, 500],
+       [
+         Opcode.make(true, []),
+         Opcode.make(:jump_not_truthy, [7]),
+         Opcode.make(:constant, [0]),
+         Opcode.make(:pop, []),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:pop, [])
+       ]},
+      {"if (true) { 5 } else { 300 }; 500;", [5, 300, 500],
+       [
+         Opcode.make(true, []),
+         Opcode.make(:jump_not_truthy, [10]),
+         Opcode.make(:constant, [0]),
+         Opcode.make(:jump, [13]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:pop, []),
+         Opcode.make(:constant, [2]),
+         Opcode.make(:pop, [])
+       ]}
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
 end

@@ -19,6 +19,24 @@ defmodule Monkex.Instructions do
   def raw(%Instructions{raw: raw}), do: raw
   def add(%Instructions{raw: raw}, next), do: (raw <> next) |> from
 
+  @doc "trim the trailing n bytes from the end of the instructions list"
+  @spec trim(t(), integer()) :: t()
+  def trim(%Instructions{raw: raw}, n) do
+    binary_length = byte_size(raw)
+    new_length = binary_length - n
+    raw |> binary_part(0, new_length) |> from
+  end
+
+  @doc "Replace the portion of the instruction at position, with the next instruction"
+  @spec replace_at(t(), integer(), t()) :: t()
+  def replace_at(%Instructions{raw: base}, position, %Instructions{raw: sub}) do
+    first = binary_part(base, 0, position)
+    second = sub
+    length_until_sub = byte_size(first) + byte_size(second)
+    third = binary_part(base, length_until_sub, byte_size(base) - length_until_sub)
+    (first <> second <> third) |> from
+  end
+
   def concat(%Instructions{raw: first}, %Instructions{raw: second}),
     do: (second <> first) |> from
 
