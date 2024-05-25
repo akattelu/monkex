@@ -121,7 +121,7 @@ defmodule Monkex.REPL do
 
         {:ok, result} = VM.run(vm)
         # print
-        result |> VM.stack_top() |> IO.puts()
+        result |> VM.stack_last_top() |> IO.puts()
 
         # loop with new env
         start_compiler_and_vm(c)
