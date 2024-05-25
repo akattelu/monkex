@@ -145,8 +145,10 @@ defmodule CompilerTest do
       {"if (true) { 5 }; 500;", [5, 500],
        [
          Opcode.make(true, []),
-         Opcode.make(:jump_not_truthy, [7]),
+         Opcode.make(:jump_not_truthy, [10]),
          Opcode.make(:constant, [0]),
+         Opcode.make(:jump, [11]),
+         Opcode.make(:null, []),
          Opcode.make(:pop, []),
          Opcode.make(:constant, [1]),
          Opcode.make(:pop, [])

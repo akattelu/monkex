@@ -97,8 +97,9 @@ end
 defmodule Monkex.VM do
   alias __MODULE__
   alias Monkex.Object.Boolean
-  alias Monkex.Compiler.Bytecode
   alias Monkex.Object.Integer
+  alias Monkex.Object.Null
+  alias Monkex.Compiler.Bytecode
   alias Monkex.VM.Stack
   alias Monkex.VM.InstructionSet
 
@@ -275,6 +276,11 @@ defmodule Monkex.VM do
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
     vm |> jump(jump_pos) |> run
+  end
+
+  # Null
+  defp run_op(<<16::8>>, %VM{stack: stack} = vm) do
+    vm |> advance() |> with_stack(Stack.push(stack, Null.object())) |> run
   end
 
   defp run_op(<<>>, vm), do: {:ok, vm}

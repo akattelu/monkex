@@ -71,7 +71,8 @@ defmodule Monkex.Opcode do
           opcode: <<14::8>>,
           operand_widths: [2]
         },
-        :jump => %Definition{name: "OpJump", opcode: <<15::8>>, operand_widths: [2]}
+        :jump => %Definition{name: "OpJump", opcode: <<15::8>>, operand_widths: [2]},
+        :null => %Definition{name: "OpNull", opcode: <<16::8>>, operand_widths: []}
       }
     end
   end

@@ -2,11 +2,16 @@ defmodule VMTest do
   alias Monkex.Lexer
   alias Monkex.Parser
   alias Monkex.Compiler
+  alias Monkex.Object.Null
   alias Monkex.VM
   use ExUnit.Case, async: true
 
   def test_literal({actual, expected}) do
-    assert actual.value == expected
+    if expected == nil do
+      assert actual == Null.object()
+    else
+      assert actual.value == expected
+    end
   end
 
   def vm_test({input, expected}) do
@@ -90,7 +95,9 @@ defmodule VMTest do
       {"if (1) { 10 }", 10},
       {"if (1 < 2) { 10 }", 10},
       {"if (1 < 2) { 10 } else { 20 }", 10},
-      {"if (1 > 2) { 10 } else { 20 }", 20}
+      {"if (1 > 2) { 10 } else { 20 }", 20},
+      {"if (1 > 2) { 10 }", nil},
+      {"if (false) { 10 }", nil}
     ]
     |> Enum.map(&vm_test/1)
   end

@@ -43,40 +43,35 @@ defmodule Monkex.AST.IfExpression do
       then_c =
         Compiler.without_last_instruction(then_c, :pop)
 
-      if else_block != nil do
-        {jump_after_else_c, jump_pos} = Compiler.emit(then_c, :jump, [9999])
+      {jump_after_else_c, jump_pos} = Compiler.emit(then_c, :jump, [9999])
 
-        # point the first jump_not_truthy to after the jump
-        pre_else_c =
-          Compiler.with_replaced_instruction(
-            jump_after_else_c,
-            jump_not_truthy_pos,
-            Opcode.make(:jump_not_truthy, [Compiler.instructions_length(jump_after_else_c)])
-          )
+      # point the first jump_not_truthy to after the jump
+      pre_else_c =
+        Compiler.with_replaced_instruction(
+          jump_after_else_c,
+          jump_not_truthy_pos,
+          Opcode.make(:jump_not_truthy, [Compiler.instructions_length(jump_after_else_c)])
+        )
 
-        {:ok, else_c} = Node.compile(else_block, pre_else_c)
-        else_c = Compiler.without_last_instruction(else_c, :pop)
+      # if there is no else block, use a null expr as the else block
+      else_c =
+        if else_block != nil do
+          {:ok, else_c} = Node.compile(else_block, pre_else_c)
+          Compiler.without_last_instruction(else_c, :pop)
+        else
+          {else_c, _} = Compiler.emit(pre_else_c, :null, [])
+          else_c
+        end
 
-        # point the unconditional jump block to after the else block
-        else_c =
-          Compiler.with_replaced_instruction(
-            else_c,
-            jump_pos,
-            Opcode.make(:jump, [Compiler.instructions_length(else_c)])
-          )
+      # point the unconditional jump block to after the else block
+      else_c =
+        Compiler.with_replaced_instruction(
+          else_c,
+          jump_pos,
+          Opcode.make(:jump, [Compiler.instructions_length(else_c)])
+        )
 
-        {:ok, else_c}
-      else
-        {
-          :ok,
-          # point the jump_not_truthy to after the then block
-          Compiler.with_replaced_instruction(
-            then_c,
-            jump_not_truthy_pos,
-            Opcode.make(:jump_not_truthy, [Compiler.instructions_length(then_c)])
-          )
-        }
-      end
+      {:ok, else_c}
     end
 
     def eval(%Error{} = err, env), do: {err, env}
