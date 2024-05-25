@@ -245,6 +245,9 @@ defmodule Monkex.VM do
 
         {s, %Boolean{value: false}} ->
           Stack.push(s, Boolean.yes())
+
+        {s, %Null{}} -> 
+          Stack.push(s, Boolean.yes())
       end
 
     vm |> advance() |> with_stack(s) |> run
@@ -257,17 +260,16 @@ defmodule Monkex.VM do
     <<jump_pos::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
-    next_vm =
       case should_not_jump_val do
         # do jump
         %Boolean{value: false} -> vm |> with_stack(s) |> jump(jump_pos)
         %Integer{value: 0} -> vm |> with_stack(s) |> jump(jump_pos)
+        %Null{} -> vm |> with_stack(s) |> jump(jump_pos)
+
         # do not jump
         %Boolean{value: true} -> vm |> advance(3) |> with_stack(s)
         %Integer{value: _} -> vm |> advance(3) |> with_stack(s)
-      end
-
-    run(next_vm)
+      end |> run
   end
 
   # Jump unconditionally

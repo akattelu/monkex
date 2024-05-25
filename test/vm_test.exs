@@ -82,7 +82,8 @@ defmodule VMTest do
       {"!5", false},
       {"!!true", true},
       {"!!false", false},
-      {"!!5", true}
+      {"!!5", true},
+      {"!(if (false) { 5; })", true}
     ]
     |> Enum.map(&vm_test/1)
   end
@@ -97,7 +98,8 @@ defmodule VMTest do
       {"if (1 < 2) { 10 } else { 20 }", 10},
       {"if (1 > 2) { 10 } else { 20 }", 20},
       {"if (1 > 2) { 10 }", nil},
-      {"if (false) { 10 }", nil}
+      {"if (false) { 10 }", nil},
+      {"if ((if (false) { 10 })) { 10 } else { 20 }", 20}
     ]
     |> Enum.map(&vm_test/1)
   end
