@@ -8,6 +8,7 @@ defmodule Monkex.AST.Identifier do
   alias Monkex.Object.Node
   alias Monkex.Object.Error
   alias Monkex.Environment
+  alias Monkex.Compiler
 
   @enforce_keys [:token, :symbol_name]
   defstruct [:token, :symbol_name]
@@ -21,7 +22,16 @@ defmodule Monkex.AST.Identifier do
   end
 
   defimpl Node, for: Identifier do
-    def compile(_node, compiler), do: compiler
+    def compile(%Identifier{symbol_name: symbol_name}, compiler) do
+      case Compiler.get_symbol_index(compiler, symbol_name) do
+        {:ok, idx} ->
+          {c, _} = Compiler.emit(compiler, :get_global, [idx])
+          {:ok, c}
+
+        :undefined ->
+          {:error, "undefined symbol #{symbol_name}"}
+      end
+    end
 
     def eval(%Identifier{symbol_name: symbol_name}, env) do
       case Environment.get(env, symbol_name) do

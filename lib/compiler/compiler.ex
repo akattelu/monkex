@@ -3,6 +3,8 @@ defmodule Monkex.Compiler do
   alias Monkex.Object.Node
   alias Monkex.Opcode
   alias Monkex.Instructions
+  alias Monkex.SymbolTable
+  alias Monkex.Symbol
 
   @moduledoc """
   MonkEx Compiler
@@ -27,15 +29,16 @@ defmodule Monkex.Compiler do
 
   # instructions is a byte array
   # constants is a list of objects
-  @enforce_keys [:instructions, :constants]
-  defstruct [:instructions, :constants]
+  @enforce_keys [:instructions, :constants, :symbols]
+  defstruct [:instructions, :constants, :symbols]
 
   @doc "Create a new empty Compiler struct"
   @spec new() :: t()
   def new() do
     %Compiler{
       instructions: Instructions.new(),
-      constants: []
+      constants: [],
+      symbols: SymbolTable.new()
     }
   end
 
@@ -70,6 +73,22 @@ defmodule Monkex.Compiler do
        compiler
        | instructions: Instructions.concat(instruction, instructions)
      }, Instructions.length(instructions)}
+  end
+
+  @doc "Add a symbol into the compiler's symbol table and return the new compiler"
+  @spec with_global_symbol(t(), String.t()) :: t()
+  def with_global_symbol(%Compiler{symbols: symbols} = c, name) do
+    %Compiler{
+      c
+      | symbols: symbols |> SymbolTable.with_definition(name)
+    }
+  end
+
+  @spec get_symbol_index(t(), String.t()) :: integer() | :undefined
+  def get_symbol_index(%Compiler{symbols: symbols}, name) do
+    with {:ok, %Symbol{index: idx}} <- SymbolTable.resolve(symbols, name) do
+      {:ok, idx}
+    end
   end
 
   @doc "Convert an opcode with operands into an instruction, add it to the Compiler, and return a new Compiler"

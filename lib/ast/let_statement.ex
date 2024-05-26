@@ -9,6 +9,7 @@ defmodule Monkex.AST.LetStatement do
 
   alias Monkex.AST.Identifier
   alias Monkex.Environment
+  alias Monkex.Compiler
 
   @enforce_keys [:token, :name, :value]
   defstruct [:token, :name, :value]
@@ -22,7 +23,14 @@ defmodule Monkex.AST.LetStatement do
   end
 
   defimpl Node, for: LetStatement do
-    def compile(_node, compiler), do: compiler
+    def compile(%LetStatement{name: %Identifier{symbol_name: name}, value: value}, compiler) do
+      with {:ok, value_c} <- Node.compile(value, compiler),
+           with_symbol = Compiler.with_global_symbol(value_c, name),
+           {:ok, idx} <- Compiler.get_symbol_index(with_symbol, name) do
+        {c, _} = Compiler.emit(with_symbol, :set_global, [idx])
+        {:ok, c}
+      end
+    end
 
     def eval(%LetStatement{name: %Identifier{symbol_name: name}, value: value}, env) do
       case Node.eval(value, env) do
