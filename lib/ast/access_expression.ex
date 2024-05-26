@@ -5,12 +5,9 @@ defmodule Monkex.AST.AccessExpression do
 
   alias __MODULE__
   alias Monkex.Object
-  alias Monkex.Object.Node
   alias Monkex.AST.Expression
-  alias Monkex.Object.Error
-  alias Monkex.Object.Array
-  alias Monkex.Object.Integer
-  alias Monkex.Object.Dictionary
+  alias Monkex.Object.{Error, Array, Integer, Dictionary, Node}
+  alias Monkex.Compiler
 
   @enforce_keys [:token, :indexable_expr, :index_expr]
   defstruct [:token, :indexable_expr, :index_expr]
@@ -28,7 +25,12 @@ defmodule Monkex.AST.AccessExpression do
   end
 
   defimpl Node, for: AccessExpression do
-    def compile(_node, compiler), do: compiler
+    def compile(%AccessExpression{indexable_expr: indexable, index_expr: index}, compiler) do
+      {:ok, c} = Node.compile(indexable, compiler)
+      {:ok, c} = Node.compile(index, c)
+      {c, _} = Compiler.emit(c, :index, [])
+      {:ok, c}
+    end
 
     defp indexable?(obj) do
       case obj do

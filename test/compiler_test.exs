@@ -282,4 +282,33 @@ defmodule CompilerTest do
     ]
     |> Enum.map(&compiler_test/1)
   end
+
+  test "index/access operator" do
+    [
+      {"[1,2,3][1 + 1]", [1, 2, 3, 1, 1],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:constant, [2]),
+         Opcode.make(:array, [3]),
+         Opcode.make(:constant, [3]),
+         Opcode.make(:constant, [4]),
+         Opcode.make(:add, []),
+         Opcode.make(:index, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"{1 : 2}[2 - 1]", [1, 2, 2, 1],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:hash, [2]),
+         Opcode.make(:constant, [2]),
+         Opcode.make(:constant, [3]),
+         Opcode.make(:sub, []),
+         Opcode.make(:index, []),
+         Opcode.make(:pop, [])
+       ]}
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
 end
