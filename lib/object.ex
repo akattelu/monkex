@@ -168,7 +168,7 @@ defmodule Monkex.Object.Array do
   end
 
   def at(%Array{items: items}, index) do
-    if index >= length(items) do
+    if index >= length(items) or index < 0 do
       {:error, "index out of bounds"}
     else
       {:ok, Enum.at(items, index, Null.object())}

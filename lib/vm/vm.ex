@@ -276,6 +276,27 @@ defmodule Monkex.VM do
     vm |> advance(3) |> with_stack(s) |> run
   end
 
+  # Access/index 
+  defp run_op(<<21::8>>, %VM{stack: stack} = vm) do
+    {s, [indexable | [index | []]]} = Stack.take(stack, 2)
+
+    obj =
+      with {%Array{} = arr, %Integer{value: v}} <- {indexable, index},
+           {:ok, obj} <- Array.at(arr, v) do
+        obj
+      else
+        {%Dictionary{} = dict, v} ->
+          Dictionary.at(dict, v)
+
+        {:error, "index out of bounds"} ->
+          Null.object()
+      end
+
+    s = Stack.push(s, obj)
+
+    vm |> advance() |> with_stack(s) |> run
+  end
+
   defp run_op(<<>>, vm), do: {:ok, vm}
   defp run_op(_, _), do: {:error, "unknown opcode"}
 end
