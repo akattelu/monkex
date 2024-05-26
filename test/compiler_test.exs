@@ -167,4 +167,33 @@ defmodule CompilerTest do
     ]
     |> Enum.map(&compiler_test/1)
   end
+
+  # test "getting and setting globals" do
+  #   [
+  #     {"let one = 1; let two = 2;", [1, 2],
+  #      [
+  #        Opcode.make(:constant, [0]),
+  #        Opcode.make(:set_global, [0]),
+  #        Opcode.make(:constant, [1]),
+  #        Opcode.make(:set_global, [1])
+  #      ]},
+  #     {"let one = 1; one;", [1],
+  #      [
+  #        Opcode.make(:constant, [0]),
+  #        Opcode.make(:set_global, [0]),
+  #        Opcode.make(:get_global, [0]),
+  #        Opcode.make(:pop, [])
+  #      ]},
+  #     {"let one = 1; let two = one; two;", [1],
+  #      [
+  #        Opcode.make(:constant, [0]),
+  #        Opcode.make(:set_global, [0]),
+  #        Opcode.make(:get_global, [0]),
+  #        Opcode.make(:set_global, [1]),
+  #        Opcode.make(:get_global, [1]),
+  #        Opcode.make(:pop, [])
+  #      ]}
+  #   ]
+  #   |> Enum.map(&compiler_test/1)
+  # end
 end

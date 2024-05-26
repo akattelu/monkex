@@ -72,7 +72,9 @@ defmodule Monkex.Opcode do
           operand_widths: [2]
         },
         :jump => %Definition{name: "OpJump", opcode: <<15::8>>, operand_widths: [2]},
-        :null => %Definition{name: "OpNull", opcode: <<16::8>>, operand_widths: []}
+        :null => %Definition{name: "OpNull", opcode: <<16::8>>, operand_widths: []},
+        :set_global => %Definition{name: "OpSetGlobal", opcode: <<17::8>>, operand_widths: [2]},
+        :get_global => %Definition{name: "OpGetGlobal", opcode: <<18::8>>, operand_widths: [2]}
       }
     end
   end
