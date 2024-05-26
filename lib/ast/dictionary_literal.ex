@@ -40,7 +40,19 @@ defmodule Monkex.AST.DictionaryLiteral do
   defimpl Node, for: DictionaryLiteral do
     alias Monkex.Object.Error
     alias Monkex.Object
-    def compile(_node, compiler), do: compiler
+    alias Monkex.Compiler
+
+    def compile(%DictionaryLiteral{pairs: pairs}, compiler) do
+      c =
+        Enum.reduce(pairs, compiler, fn %Pair{key: k, value: v}, c ->
+          {:ok, c} = Node.compile(k, c)
+          {:ok, c} = Node.compile(v, c)
+          c
+        end)
+
+      {c, _} = Compiler.emit(c, :hash, [length(pairs) * 2])
+      {:ok, c}
+    end
 
     defp check_string(%Object.String{}), do: :ok
     defp check_string(other), do: {:error, "expected string as key, got #{Object.type(other)}"}

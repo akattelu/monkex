@@ -404,17 +404,8 @@ defmodule Monkex.Parser do
      }}
   end
 
-  def parse_dict_key(parser) do
-    if current_token_is?(parser, :string) do
-      parse_string_literal(parser)
-    else
-      parse_identifier(parser)
-    end
-  end
-
-  def parse_dict_value(parser) do
-    parse_expression(parser, :lowest)
-  end
+  def parse_dict_key(parser), do: parse_expression(parser, :lowest)
+  def parse_dict_value(parser), do: parse_expression(parser, :lowest)
 
   def parse_dict_pair(parser) do
     with {next, key} <- parse_dict_key(parser),

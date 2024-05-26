@@ -75,7 +75,8 @@ defmodule Monkex.Opcode do
         :null => %Definition{name: "OpNull", opcode: <<16::8>>, operand_widths: []},
         :set_global => %Definition{name: "OpSetGlobal", opcode: <<17::8>>, operand_widths: [2]},
         :get_global => %Definition{name: "OpGetGlobal", opcode: <<18::8>>, operand_widths: [2]},
-        :array => %Definition{name: "OpArray", opcode: <<19::8>>, operand_widths: [2]}
+        :array => %Definition{name: "OpArray", opcode: <<19::8>>, operand_widths: [2]},
+        :hash => %Definition{name: "OpHash", opcode: <<20::8>>, operand_widths: [2]}
       }
     end
   end

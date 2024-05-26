@@ -247,4 +247,39 @@ defmodule CompilerTest do
     ]
     |> Enum.map(&compiler_test/1)
   end
+
+  test "dictionary literals" do
+    [
+      {"{}", [],
+       [
+         Opcode.make(:hash, [0]),
+         Opcode.make(:pop, [])
+       ]},
+      {"{1 : 2, 3 : 4, 5 : 6}", [1, 2, 3, 4, 5, 6],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:constant, [2]),
+         Opcode.make(:constant, [3]),
+         Opcode.make(:constant, [4]),
+         Opcode.make(:constant, [5]),
+         Opcode.make(:hash, [6]),
+         Opcode.make(:pop, [])
+       ]},
+      {"{1 : 2 + 3, 4 : 5 * 6}", [1, 2, 3, 4, 5, 6],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:constant, [2]),
+         Opcode.make(:add, []),
+         Opcode.make(:constant, [3]),
+         Opcode.make(:constant, [4]),
+         Opcode.make(:constant, [5]),
+         Opcode.make(:mul, []),
+         Opcode.make(:hash, [4]),
+         Opcode.make(:pop, [])
+       ]}
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
 end
