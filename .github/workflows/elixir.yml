@@ -38,4 +38,4 @@ jobs:
     - name: Analyze with credo
       run: mix credo
     - name: Run tests
-      run: mix test
+      run: mix test --trace
