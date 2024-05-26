@@ -197,6 +197,8 @@ defmodule Monkex.Object.Dictionary do
   @enforce_keys [:map]
   defstruct [:map]
 
+  def from(map), do: %Dictionary{map: map}
+
   def at(%Dictionary{map: map}, index) do
     Map.get(map, index, Null.object())
   end

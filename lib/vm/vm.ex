@@ -5,7 +5,8 @@ defmodule Monkex.VM do
     Boolean,
     Integer,
     Array,
-    Null
+    Null,
+    Dictionary
   }
 
   alias Monkex.Object.String, as: StringObj
@@ -251,6 +252,26 @@ defmodule Monkex.VM do
     {s, items} = Stack.take(stack, array_items)
     array_obj = Array.from(items)
     s = Stack.push(s, array_obj)
+
+    vm |> advance(3) |> with_stack(s) |> run
+  end
+
+  # Hash
+  defp run_op(<<20::8>>, %VM{instructions: iset, stack: stack} = vm) do
+    <<hash_items::big-integer-size(2)-unit(8), _::binary>> =
+      iset |> InstructionSet.advance() |> InstructionSet.read(2)
+
+    {s, items} = Stack.take(stack, hash_items)
+
+    dict_obj =
+      items
+      |> Enum.chunk_every(2)
+      |> Enum.reduce(%{}, fn [k | [v | []]], acc_map ->
+        Map.put(acc_map, k, v)
+      end)
+      |> Dictionary.from()
+
+    s = Stack.push(s, dict_obj)
 
     vm |> advance(3) |> with_stack(s) |> run
   end

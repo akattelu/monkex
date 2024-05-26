@@ -2,13 +2,21 @@ defmodule VMTest do
   alias Monkex.Lexer
   alias Monkex.Parser
   alias Monkex.Compiler
-  alias Monkex.Object.Null
-  alias Monkex.Object.Array
+  alias Monkex.Object.{Null, Array, Dictionary}
   alias Monkex.VM
   use ExUnit.Case, async: true
 
   def test_literal({actual, nil}) do
     assert actual == Null.object()
+  end
+
+  def test_literal({%Dictionary{map: map}, expected}) do
+    map
+    |> Map.keys()
+    |> Enum.each(fn k ->
+      # will not work on arrays or nulls inside dicts
+      test_literal({map[k], expected[k.value]})
+    end)
   end
 
   def test_literal({%Array{items: [ah | at]}, [eh | et]}) do
@@ -137,6 +145,15 @@ defmodule VMTest do
       {"[]", []},
       {"[1, 2, 3]", [1, 2, 3]},
       {"[1 + 2, 3 * 4, 5 + 6]", [3, 12, 11]}
+    ]
+    |> Enum.map(&vm_test/1)
+  end
+
+  test "dict literals" do
+    [
+      {"{}", %{}},
+      {"{1: 2, 3: 4}", %{1 => 2, 3 => 4}},
+      {"{1 + 1: 2 * 2, 3 + 3: 4 * 4}", %{2 => 4, 6 => 16}}
     ]
     |> Enum.map(&vm_test/1)
   end
