@@ -5,8 +5,9 @@ defmodule Monkex.AST.ArrayLiteral do
   alias __MODULE__
   alias Monkex.Object.Node
   alias Monkex.Object.Error
-  alias Monkex.AST.Expression
   alias Monkex.Object.Array
+  alias Monkex.AST.Expression
+  alias Monkex.Compiler
 
   @enforce_keys [:token, :items]
   defstruct [:token, :items]
@@ -20,7 +21,16 @@ defmodule Monkex.AST.ArrayLiteral do
   end
 
   defimpl Node, for: ArrayLiteral do
-    def compile(_node, compiler), do: compiler
+    def compile(%ArrayLiteral{items: items}, compiler) do
+      c =
+        Enum.reduce(items, compiler, fn item, acc ->
+          {:ok, c} = Node.compile(item, acc)
+          c
+        end)
+
+      {c, _} = Compiler.emit(c, :array, [length(items)])
+      {:ok, c}
+    end
 
     def eval(%ArrayLiteral{items: items}, env) do
       {Enum.reduce_while(items, [], fn expr, acc ->

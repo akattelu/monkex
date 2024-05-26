@@ -105,7 +105,8 @@ defmodule OpcodeTest do
       {:jump, [65_534], <<15::8, 255::8, 254::8>>},
       {:null, [], <<16::8>>},
       {:set_global, [65_534], <<17::8, 255::8, 254::8>>},
-      {:get_global, [65_534], <<18::8, 255::8, 254::8>>}
+      {:get_global, [65_534], <<18::8, 255::8, 254::8>>},
+      {:array, [65_534], <<19::8, 255::8, 254::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)
