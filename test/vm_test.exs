@@ -109,6 +109,7 @@ defmodule VMTest do
       {"let one = 1; one", 1},
       {"let one = 1; let two = 2; one + two", 3},
       {"let one = 1; let two = one + one; one + two", 3}
-    ] |> Enum.map(&vm_test/1)
+    ]
+    |> Enum.map(&vm_test/1)
   end
 end

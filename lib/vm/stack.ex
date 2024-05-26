@@ -1,4 +1,3 @@
-
 defmodule Monkex.VM.Stack do
   alias __MODULE__
 

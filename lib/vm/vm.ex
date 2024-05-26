@@ -6,6 +6,7 @@ defmodule Monkex.VM do
   alias Monkex.Compiler.Bytecode
   alias Monkex.VM.Stack
   alias Monkex.VM.InstructionSet
+  alias Monkex.VM.ArrayList
 
   @moduledoc """
   VM for running bytecode generated from compiler
@@ -30,10 +31,10 @@ defmodule Monkex.VM do
   @spec new(Bytecode.t()) :: t()
   def new(%Bytecode{constants: constants, instructions: instructions}) do
     %VM{
-      constants: constants,
+      constants: ArrayList.new(constants),
       instructions: InstructionSet.new(instructions),
       stack: Stack.new(),
-      globals: []
+      globals: ArrayList.new()
     }
   end
 
@@ -52,6 +53,15 @@ defmodule Monkex.VM do
     %VM{
       vm
       | stack: stack
+    }
+  end
+
+  @doc "Return the VM with the set of globals updated"
+  @spec with_globals(t(), ArrayList.t()) :: t()
+  def with_globals(%VM{} = vm, globals) do
+    %VM{
+      vm
+      | globals: globals
     }
   end
 
@@ -105,8 +115,7 @@ defmodule Monkex.VM do
     <<int::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
-    # make this list access faster
-    obj = Enum.at(constants, int)
+    {:ok, obj} = ArrayList.at(constants, int)
 
     vm |> advance(3) |> with_stack(Stack.push(stack, obj)) |> run
   end
@@ -188,6 +197,26 @@ defmodule Monkex.VM do
   # Null
   defp run_op(<<16::8>>, %VM{stack: stack} = vm) do
     vm |> advance() |> with_stack(Stack.push(stack, Null.object())) |> run
+  end
+
+  # Set global
+  defp run_op(<<17::8>>, %VM{instructions: iset, stack: stack, globals: globals} = vm) do
+    <<global_idx::big-integer-size(2)-unit(8), _::binary>> =
+      iset |> InstructionSet.advance() |> InstructionSet.read(2)
+
+    {s, obj} = Stack.pop(stack)
+    new_globals = ArrayList.set(globals, global_idx, obj)
+    vm |> advance(3) |> with_stack(s) |> with_globals(new_globals) |> run
+  end
+
+  # Get global
+  defp run_op(<<18::8>>, %VM{instructions: iset, stack: stack, globals: globals} = vm) do
+    <<global_idx::big-integer-size(2)-unit(8), _::binary>> =
+      iset |> InstructionSet.advance() |> InstructionSet.read(2)
+
+    {:ok, obj} = ArrayList.at(globals, global_idx)
+    s = Stack.push(stack, obj)
+    vm |> advance(3) |> with_stack(s) |> run
   end
 
   defp run_op(<<>>, vm), do: {:ok, vm}
