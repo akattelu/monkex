@@ -112,4 +112,13 @@ defmodule VMTest do
     ]
     |> Enum.map(&vm_test/1)
   end
+
+  test "string literals and concatenation" do
+    [
+      {~S("monkey"), "monkey"},
+      {~S("mon"+"key"), "monkey"},
+      {~S("mon" + "key" + "banana"), "monkeybanana"}
+    ]
+    |> Enum.map(&vm_test/1)
+  end
 end

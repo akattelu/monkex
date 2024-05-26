@@ -25,6 +25,7 @@ defmodule Monkex.AST.StringLiteral do
       {final, _} = Compiler.emit(next, :constant, [pointer])
       {:ok, final}
     end
+
     def eval(%StringLiteral{value: value}, env), do: {Object.String.from(value), env}
   end
 end

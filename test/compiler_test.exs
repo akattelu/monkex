@@ -202,15 +202,15 @@ defmodule CompilerTest do
       {~S("monkey"), ["monkey"],
        [
          Opcode.make(:constant, [0]),
-         Opcode.make(:pop, []),
+         Opcode.make(:pop, [])
        ]},
       {~S("mon" + "key"), ["mon", "key"],
        [
          Opcode.make(:constant, [0]),
          Opcode.make(:constant, [1]),
          Opcode.make(:add, []),
-         Opcode.make(:pop, []),
-       ]},
+         Opcode.make(:pop, [])
+       ]}
     ]
     |> Enum.map(&compiler_test/1)
   end

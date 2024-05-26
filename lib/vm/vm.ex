@@ -2,6 +2,7 @@ defmodule Monkex.VM do
   alias __MODULE__
   alias Monkex.Object.Boolean
   alias Monkex.Object.Integer
+  alias Monkex.Object.String, as: StringObj
   alias Monkex.Object.Null
   alias Monkex.Compiler.Bytecode
   alias Monkex.VM.Stack
@@ -16,11 +17,10 @@ defmodule Monkex.VM do
 
   @type t() :: %VM{}
 
-  defguard is_arithmetic_operator(first) when first >= <<3::8>> and first <= <<6::8>>
+  defguard is_arithmetic_operator(first) when first >= <<4::8>> and first <= <<6::8>>
   defguard is_comparison_operator(first) when first >= <<9::8>> and first <= <<11::8>>
 
   @spec operation(<<_::8>>) :: (any(), any() -> any())
-  defp operation(<<3::8>>), do: fn a, b -> a + b end
   defp operation(<<4::8>>), do: fn a, b -> a - b end
   defp operation(<<5::8>>), do: fn a, b -> a * b end
   defp operation(<<6::8>>), do: fn a, b -> a / b end
@@ -79,6 +79,7 @@ defmodule Monkex.VM do
 
   def type_check(%Integer{}, %Integer{}), do: :ok
   def type_check(%Boolean{}, %Boolean{}), do: :ok
+  def type_check(%StringObj{}, %StringObj{}), do: :ok
   def type_check(_, _), do: {:error, "type mismatch"}
 
   @doc "Execute all instructions in the VM"
@@ -123,6 +124,24 @@ defmodule Monkex.VM do
   # Pop
   defp run_op(<<2::8>>, %VM{stack: stack} = vm),
     do: vm |> advance() |> with_stack(Stack.pop(stack) |> elem(0)) |> run
+
+  # Add / concatenate
+  defp run_op(<<3::8>>, %VM{stack: stack} = vm) do
+    {s, right} = Stack.pop(stack)
+    {s, left} = Stack.pop(s)
+
+    with :ok <- type_check(left, right) do
+      result_obj =
+        case {left, right} do
+          {%Integer{value: l}, %Integer{value: r}} -> (l + r) |> Integer.from()
+          {%StringObj{value: l}, %StringObj{value: r}} -> (l <> r) |> StringObj.from()
+        end
+
+      s = Stack.push(s, result_obj)
+
+      vm |> advance() |> with_stack(s) |> run
+    end
+  end
 
   # True
   defp run_op(<<7::8>>, %VM{stack: stack} = vm),
