@@ -196,4 +196,15 @@ defmodule CompilerTest do
     ]
     |> Enum.map(&compiler_test/1)
   end
+
+  test "string literals" do
+    [
+      {~S("monkey"), ["monkey"],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:pop, []),
+       ]},
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
 end

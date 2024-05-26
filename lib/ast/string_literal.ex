@@ -6,6 +6,7 @@ defmodule Monkex.AST.StringLiteral do
   alias Monkex.AST.Expression
   alias Monkex.Object
   alias Monkex.Object.Node
+  alias Monkex.Compiler
 
   @enforce_keys [:token, :value]
   defstruct [:token, :value]
@@ -19,7 +20,11 @@ defmodule Monkex.AST.StringLiteral do
   end
 
   defimpl Node, for: StringLiteral do
-    def compile(_node, compiler), do: compiler
+    def compile(%StringLiteral{value: value}, compiler) do
+      {next, pointer} = compiler |> Compiler.with_constant(Object.String.from(value))
+      {final, _} = Compiler.emit(next, :constant, [pointer])
+      {:ok, final}
+    end
     def eval(%StringLiteral{value: value}, env), do: {Object.String.from(value), env}
   end
 end
