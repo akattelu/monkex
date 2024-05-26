@@ -1,99 +1,3 @@
-defmodule Monkex.VM.Stack do
-  alias __MODULE__
-
-  @moduledoc """
-  Custom implementation of the VMs stack
-  Uses a backing map instead of a list for constant time operations
-  Also does not delete keys of elements that are popped, instead uses a stack pointer to keep track of the top
-  """
-
-  @enforce_keys [:store, :sp]
-  defstruct [:store, :sp]
-
-  @type t() :: %Stack{}
-
-  @spec new() :: t()
-  # start at -1 so pushing points to a valid element
-  def new(), do: %Stack{store: %{}, sp: -1}
-
-  @spec top(t()) :: any()
-  def top(%Stack{store: store, sp: sp}), do: Map.get(store, sp, nil)
-
-  @spec push(t(), any()) :: t()
-  def push(%Stack{store: store, sp: sp}, obj) do
-    %Stack{
-      store: Map.put(store, sp + 1, obj),
-      sp: sp + 1
-    }
-  end
-
-  @spec pop(t()) :: {t(), any()}
-  def pop(%Stack{store: store, sp: sp}) do
-    {
-      %Stack{store: store, sp: sp - 1},
-      Map.get(store, sp, nil)
-    }
-  end
-
-  @spec last_popped(t()) :: any()
-  def last_popped(%Stack{store: store, sp: sp}) do
-    Map.get(store, sp + 1, nil)
-  end
-end
-
-defmodule Monkex.VM.InstructionSet do
-  alias __MODULE__
-  alias Monkex.Instructions
-
-  @moduledoc """
-  Wrapper around `Instructions` that preserves the initial set of instructions
-  Allows retrieving the head and tail of the instruction set
-  Supports moving an instruction pointer for jump opcodes
-  """
-
-  @enforce_keys [:ip, :instructions]
-  defstruct [:ip, :instructions]
-
-  @type t() :: %InstructionSet{}
-
-  @doc "Create a new instruction set from instructions"
-  @spec new(Instructions.t()) :: t()
-  def new(%Instructions{} = i) do
-    %InstructionSet{
-      instructions: i,
-      ip: 0
-    }
-  end
-
-  @doc "Read n_bytes from the instructions at the instruction pointer"
-  @spec read(t(), integer()) :: binary()
-  def read(%InstructionSet{instructions: %Instructions{raw: raw}, ip: ip}, n_bytes \\ 1) do
-    if ip + n_bytes > byte_size(raw) do
-      <<>>
-    else
-      binary_part(raw, ip, n_bytes)
-    end
-  end
-
-  @doc "Advance the instruction pointer by n bytes"
-  @spec advance(t(), integer()) :: t()
-  def advance(%InstructionSet{ip: ip} = i, n_bytes \\ 1) do
-    %InstructionSet{
-      i
-      | ip: ip + n_bytes
-    }
-  end
-
-  @doc "Advance the instruction pointer to pos"
-  @spec jump(t(), integer()) :: t()
-  def jump(set, pos) do
-    %InstructionSet{
-      set
-      | ip: pos
-    }
-  end
-end
-
 defmodule Monkex.VM do
   alias __MODULE__
   alias Monkex.Object.Boolean
@@ -106,8 +10,8 @@ defmodule Monkex.VM do
   @moduledoc """
   VM for running bytecode generated from compiler
   """
-  @enforce_keys [:constants, :instructions, :stack]
-  defstruct [:constants, :instructions, :stack]
+  @enforce_keys [:constants, :instructions, :stack, :globals]
+  defstruct [:constants, :instructions, :stack, :globals]
 
   @type t() :: %VM{}
 
@@ -128,7 +32,8 @@ defmodule Monkex.VM do
     %VM{
       constants: constants,
       instructions: InstructionSet.new(instructions),
-      stack: Stack.new()
+      stack: Stack.new(),
+      globals: []
     }
   end
 
