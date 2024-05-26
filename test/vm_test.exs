@@ -3,15 +3,25 @@ defmodule VMTest do
   alias Monkex.Parser
   alias Monkex.Compiler
   alias Monkex.Object.Null
+  alias Monkex.Object.Array
   alias Monkex.VM
   use ExUnit.Case, async: true
 
+  def test_literal({actual, nil}) do
+    assert actual == Null.object()
+  end
+
+  def test_literal({%Array{items: [ah | at]}, [eh | et]}) do
+    test_literal({ah, eh})
+    test_literal({%Array{items: at}, et})
+  end
+
+  def test_literal({%Array{items: []}, []}) do
+    assert [] == []
+  end
+
   def test_literal({actual, expected}) do
-    if expected == nil do
-      assert actual == Null.object()
-    else
-      assert actual.value == expected
-    end
+    assert actual.value == expected
   end
 
   def vm_test({input, expected}) do
@@ -118,6 +128,15 @@ defmodule VMTest do
       {~S("monkey"), "monkey"},
       {~S("mon"+"key"), "monkey"},
       {~S("mon" + "key" + "banana"), "monkeybanana"}
+    ]
+    |> Enum.map(&vm_test/1)
+  end
+
+  test "array literals" do
+    [
+      {"[]", []},
+      {"[1, 2, 3]", [1, 2, 3]},
+      {"[1 + 2, 3 * 4, 5 + 6]", [3, 12, 11]}
     ]
     |> Enum.map(&vm_test/1)
   end

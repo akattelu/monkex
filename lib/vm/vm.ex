@@ -1,9 +1,14 @@
 defmodule Monkex.VM do
   alias __MODULE__
-  alias Monkex.Object.Boolean
-  alias Monkex.Object.Integer
+
+  alias Monkex.Object.{
+    Boolean,
+    Integer,
+    Array,
+    Null
+  }
+
   alias Monkex.Object.String, as: StringObj
-  alias Monkex.Object.Null
   alias Monkex.Compiler.Bytecode
   alias Monkex.VM.Stack
   alias Monkex.VM.InstructionSet
@@ -235,6 +240,18 @@ defmodule Monkex.VM do
 
     {:ok, obj} = ArrayList.at(globals, global_idx)
     s = Stack.push(stack, obj)
+    vm |> advance(3) |> with_stack(s) |> run
+  end
+
+  # Array
+  defp run_op(<<19::8>>, %VM{instructions: iset, stack: stack} = vm) do
+    <<array_items::big-integer-size(2)-unit(8), _::binary>> =
+      iset |> InstructionSet.advance() |> InstructionSet.read(2)
+
+    {s, items} = Stack.take(stack, array_items)
+    array_obj = Array.from(items)
+    s = Stack.push(s, array_obj)
+
     vm |> advance(3) |> with_stack(s) |> run
   end
 

@@ -28,6 +28,8 @@ defmodule Monkex.VM.Stack do
   end
 
   @spec pop(t()) :: {t(), any()}
+  def pop(%Stack{sp: -1} = s), do: {s, nil}
+
   def pop(%Stack{store: store, sp: sp}) do
     {
       %Stack{store: store, sp: sp - 1},
@@ -38,5 +40,16 @@ defmodule Monkex.VM.Stack do
   @spec last_popped(t()) :: any()
   def last_popped(%Stack{store: store, sp: sp}) do
     Map.get(store, sp + 1, nil)
+  end
+
+  @doc "Take n elements from the top of the stack in reverse-order"
+  @spec take(Stack.t(), integer()) :: {t(), [any()]}
+  def take(stack, 0), do: {stack, []}
+
+  def take(stack, n) do
+    Enum.reduce(1..n, {stack, []}, fn _, {acc_stack, acc_arr} ->
+      {s, item} = Stack.pop(acc_stack)
+      {s, [item | acc_arr]}
+    end)
   end
 end
