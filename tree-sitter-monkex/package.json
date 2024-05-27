@@ -8,6 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "gen": "tree-sitter generate --no-bindings",
     "parse-example": "TREE_SITTER_DEBUG=1 tree-sitter parse ../examples/*.mx",
+    "highlight": "tree-sitter highlight cube.mx",
     "install": "node-gyp-build",
     "prebuildify": "prebuildify --napi --strip"
   },
@@ -39,7 +40,9 @@
   "tree-sitter": [
     {
       "scope": "source.monkex",
-      "injection-regex": "^monkex$"
+      "file-types": [
+        "mx"
+      ]
     }
   ]
 }

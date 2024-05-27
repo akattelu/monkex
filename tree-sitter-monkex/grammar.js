@@ -55,7 +55,7 @@ module.exports = grammar({
     prefix_expression: $ => prec.left(3, seq(choice('-', '!'), $._expression)),
     let_statement: $ => seq(
       'let',
-      $.identifier,
+      field('name', $.identifier),
       '=',
       $._expression,
     ),
@@ -74,7 +74,7 @@ module.exports = grammar({
     function_definition: $ => seq(
       'fn',
       '(',
-      optional(sepBy(',', $.identifier)),
+      field('parameters', optional(sepBy(',', $.identifier))),
       ')',
       '{',
       repeat($._statement),
@@ -84,7 +84,7 @@ module.exports = grammar({
     function_call: $ => prec.left(5, seq(
       $._expression,
       '(',
-      optional(sepBy(',', $._expression)),
+      field('arguments', optional(sepBy(',', $._expression))),
       ')'
     )),
 
@@ -113,9 +113,9 @@ module.exports = grammar({
     ),
 
     key_value_pair: $ => seq(
-      $._expression,
+      field('key', $._expression),
       ':',
-      $._expression
+      field('value', $._expression)
     ),
 
     number: $ => /\d+/,
