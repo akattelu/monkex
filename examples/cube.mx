@@ -51,7 +51,7 @@ let stringSplit = fn (str, delim) {
 
 let map = fn (arr, f) {
 	if (len(arr) == 0) { return arr; }
-	if (len(arr) == 1) { return [f(arr[0])] };
+	if (len(arr) == 1) { return [f(arr[0])]; };
 	cons(map(tail(arr), f), f(head(arr)));
 };
 
