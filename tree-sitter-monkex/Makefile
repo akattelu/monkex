@@ -1,6 +1,6 @@
 VERSION := 0.0.1
 
-LANGUAGE_NAME := tree-sitter-monkex
+LANGUAGE_NAME := monkex
 
 # repository
 SRC_DIR := src
