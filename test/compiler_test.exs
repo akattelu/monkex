@@ -4,6 +4,7 @@ defmodule CompilerTest do
   alias Monkex.Lexer
   alias Monkex.Opcode
   alias Monkex.Instructions
+  alias Monkex.Object.CompiledFunction
 
   use ExUnit.Case, async: true
 
@@ -13,6 +14,14 @@ defmodule CompilerTest do
   end
 
   def assert_constants([], []), do: nil
+
+  def assert_constants(
+        [%CompiledFunction{instructions: %Instructions{raw: actual_raw}} | objects],
+        [%Instructions{raw: expect_raw} | rest]
+      ) do
+    assert actual_raw == expect_raw
+    assert_constants(objects, rest)
+  end
 
   def assert_constants([actual | objects], [expected | rest]) do
     assert actual.value == expected
@@ -306,6 +315,27 @@ defmodule CompilerTest do
          Opcode.make(:constant, [3]),
          Opcode.make(:sub, []),
          Opcode.make(:index, []),
+         Opcode.make(:pop, [])
+       ]}
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
+
+  test "" do
+    [
+      {"fn() { return 5 + 10; }",
+       [
+         5,
+         10,
+         Instructions.merge([
+           Opcode.make(:constant, [0]),
+           Opcode.make(:constant, [1]),
+           Opcode.make(:add, []),
+           Opcode.make(:return_value, [])
+         ])
+       ],
+       [
+         Opcode.make(:constant, [2]),
          Opcode.make(:pop, [])
        ]}
     ]

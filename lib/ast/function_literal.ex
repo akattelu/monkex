@@ -24,7 +24,9 @@ defmodule Monkex.AST.FunctionLiteral do
   end
 
   defimpl Node, for: FunctionLiteral do
-    def compile(_node, compiler), do: compiler
+    def compile(%FunctionLiteral{}, compiler) do
+      {:ok, compiler}
+    end
 
     def eval(%FunctionLiteral{params: params, body: body}, env) do
       {Function.new(params, body, env), env}
