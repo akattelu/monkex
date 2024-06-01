@@ -77,7 +77,10 @@ defmodule Monkex.Opcode do
         :get_global => %Definition{name: "OpGetGlobal", opcode: <<18::8>>, operand_widths: [2]},
         :array => %Definition{name: "OpArray", opcode: <<19::8>>, operand_widths: [2]},
         :hash => %Definition{name: "OpHash", opcode: <<20::8>>, operand_widths: [2]},
-        :index => %Definition{name: "OpIndex", opcode: <<21::8>>, operand_widths: []}
+        :index => %Definition{name: "OpIndex", opcode: <<21::8>>, operand_widths: []},
+        :call => %Definition{name: "OpCall", opcode: <<22::8>>, operand_widths: []},
+        :return_value => %Definition{name: "OpReturnValue", opcode: <<23::8>>, operand_widths: []},
+        :return => %Definition{name: "OpReturn", opcode: <<24::8>>, operand_widths: []}
       }
     end
   end
