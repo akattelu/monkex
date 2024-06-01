@@ -1,4 +1,4 @@
-defmodule Monkex.VM.Stack do
+defmodule Monkex.Container.Stack do
   alias __MODULE__
 
   @moduledoc """

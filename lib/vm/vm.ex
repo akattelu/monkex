@@ -11,9 +11,8 @@ defmodule Monkex.VM do
 
   alias Monkex.Object.String, as: StringObj
   alias Monkex.Compiler.Bytecode
-  alias Monkex.VM.Stack
+  alias Monkex.Container.{ArrayList, Stack}
   alias Monkex.VM.InstructionSet
-  alias Monkex.VM.ArrayList
 
   @moduledoc """
   VM for running bytecode generated from compiler

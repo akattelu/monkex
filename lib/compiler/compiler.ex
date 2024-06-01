@@ -38,7 +38,8 @@ defmodule Monkex.Compiler do
     %Compiler{
       instructions: Instructions.new(),
       constants: [],
-      symbols: SymbolTable.new()
+      symbols: SymbolTable.new(),
+      scopes: []
     }
   end
 
@@ -124,16 +125,16 @@ defmodule Monkex.Compiler do
   """
   @spec enter_scope(t()) :: t()
   def enter_scope(c) do
-
+    c
   end
 
   @doc """
   End tracking of the current scope
   Return the bytecode instructions from the ended scope
   """
-  @spec leave_scope(c) :: {t(), Instructions.t()}
-  def leave_scope() do
-
+  @spec leave_scope(t()) :: {t(), Instructions.t()}
+  def leave_scope(c) do
+    {c, nil}
   end
 
   @doc "Retrieve the byte length of the instructions inside the compiler"

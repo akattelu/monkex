@@ -1,6 +1,6 @@
 defmodule ArrayListTest do
   use ExUnit.Case, async: true
-  import Monkex.VM.ArrayList
+  import Monkex.Container.ArrayList
 
   test "basic operations" do
     table = new()

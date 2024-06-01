@@ -1,4 +1,4 @@
-defmodule Monkex.VM.ArrayList do
+defmodule Monkex.Container.ArrayList do
   alias __MODULE__
 
   @moduledoc """

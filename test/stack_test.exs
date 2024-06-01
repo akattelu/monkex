@@ -1,8 +1,8 @@
 defmodule StackTest do
   use ExUnit.Case, async: true
-  import Monkex.VM.Stack
+  import Monkex.Container.Stack
 
-  test ~c"basic operations" do
+  test "basic operations" do
     s = new()
     pushed = s |> push(1) |> push(2) |> push(3)
 
