@@ -29,8 +29,8 @@ defmodule Monkex.Compiler do
 
   # instructions is a byte array
   # constants is a list of objects
-  @enforce_keys [:instructions, :constants, :symbols]
-  defstruct [:instructions, :constants, :symbols]
+  @enforce_keys [:instructions, :constants, :symbols, :scopes]
+  defstruct [:instructions, :constants, :symbols, :scopes]
 
   @doc "Create a new empty Compiler struct"
   @spec new() :: t()
@@ -115,6 +115,25 @@ defmodule Monkex.Compiler do
       c
       | instructions: Instructions.replace_at(instr, pos, sub)
     }
+  end
+
+
+  @doc """
+  Track a new set of bytecode instructions on a stack of scopes
+  Use `leave_scope` to return to the prior scope
+  """
+  @spec enter_scope(t()) :: t()
+  def enter_scope(c) do
+
+  end
+
+  @doc """
+  End tracking of the current scope
+  Return the bytecode instructions from the ended scope
+  """
+  @spec leave_scope(c) :: {t(), Instructions.t()}
+  def leave_scope() do
+
   end
 
   @doc "Retrieve the byte length of the instructions inside the compiler"

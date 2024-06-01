@@ -264,3 +264,18 @@ defmodule Monkex.Object.Builtin do
   def last([%Array{} = arr | _]), do: Array.last(arr)
   def cons([%Array{} = arr | [obj | _]]), do: Array.cons(arr, obj)
 end
+
+defmodule Monkex.Object.CompiledFunction do
+  @moduledoc "Object representation of a compiled function"
+  alias __MODULE__
+  alias Monkex.Instructions
+
+  @enforce_keys [:instructions]
+  defstruct [:instructions]
+
+  @type t() :: %CompiledFunction{}
+
+  @spec from(Instructions.t()) :: t()
+  def from(instructions), do: %CompiledFunction{instructions: instructions}
+end
+
