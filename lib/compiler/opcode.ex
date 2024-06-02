@@ -83,7 +83,7 @@ defmodule Monkex.Opcode do
         :array => %Definition{name: "OpArray", opcode: <<19::8>>, operand_widths: [2]},
         :hash => %Definition{name: "OpHash", opcode: <<20::8>>, operand_widths: [2]},
         :index => %Definition{name: "OpIndex", opcode: <<21::8>>, operand_widths: []},
-        :call => %Definition{name: "OpCall", opcode: <<22::8>>, operand_widths: []},
+        :call => %Definition{name: "OpCall", opcode: <<22::8>>, operand_widths: [1]},
         :return_value => %Definition{name: "OpReturnValue", opcode: <<23::8>>, operand_widths: []},
         :return => %Definition{name: "OpReturn", opcode: <<24::8>>, operand_widths: []},
         :set_local => %Definition{name: "OpSetLocal", opcode: <<25::8>>, operand_widths: [1]},

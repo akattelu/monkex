@@ -74,13 +74,17 @@ defmodule OpcodeTest do
           Code.make(:add, []),
           Code.make(:get_local, [1]),
           Code.make(:constant, [2]),
-          Code.make(:constant, [255])
+          Code.make(:constant, [255]),
+          Code.make(:call, [3]),
+          Code.make(:add, [])
         ],
         """
         0000 OpAdd
         0001 OpGetLocal 1
         0003 OpConstant 2
         0006 OpConstant 255
+        0009 OpCall 3
+        0011 OpAdd
         """
       }
     ]
@@ -123,7 +127,7 @@ defmodule OpcodeTest do
       {:array, [65_534], <<19::8, 255::8, 254::8>>},
       {:hash, [65_534], <<20::8, 255::8, 254::8>>},
       {:index, [], <<21::8>>},
-      {:call, [], <<22::8>>},
+      {:call, [255], <<22::8, 255::8>>},
       {:return_value, [], <<23::8>>},
       {:return, [], <<24::8>>},
       {:set_local, [255], <<25::8, 255::8>>},

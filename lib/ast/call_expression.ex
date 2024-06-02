@@ -32,7 +32,7 @@ defmodule Monkex.AST.CallExpression do
   defimpl Node, for: CallExpression do
     def compile(%CallExpression{function: func, arguments: _args}, compiler) do
       {:ok, c} = Node.compile(func, compiler)
-      {c, _} = Compiler.emit(c, :call, [])
+      {c, _} = Compiler.emit(c, :call, [0])
       {:ok, c}
     end
 

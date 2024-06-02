@@ -402,7 +402,7 @@ defmodule CompilerTest do
        ],
        [
          Opcode.make(:constant, [1]),
-         Opcode.make(:call, []),
+         Opcode.make(:call, [0]),
          Opcode.make(:pop, [])
        ]},
       {"let noArg = fn() { 24 }; noArg();",
@@ -417,7 +417,7 @@ defmodule CompilerTest do
          Opcode.make(:constant, [1]),
          Opcode.make(:set_global, [0]),
          Opcode.make(:get_global, [0]),
-         Opcode.make(:call, []),
+         Opcode.make(:call, [0]),
          Opcode.make(:pop, [])
        ]},
       {"fn() { }",

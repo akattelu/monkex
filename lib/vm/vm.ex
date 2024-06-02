@@ -336,9 +336,15 @@ defmodule Monkex.VM do
   end
 
   # Call
-  defp run_op(<<22::8>>, %VM{stack: stack, frames: frames} = vm) do
+  defp run_op(<<22::8>>, %VM{stack: stack} = vm) do
+    <<_num_args::big-integer-size(1)-unit(8), _::binary>> =
+      vm |> instructions |> InstructionSet.advance() |> InstructionSet.read(1)
+
     {s, %CompiledFunction{instructions: instructions, num_locals: num_locals}} = Stack.pop(stack)
-    frames = Stack.push(frames, InstructionSet.new(instructions, Stack.sp(stack)))
+    # advance past the num_args before pushing stack frame
+    %VM{frames: after_skip_arg_instr} = vm |> advance
+
+    frames = Stack.push(after_skip_arg_instr, InstructionSet.new(instructions, Stack.sp(stack)))
     next_stack = Stack.make_space(s, num_locals)
     vm |> with_stack(next_stack) |> with_frames(frames) |> run
   end
