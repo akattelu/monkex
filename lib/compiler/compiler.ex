@@ -5,6 +5,7 @@ defmodule Monkex.Compiler do
   alias Monkex.Instructions
   alias Monkex.SymbolTable
   alias Monkex.Symbol
+  alias Monkex.Container.ArrayList
 
   @moduledoc """
   MonkEx Compiler
@@ -27,19 +28,18 @@ defmodule Monkex.Compiler do
     @type t() :: %Bytecode{}
   end
 
-  # instructions is a byte array
   # constants is a list of objects
-  @enforce_keys [:instructions, :constants, :symbols, :scopes]
-  defstruct [:instructions, :constants, :symbols, :scopes]
+  # scopes is an arraylist of instructions
+  @enforce_keys [:constants, :symbols, :scopes]
+  defstruct [:constants, :symbols, :scopes]
 
   @doc "Create a new empty Compiler struct"
   @spec new() :: t()
   def new() do
     %Compiler{
-      instructions: Instructions.new(),
       constants: [],
       symbols: SymbolTable.new(),
-      scopes: []
+      scopes: ArrayList.new([Instructions.new()])
     }
   end
 
@@ -49,11 +49,18 @@ defmodule Monkex.Compiler do
     Node.compile(node, compiler)
   end
 
+  @doc "Gets the instructions associated with the top scope in the compiler"
+  @spec current_instructions(t()) :: Instructions.t()
+  def current_instructions(%Compiler{scopes: scopes}) do
+    {:ok, instructions} = ArrayList.last(scopes)
+    instructions
+  end
+
   @doc "Retrieve the bytecode from the current state of the Compiler"
   @spec bytecode(t()) :: Bytecode.t()
-  def bytecode(%Compiler{instructions: i, constants: c}) do
+  def bytecode(%Compiler{constants: c} = compiler) do
     %Bytecode{
-      instructions: i,
+      instructions: current_instructions(compiler),
       constants: c
     }
   end
@@ -69,10 +76,13 @@ defmodule Monkex.Compiler do
 
   @doc "Add an instruction to the Compiler state and return the new Compiler with the total length"
   @spec with_instruction(t(), Instructions.t()) :: {t(), integer()}
-  def with_instruction(%Compiler{instructions: instructions} = compiler, instruction) do
+  def with_instruction(%Compiler{scopes: scopes} = compiler, instruction) do
+    instructions = current_instructions(compiler)
+    new_scopes = ArrayList.set_last(scopes, Instructions.concat(instruction, instructions))
+
     {%Compiler{
        compiler
-       | instructions: Instructions.concat(instruction, instructions)
+       | scopes: new_scopes
      }, Instructions.length(instructions)}
   end
 
@@ -104,28 +114,31 @@ defmodule Monkex.Compiler do
   Uses the type passed in to determine the length of the instruction to be trimmed
   """
   @spec without_last_instruction(t(), atom()) :: t()
-  def without_last_instruction(%Compiler{instructions: instructions} = c, opcode) do
+  def without_last_instruction(%Compiler{scopes: scopes} = c, opcode) do
     size = Opcode.Definition.oplength(opcode)
-    %Compiler{c | instructions: Instructions.trim(instructions, size)}
+    new_scopes = ArrayList.set_last(scopes, c |> current_instructions |> Instructions.trim(size))
+    %Compiler{c | scopes: new_scopes}
   end
 
   @doc "Return a compiler with instructions subsituted at the specified position"
   @spec with_replaced_instruction(t(), integer(), Instructions.t()) :: t()
-  def with_replaced_instruction(%Compiler{instructions: instr} = c, pos, sub) do
-    %Compiler{
-      c
-      | instructions: Instructions.replace_at(instr, pos, sub)
-    }
-  end
+  def with_replaced_instruction(%Compiler{scopes: scopes} = c, pos, sub) do
+    instructions = current_instructions(c)
+    new_scopes = ArrayList.set_last(scopes, Instructions.replace_at(instructions, pos, sub))
 
+    %Compiler{c | scopes: new_scopes}
+  end
 
   @doc """
   Track a new set of bytecode instructions on a stack of scopes
   Use `leave_scope` to return to the prior scope
   """
   @spec enter_scope(t()) :: t()
-  def enter_scope(c) do
-    c
+  def enter_scope(%Compiler{scopes: scopes} = c) do
+    %Compiler{
+      c
+      | scopes: ArrayList.push(scopes, Instructions.new())
+    }
   end
 
   @doc """
@@ -133,12 +146,20 @@ defmodule Monkex.Compiler do
   Return the bytecode instructions from the ended scope
   """
   @spec leave_scope(t()) :: {t(), Instructions.t()}
-  def leave_scope(c) do
-    {c, nil}
+  def leave_scope(%Compiler{scopes: scopes} = c) do
+    {new_scopes, instructions} = ArrayList.pop(scopes)
+
+    {
+      %Compiler{
+        c
+        | scopes: new_scopes
+      },
+      instructions
+    }
   end
 
   @doc "Retrieve the byte length of the instructions inside the compiler"
   @spec instructions_length(t()) :: integer()
-  def instructions_length(%Compiler{instructions: instructions}),
-    do: Instructions.length(instructions)
+  def instructions_length(c),
+    do: c |> current_instructions |> Instructions.length()
 end

@@ -5,6 +5,7 @@ defmodule CompilerTest do
   alias Monkex.Opcode
   alias Monkex.Instructions
   alias Monkex.Object.CompiledFunction
+  alias Monkex.Container.ArrayList
 
   use ExUnit.Case, async: true
 
@@ -321,7 +322,7 @@ defmodule CompilerTest do
     |> Enum.map(&compiler_test/1)
   end
 
-  test "" do
+  test "function literal" do
     [
       {"fn() { return 5 + 10; }",
        [
@@ -340,5 +341,24 @@ defmodule CompilerTest do
        ]}
     ]
     |> Enum.map(&compiler_test/1)
+  end
+
+  test "compiler scopes" do
+    c = Compiler.new()
+    assert ArrayList.size(c.scopes) == 1
+
+    {c, _} = Compiler.emit(c, :mul, [])
+    c = Compiler.enter_scope(c)
+    assert ArrayList.size(c.scopes) == 2
+
+    {c, _ } = Compiler.emit(c, :sub, [])
+    {c, _ } = Compiler.emit(c, :div, [])
+    assert Compiler.instructions_length(c) == 2
+
+    {c, _} = Compiler.leave_scope(c)
+
+    {c, _ } = Compiler.emit(c, :add, [])
+    assert Compiler.instructions_length(c) == 2
+
   end
 end

@@ -29,4 +29,13 @@ defmodule ArrayListTest do
     assert small |> at(0) == {:ok, 2}
     assert size(small) == 1
   end
+
+  test "last" do
+    assert new() |> push(1) |> push(2) |> push(3) |> last() == {:ok, 3}
+    assert new() |> last() == :undefined
+    assert new() |> push(1) |> push(2) |> push(3) |> set_last(5) |> last() == {:ok, 5}
+    {after_pop, item} = new() |> push(1) |> push(2) |> pop
+    assert item == 2
+    assert last(after_pop) == {:ok, 1}
+  end
 end

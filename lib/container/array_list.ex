@@ -30,6 +30,12 @@ defmodule Monkex.Container.ArrayList do
     end
   end
 
+  @doc "Return the last element in the ArrayList"
+  @spec last(t()) :: {:ok, any()} | :undefined
+  def last(%ArrayList{num_slots: num_slots} = arr) do
+    at(arr, num_slots - 1)
+  end
+
   @doc "Return the number of slots in the ArrayList"
   @spec size(t()) :: integer()
   def size(%ArrayList{num_slots: num}), do: num
@@ -44,13 +50,33 @@ defmodule Monkex.Container.ArrayList do
   end
 
   @doc "Set the value of the ArrayList at the specified index and create a new slot if it does not exist"
-  @spec set(t(), integer(), integer()) :: t()
+  @spec set(t(), integer(), any()) :: t()
   def set(%ArrayList{store: store, num_slots: num_slots}, idx, value) do
     new_size = Enum.max([num_slots, idx])
 
     %ArrayList{
       store: Map.put(store, idx, value),
       num_slots: new_size
+    }
+  end
+
+  @doc "Overwrite the last element of the list"
+  @spec set_last(t(), any()) :: t()
+  def set_last(%ArrayList{num_slots: num_slots} = arr, item) do
+    set(arr, num_slots - 1, item)
+  end
+
+  @doc "Remove the last element of the ArrayList and return the modified ArrayList and the item"
+  @spec pop(t()) :: {t(), any()}
+  def pop(%ArrayList{store: store, num_slots: num_slots} = arr) do
+    {:ok, item} = last(arr)
+
+    {
+      %ArrayList{
+        store: Map.delete(store, num_slots - 1),
+        num_slots: num_slots - 1
+      },
+      item
     }
   end
 end
