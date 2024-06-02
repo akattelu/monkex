@@ -17,8 +17,8 @@ defmodule Monkex.VM do
   @moduledoc """
   VM for running bytecode generated from compiler
   """
-  @enforce_keys [:constants, :instructions, :stack, :globals]
-  defstruct [:constants, :instructions, :stack, :globals]
+  @enforce_keys [:constants, :stack, :globals, :frames]
+  defstruct [:constants, :stack, :globals, :frames]
 
   @type t() :: %VM{}
 
@@ -37,19 +37,39 @@ defmodule Monkex.VM do
   def new(%Bytecode{constants: constants, instructions: instructions}) do
     %VM{
       constants: ArrayList.new(constants),
-      instructions: InstructionSet.new(instructions),
       stack: Stack.new(),
-      globals: ArrayList.new()
+      globals: ArrayList.new(),
+      frames: Stack.new() |> Stack.push(InstructionSet.new(instructions))
     }
+  end
+
+  @doc "Return a new VM with the frame on the top of the stack replaced"
+  @spec replace_top_frame(t(), InstructionSet.t()) :: t()
+  def replace_top_frame(%VM{frames: frames} = vm, iset) do
+    {f, _} = Stack.pop(frames)
+    new_frames = Stack.push(f, iset)
+
+    %VM{
+      vm
+      | frames: new_frames
+    }
+  end
+
+  @doc "Retrieve the instructions associated with the top stack frame"
+  @spec instructions(t()) :: InstructionSet.t()
+  def instructions(%VM{frames: frames}) do
+    Stack.top(frames)
   end
 
   @doc "Return the VM with instruction pointer incremented by n_bytes"
   @spec advance(t(), integer()) :: t()
-  def advance(%VM{instructions: iset} = vm, n_bytes \\ 1) do
-    %VM{
-      vm
-      | instructions: iset |> InstructionSet.advance(n_bytes)
-    }
+  def advance(%VM{frames: frames} = vm, n_bytes \\ 1) do
+    frame =
+      frames
+      |> Stack.top()
+      |> InstructionSet.advance(n_bytes)
+
+    vm |> replace_top_frame(frame)
   end
 
   @doc "Return the VM with instruction pointer incremented by n_bytes"
@@ -59,6 +79,12 @@ defmodule Monkex.VM do
       vm
       | stack: stack
     }
+  end
+
+  @doc "Return the VM with the stack frames updated"
+  @spec with_frames(t(), Stack.t()) :: t()
+  def with_frames(vm, frames) do
+    %VM{vm | frames: frames}
   end
 
   @doc "Return the VM with the set of globals updated"
@@ -72,23 +98,22 @@ defmodule Monkex.VM do
 
   @doc "Return the VM with instruction pointer jumped to the position"
   @spec jump(t(), integer()) :: t()
-  def jump(%VM{instructions: iset} = vm, pos) do
-    %VM{
-      vm
-      | instructions: iset |> InstructionSet.jump(pos)
-    }
+  def jump(%VM{} = vm, pos) do
+    frame = vm |> instructions |> InstructionSet.jump(pos)
+    vm |> replace_top_frame(frame)
   end
 
   def stack_last_top(%VM{stack: s}), do: Stack.last_popped(s)
   def stack_top(%VM{stack: s}), do: Stack.top(s)
 
-  def type_check(%Integer{}, %Integer{}), do: :ok
-  def type_check(%Boolean{}, %Boolean{}), do: :ok
-  def type_check(%StringObj{}, %StringObj{}), do: :ok
-  def type_check(_, _), do: {:error, "type mismatch"}
+  defp type_check(%Integer{}, %Integer{}), do: :ok
+  defp type_check(%Boolean{}, %Boolean{}), do: :ok
+  defp type_check(%StringObj{}, %StringObj{}), do: :ok
+  defp type_check(_, _), do: {:error, "type mismatch"}
 
   @doc "Execute all instructions in the VM"
-  def run(%VM{instructions: iset} = vm) do
+  def run(%VM{} = vm) do
+    iset = vm |> instructions
     opcode = InstructionSet.read(iset)
     run_op(opcode, vm)
   end
@@ -117,7 +142,8 @@ defmodule Monkex.VM do
   end
 
   # Constant
-  defp run_op(<<1::8>>, %VM{instructions: iset, stack: stack, constants: constants} = vm) do
+  defp run_op(<<1::8>>, %VM{stack: stack, constants: constants} = vm) do
+    iset = vm |> instructions
     <<int::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -192,7 +218,8 @@ defmodule Monkex.VM do
   end
 
   # Jump not truthy
-  defp run_op(<<14::8>>, %VM{stack: stack, instructions: iset} = vm) do
+  defp run_op(<<14::8>>, %VM{stack: stack} = vm) do
+    iset = vm |> instructions
     {s, should_not_jump_val} = Stack.pop(stack)
 
     <<jump_pos::big-integer-size(2)-unit(8), _::binary>> =
@@ -211,7 +238,8 @@ defmodule Monkex.VM do
   end
 
   # Jump unconditionally
-  defp run_op(<<15::8>>, %VM{instructions: iset} = vm) do
+  defp run_op(<<15::8>>, %VM{} = vm) do
+    iset = vm |> instructions
     <<jump_pos::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -224,7 +252,8 @@ defmodule Monkex.VM do
   end
 
   # Set global
-  defp run_op(<<17::8>>, %VM{instructions: iset, stack: stack, globals: globals} = vm) do
+  defp run_op(<<17::8>>, %VM{stack: stack, globals: globals} = vm) do
+    iset = vm |> instructions
     <<global_idx::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -234,8 +263,9 @@ defmodule Monkex.VM do
   end
 
   # Get global
-  defp run_op(<<18::8>>, %VM{instructions: iset, stack: stack, globals: globals} = vm) do
-    <<global_idx::big-integer-size(2)-unit(8), _::binary>> =
+  defp run_op(<<18::8>>, %VM{stack: stack, globals: globals} = vm) do
+    iset = vm |> instructions
+     <<global_idx::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
     {:ok, obj} = ArrayList.at(globals, global_idx)
@@ -244,7 +274,8 @@ defmodule Monkex.VM do
   end
 
   # Array
-  defp run_op(<<19::8>>, %VM{instructions: iset, stack: stack} = vm) do
+  defp run_op(<<19::8>>, %VM{stack: stack} = vm) do
+    iset = vm |> instructions
     <<array_items::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -256,7 +287,8 @@ defmodule Monkex.VM do
   end
 
   # Hash
-  defp run_op(<<20::8>>, %VM{instructions: iset, stack: stack} = vm) do
+  defp run_op(<<20::8>>, %VM{stack: stack} = vm) do
+    iset = vm |> instructions
     <<hash_items::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
