@@ -337,24 +337,55 @@ defmodule Monkex.VM do
 
   # Call
   defp run_op(<<22::8>>, %VM{stack: stack, frames: frames} = vm) do
-    {s, %CompiledFunction{instructions: instructions}} = Stack.pop(stack)
-    frames = Stack.push(frames, InstructionSet.new(instructions))
-    vm |> with_stack(s) |> with_frames(frames) |> run
+    {s, %CompiledFunction{instructions: instructions, num_locals: num_locals}} = Stack.pop(stack)
+    frames = Stack.push(frames, InstructionSet.new(instructions, Stack.sp(stack)))
+    next_stack = Stack.make_space(s, num_locals)
+    vm |> with_stack(next_stack) |> with_frames(frames) |> run
   end
 
   # Return value
   defp run_op(<<23::8>>, %VM{stack: stack, frames: frames} = vm) do
     {s, ret_val} = Stack.pop(stack)
-    {new_frames, _} = Stack.pop(frames)
-    new_stack = Stack.push(s, ret_val)
+    {new_frames, %InstructionSet{base_pointer: bp}} = Stack.pop(frames)
+    {s, _} = s |> Stack.set_pointer(bp) |> Stack.pop()
+    new_stack = s |> Stack.push(ret_val)
     vm |> with_frames(new_frames) |> advance() |> with_stack(new_stack) |> run
   end
 
   # Return
   defp run_op(<<24::8>>, %VM{frames: frames, stack: stack} = vm) do
-    {new_frames, _} = Stack.pop(frames)
-    new_stack = Stack.push(stack, Null.object())
+    {new_frames, %InstructionSet{base_pointer: bp}} = Stack.pop(frames)
+    {s, _} = stack |> Stack.set_pointer(bp) |> Stack.pop()
+    new_stack = s |> Stack.push(Null.object())
     vm |> with_frames(new_frames) |> advance() |> with_stack(new_stack) |> run
+  end
+
+  # Set local
+  defp run_op(<<25::8>>, %VM{frames: frames, stack: stack} = vm) do
+    iset = vm |> instructions
+
+    <<local_idx::big-integer-size(1)-unit(8), _::binary>> =
+      iset |> InstructionSet.advance() |> InstructionSet.read(1)
+
+    %InstructionSet{base_pointer: bp} = Stack.top(frames)
+    {s, obj} = Stack.pop(stack)
+    with_local_set = Stack.set(s, bp + local_idx, obj)
+
+    vm |> with_stack(with_local_set) |> advance(2) |> run
+  end
+
+  # Get local
+  defp run_op(<<26::8>>, %VM{frames: frames, stack: stack} = vm) do
+    iset = vm |> instructions
+
+    <<local_idx::big-integer-size(1)-unit(8), _::binary>> =
+      iset |> InstructionSet.advance() |> InstructionSet.read(1)
+
+    %InstructionSet{base_pointer: bp} = Stack.top(frames)
+
+    obj = Stack.at(stack, bp + local_idx)
+    s = Stack.push(stack, obj)
+    vm |> with_stack(s) |> advance(2) |> run
   end
 
   defp run_op(<<>>, vm), do: {:ok, vm}

@@ -183,4 +183,8 @@ defmodule Monkex.Compiler do
   @spec instructions_length(t()) :: integer()
   def instructions_length(c),
     do: c |> current_instructions |> Instructions.length()
+
+  @doc "Return the number of symbols tracked by the most recently enclosed symbol table"
+  @spec num_symbols(t()) :: integer()
+  def num_symbols(%Compiler{symbols: symbols}), do: SymbolTable.size(symbols)
 end

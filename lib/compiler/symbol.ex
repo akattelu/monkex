@@ -74,4 +74,8 @@ defmodule Monkex.SymbolTable do
   @doc "Return a symbol table's outer table reference"
   @spec unwrap(t()) :: t() | nil
   def unwrap(%SymbolTable{outer: outer}), do: outer
+
+  @doc "Returns the number of definitions in the symbol table"
+  @spec size(t()) :: integer()
+  def size(%SymbolTable{num_defs: n}), do: n
 end

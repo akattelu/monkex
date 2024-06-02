@@ -16,8 +16,38 @@ defmodule Monkex.Container.Stack do
   # start at -1 so pushing points to a valid element
   def new(), do: %Stack{store: %{}, sp: -1}
 
+  @spec sp(t()) :: integer()
+  def sp(%Stack{sp: sp}), do: sp
+
+  @spec make_space(t(), integer()) :: t()
+  def make_space(%Stack{sp: sp} = s, space \\ 1), do: %Stack{s | sp: sp + space}
+
+  @spec set_pointer(t(), integer()) :: t()
+  def set_pointer(s, new_pointer), do: %Stack{s | sp: new_pointer}
+
   @spec top(t()) :: any()
   def top(%Stack{store: store, sp: sp}), do: Map.get(store, sp, nil)
+
+  @spec set(t(), integer(), any()) :: t()
+  def set(%Stack{store: store, sp: sp} = s, idx, val) do
+    if idx > sp do
+      s
+    else
+      %Stack{
+        s
+        | store: Map.put(store, idx, val)
+      }
+    end
+  end
+
+  @spec at(t(), integer()) :: any()
+  def at(%Stack{store: store, sp: sp}, idx) do
+    if idx > sp do
+      nil
+    else
+      Map.get(store, idx, nil)
+    end
+  end
 
   @spec push(t(), any()) :: t()
   def push(%Stack{store: store, sp: sp}, obj) do

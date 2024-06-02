@@ -6,19 +6,21 @@ defmodule Monkex.VM.InstructionSet do
   Wrapper around `Instructions` that preserves the initial set of instructions
   Allows retrieving the head and tail of the instruction set
   Supports moving an instruction pointer for jump opcodes
+  An InstructionSet is also used as a "stack frame"
   """
 
-  @enforce_keys [:ip, :instructions]
-  defstruct [:ip, :instructions]
+  @enforce_keys [:ip, :instructions, :base_pointer]
+  defstruct [:ip, :instructions, :base_pointer]
 
   @type t() :: %InstructionSet{}
 
   @doc "Create a new instruction set from instructions"
-  @spec new(Instructions.t()) :: t()
-  def new(%Instructions{} = i) do
+  @spec new(Instructions.t(), integer()) :: t()
+  def new(%Instructions{} = i, bp \\ 0) do
     %InstructionSet{
       instructions: i,
-      ip: 0
+      ip: 0,
+      base_pointer: bp
     }
   end
 

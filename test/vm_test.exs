@@ -36,8 +36,10 @@ defmodule VMTest do
     {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
     assert parser.errors == []
     {:ok, compiler} = Compiler.new() |> Compiler.compile(program)
-    {:ok, final} = compiler |> Compiler.bytecode() |> VM.new() |> VM.run()
-    test_literal({VM.stack_last_top(final), expected})
+
+    case compiler |> Compiler.bytecode() |> VM.new() |> VM.run() do
+      {:ok, final} -> test_literal({VM.stack_last_top(final), expected})
+    end
   end
 
   test "integer arithmetic" do
@@ -232,11 +234,62 @@ defmodule VMTest do
       },
       {
         """
-           let returnsOne = fn() { 1; };
+        let returnsOne = fn() { 1; };
         let returnsOneReturner = fn() { returnsOne; };
         returnsOneReturner()();
         """,
         1
+      }
+    ]
+    |> Enum.map(&vm_test/1)
+  end
+
+  test "functions with local and global bindings" do
+    [
+      {
+        """
+        let one = fn() { let one = 1; one };
+        one();
+        """,
+        1
+      },
+      {
+        """
+        let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
+        oneAndTwo();
+        """,
+        3
+      },
+      {
+        """
+        let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
+        let threeAndFour = fn() { let three = 3; let four = 4; three + four; };
+        oneAndTwo() + threeAndFour();
+        """,
+        10
+      },
+      {
+        """
+        let firstFoobar = fn() { let foobar = 50; foobar; };
+        let secondFoobar = fn() { let foobar = 100; foobar; };
+        firstFoobar() + secondFoobar();
+        """,
+        150
+      },
+      {
+        """
+        let globalSeed = 50;
+        let minusOne = fn() {
+            let num = 1;
+            globalSeed - num;
+        }
+        let minusTwo = fn() {
+            let num = 2;
+            globalSeed - num;
+        }
+        minusOne() + minusTwo();
+        """,
+        97
       }
     ]
     |> Enum.map(&vm_test/1)
