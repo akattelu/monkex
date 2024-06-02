@@ -30,9 +30,16 @@ defmodule Monkex.AST.CallExpression do
   end
 
   defimpl Node, for: CallExpression do
-    def compile(%CallExpression{function: func, arguments: _args}, compiler) do
+    def compile(%CallExpression{function: func, arguments: args}, compiler) do
       {:ok, c} = Node.compile(func, compiler)
-      {c, _} = Compiler.emit(c, :call, [0])
+
+      c =
+        Enum.reduce(args, c, fn arg, acc ->
+          {:ok, c} = Node.compile(arg, acc)
+          c
+        end)
+
+      {c, _} = Compiler.emit(c, :call, [length(args)])
       {:ok, c}
     end
 

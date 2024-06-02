@@ -429,6 +429,46 @@ defmodule CompilerTest do
        [
          Opcode.make(:constant, [0]),
          Opcode.make(:pop, [])
+       ]},
+      {"let oneArg = fn(a) { a; }; oneArg(24);",
+       [
+         Instructions.merge([
+           Opcode.make(:get_local, [0]),
+           Opcode.make(:return_value, [])
+         ]),
+         24
+       ],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:set_global, [0]),
+         Opcode.make(:get_global, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:call, [1]),
+         Opcode.make(:pop, [])
+       ]},
+      {"let manyArg = fn(a, b, c) { a; b; c; }; manyArg(25, 26, 27);",
+       [
+         Instructions.merge([
+           Opcode.make(:get_local, [0]),
+           Opcode.make(:pop, []),
+           Opcode.make(:get_local, [1]),
+           Opcode.make(:pop, []),
+           Opcode.make(:get_local, [2]),
+           Opcode.make(:return_value, [])
+         ]),
+         25,
+         26,
+         27
+       ],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:set_global, [0]),
+         Opcode.make(:get_global, [0]),
+         Opcode.make(:constant, [1]),
+         Opcode.make(:constant, [2]),
+         Opcode.make(:constant, [3]),
+         Opcode.make(:call, [3]),
+         Opcode.make(:pop, [])
        ]}
     ]
     |> Enum.map(&compiler_test/1)

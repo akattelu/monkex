@@ -3,6 +3,7 @@ defmodule Monkex.AST.FunctionLiteral do
   AST Node for an function literal like `fn (x, y) { x + y }`
   """
   alias Monkex.AST.Expression
+  alias Monkex.AST.Identifier
   alias Monkex.Object.{Node, Function, CompiledFunction}
   alias Monkex.Compiler
   alias __MODULE__
@@ -24,8 +25,14 @@ defmodule Monkex.AST.FunctionLiteral do
   end
 
   defimpl Node, for: FunctionLiteral do
-    def compile(%FunctionLiteral{params: _params, body: body}, compiler) do
+    def compile(%FunctionLiteral{params: params, body: body}, compiler) do
       c = Compiler.enter_scope(compiler)
+
+      c =
+        Enum.reduce(params, c, fn %Identifier{symbol_name: param}, acc ->
+          Compiler.with_symbol_definition(acc, param)
+        end)
+
       {:ok, c} = Node.compile(body, c)
       c = Compiler.with_last_pop_as_return(c)
 

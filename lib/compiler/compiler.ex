@@ -88,8 +88,8 @@ defmodule Monkex.Compiler do
   end
 
   @doc "Add a symbol into the compiler's symbol table and return the new compiler"
-  @spec with_global_symbol(t(), String.t()) :: t()
-  def with_global_symbol(%Compiler{symbols: symbols} = c, name) do
+  @spec with_symbol_definition(t(), String.t()) :: t()
+  def with_symbol_definition(%Compiler{symbols: symbols} = c, name) do
     %Compiler{
       c
       | symbols: symbols |> SymbolTable.with_definition(name)

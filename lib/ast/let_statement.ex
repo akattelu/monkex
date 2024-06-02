@@ -26,7 +26,7 @@ defmodule Monkex.AST.LetStatement do
   defimpl Node, for: LetStatement do
     def compile(%LetStatement{name: %Identifier{symbol_name: name}, value: value}, compiler) do
       with {:ok, value_c} <- Node.compile(value, compiler),
-           with_symbol = Compiler.with_global_symbol(value_c, name),
+           with_symbol = Compiler.with_symbol_definition(value_c, name),
            {:ok, %Symbol{index: idx, scope: scope}} <- Compiler.get_symbol(with_symbol, name) do
         {c, _} =
           Compiler.emit(
