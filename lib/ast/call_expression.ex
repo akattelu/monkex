@@ -11,6 +11,7 @@ defmodule Monkex.AST.CallExpression do
   alias Monkex.Environment
   alias Monkex.Object.ReturnValue
   alias Monkex.Object.Builtin
+  alias Monkex.Compiler
 
   @enforce_keys [:token, :function, :arguments]
   defstruct [:token, :function, :arguments]
@@ -29,7 +30,11 @@ defmodule Monkex.AST.CallExpression do
   end
 
   defimpl Node, for: CallExpression do
-    def compile(_node, compiler), do: compiler
+    def compile(%CallExpression{function: func, arguments: _args}, compiler) do
+      {:ok, c} = Node.compile(func, compiler)
+      {c, _} = Compiler.emit(c, :call, [])
+      {:ok, c}
+    end
 
     defp args_match(params, args) do
       if length(params) == length(args) do

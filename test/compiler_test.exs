@@ -358,6 +358,40 @@ defmodule CompilerTest do
     |> Enum.map(&compiler_test/1)
   end
 
+  test "function calls" do
+    [
+      {"fn() { 24 }();",
+       [
+         24,
+         Instructions.merge([
+           Opcode.make(:constant, [0]),
+           Opcode.make(:return_value, [])
+         ])
+       ],
+       [
+         Opcode.make(:constant, [1]),
+         Opcode.make(:call, []),
+         Opcode.make(:pop, [])
+       ]},
+      {"let noArg = fn() { 24 }; noArg();",
+       [
+         24,
+         Instructions.merge([
+           Opcode.make(:constant, [0]),
+           Opcode.make(:return_value, [])
+         ])
+       ],
+       [
+         Opcode.make(:constant, [1]),
+         Opcode.make(:set_global, [0]),
+         Opcode.make(:get_global, [0]),
+         Opcode.make(:call, []),
+         Opcode.make(:pop, [])
+       ]}
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
+
   test "compiler scopes" do
     c = Compiler.new()
     assert ArrayList.size(c.scopes) == 1
