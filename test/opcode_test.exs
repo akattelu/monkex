@@ -68,6 +68,20 @@ defmodule OpcodeTest do
         0003 OpJump 100
         0006 OpPop
         """
+      },
+      {
+        [
+          Code.make(:add, []),
+          Code.make(:get_local, [1]),
+          Code.make(:constant, [2]),
+          Code.make(:constant, [255])
+        ],
+        """
+        0000 OpAdd
+        0001 OpGetLocal 1
+        0003 OpConstant 2
+        0006 OpConstant 255
+        """
       }
     ]
     |> Enum.map(fn {actual, expected} ->
@@ -111,7 +125,9 @@ defmodule OpcodeTest do
       {:index, [], <<21::8>>},
       {:call, [], <<22::8>>},
       {:return_value, [], <<23::8>>},
-      {:return, [], <<24::8>>}
+      {:return, [], <<24::8>>},
+      {:set_local, [255], <<25::8, 255::8>>},
+      {:get_local, [255], <<26::8, 255::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)

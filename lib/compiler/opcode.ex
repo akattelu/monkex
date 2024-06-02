@@ -13,6 +13,11 @@ defmodule Monkex.Opcode do
       {value, next_rest} = from_big_binary(rest, widths)
       {[int | value], next_rest}
     end
+
+    def from_big_binary(<<int::big-integer-size(1)-unit(8), rest::binary>>, [1 | widths]) do
+      {value, next_rest} = from_big_binary(rest, widths)
+      {[int | value], next_rest}
+    end
   end
 
   defmodule Definition do
@@ -80,7 +85,9 @@ defmodule Monkex.Opcode do
         :index => %Definition{name: "OpIndex", opcode: <<21::8>>, operand_widths: []},
         :call => %Definition{name: "OpCall", opcode: <<22::8>>, operand_widths: []},
         :return_value => %Definition{name: "OpReturnValue", opcode: <<23::8>>, operand_widths: []},
-        :return => %Definition{name: "OpReturn", opcode: <<24::8>>, operand_widths: []}
+        :return => %Definition{name: "OpReturn", opcode: <<24::8>>, operand_widths: []},
+        :set_local => %Definition{name: "OpSetLocal", opcode: <<25::8>>, operand_widths: [1]},
+        :get_local => %Definition{name: "OpGetLocal", opcode: <<26::8>>, operand_widths: [1]}
       }
     end
   end
