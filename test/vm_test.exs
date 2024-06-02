@@ -32,14 +32,22 @@ defmodule VMTest do
     assert actual.value == expected
   end
 
+  def vm_test({input, {:error, msg}}) do
+    {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+    assert parser.errors == []
+    {:ok, compiler} = Compiler.new() |> Compiler.compile(program)
+
+    {:error, actual_msg} = compiler |> Compiler.bytecode() |> VM.new() |> VM.run()
+    assert actual_msg == msg
+  end
+
   def vm_test({input, expected}) do
     {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
     assert parser.errors == []
     {:ok, compiler} = Compiler.new() |> Compiler.compile(program)
 
-    case compiler |> Compiler.bytecode() |> VM.new() |> VM.run() do
-      {:ok, final} -> test_literal({VM.stack_last_top(final), expected})
-    end
+    {:ok, final} = compiler |> Compiler.bytecode() |> VM.new() |> VM.run()
+    test_literal({VM.stack_last_top(final), expected})
   end
 
   test "integer arithmetic" do
@@ -290,6 +298,91 @@ defmodule VMTest do
         minusOne() + minusTwo();
         """,
         97
+      },
+      {
+        """
+        let identity = fn(a) { a; };
+        identity(4);
+        """,
+        4
+      },
+      {
+        """
+        let sum = fn(a, b) { a + b; }
+        sum(1, 2)
+        """,
+        3
+      },
+      {
+        """
+        let sum = fn(a, b) {
+            let c = a + b;
+            c;
+        };
+        sum(1, 2);
+        """,
+        3
+      },
+      {
+        """
+        let sum = fn(a, b) {
+            let c = a + b;
+            c;
+        };
+        sum(1, 2) + sum(3, 4);
+        """,
+        10
+      },
+      {
+        """
+        let sum = fn(a, b) {
+            let c = a + b;
+            c;
+        };
+        let outer = fn() {
+            sum(1, 2) + sum(3, 4);
+        };
+        outer();
+        """,
+        10
+      },
+      {
+        """
+        let globalNum = 10;
+        let sum = fn(a, b) {
+            let c = a + b;
+            c + globalNum;
+        };
+        let outer = fn() {
+            sum(1, 2) + sum(3, 4) + globalNum;
+        };
+        outer() + globalNum;
+        """,
+        50
+      }
+    ]
+    |> Enum.map(&vm_test/1)
+  end
+
+  test "calling functions with wrong arguments" do
+    [
+      {
+        """
+        fn(){ 1;}(1)
+        """,
+        {:error, "wrong number of arguments, expected: 0, got: 1"}
+      },
+      {
+        """
+        fn(a){ 1;}()
+        """,
+        {:error, "wrong number of arguments, expected: 1, got: 0"}
+      },
+      {
+        """
+        fn(a, b){ a + b;}(1)
+        """,
+        {:error, "wrong number of arguments, expected: 2, got: 1"}
       }
     ]
     |> Enum.map(&vm_test/1)

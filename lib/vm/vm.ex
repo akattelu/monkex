@@ -337,16 +337,29 @@ defmodule Monkex.VM do
 
   # Call
   defp run_op(<<22::8>>, %VM{stack: stack} = vm) do
-    <<_num_args::big-integer-size(1)-unit(8), _::binary>> =
+    <<num_args::big-integer-size(1)-unit(8), _::binary>> =
       vm |> instructions |> InstructionSet.advance() |> InstructionSet.read(1)
 
-    {s, %CompiledFunction{instructions: instructions, num_locals: num_locals}} = Stack.pop(stack)
-    # advance past the num_args before pushing stack frame
-    %VM{frames: after_skip_arg_instr} = vm |> advance
+    s = stack
 
-    frames = Stack.push(after_skip_arg_instr, InstructionSet.new(instructions, Stack.sp(stack)))
-    next_stack = Stack.make_space(s, num_locals)
-    vm |> with_stack(next_stack) |> with_frames(frames) |> run
+    %CompiledFunction{instructions: instructions, num_locals: num_locals, num_params: num_params} =
+      Stack.at(stack, Stack.sp(stack) - num_args)
+
+    if num_params != num_args do
+      {:error, "wrong number of arguments, expected: #{num_params}, got: #{num_args}"}
+    else
+      # advance past the num_args before pushing stack frame
+      %VM{frames: after_skip_arg_instr} = vm |> advance
+
+      frames =
+        Stack.push(
+          after_skip_arg_instr,
+          InstructionSet.new(instructions, Stack.sp(stack) - num_args)
+        )
+
+      next_stack = Stack.make_space(s, num_locals)
+      vm |> with_stack(next_stack) |> with_frames(frames) |> run
+    end
   end
 
   # Return value
@@ -367,15 +380,14 @@ defmodule Monkex.VM do
   end
 
   # Set local
-  defp run_op(<<25::8>>, %VM{frames: frames, stack: stack} = vm) do
-    iset = vm |> instructions
+  defp run_op(<<25::8>>, %VM{stack: stack} = vm) do
+    %InstructionSet{base_pointer: bp} = iset = vm |> instructions
 
     <<local_idx::big-integer-size(1)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(1)
 
-    %InstructionSet{base_pointer: bp} = Stack.top(frames)
     {s, obj} = Stack.pop(stack)
-    with_local_set = Stack.set(s, bp + local_idx, obj)
+    with_local_set = Stack.set(s, bp + local_idx + 1, obj)
 
     vm |> with_stack(with_local_set) |> advance(2) |> run
   end
@@ -389,7 +401,7 @@ defmodule Monkex.VM do
 
     %InstructionSet{base_pointer: bp} = Stack.top(frames)
 
-    obj = Stack.at(stack, bp + local_idx)
+    obj = Stack.at(stack, bp + local_idx + 1)
     s = Stack.push(stack, obj)
     vm |> with_stack(s) |> advance(2) |> run
   end

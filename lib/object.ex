@@ -270,17 +270,26 @@ defmodule Monkex.Object.CompiledFunction do
   alias __MODULE__
   alias Monkex.Instructions
 
-  @enforce_keys [:instructions, :num_locals]
-  defstruct [:instructions, :num_locals]
+  @enforce_keys [:instructions, :num_locals, :num_params]
+  defstruct [:instructions, :num_locals, :num_params]
 
   @type t() :: %CompiledFunction{}
 
-  @spec from(Instructions.t(), integer()) :: t()
-  def from(instructions, num_locals),
-    do: %CompiledFunction{instructions: instructions, num_locals: num_locals}
+  @spec from(Instructions.t(), integer(), integer()) :: t()
+  def from(instructions, num_locals, num_params),
+    do: %CompiledFunction{
+      instructions: instructions,
+      num_locals: num_locals,
+      num_params: num_params
+    }
 
   defimpl String.Chars, for: CompiledFunction do
-    def to_string(%CompiledFunction{num_locals: num_locals, instructions: instructions}),
-      do: "Compiled Function (#{num_locals})\nInstructions:\n#{instructions}"
+    def to_string(%CompiledFunction{
+          num_locals: num_locals,
+          instructions: instructions,
+          num_params: num_params
+        }),
+        do:
+          "Compiled Function (arity: #{num_params}) (locals: #{num_locals})\nInstructions:\n#{instructions}"
   end
 end

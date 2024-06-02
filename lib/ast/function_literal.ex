@@ -46,7 +46,7 @@ defmodule Monkex.AST.FunctionLiteral do
 
       num_locals = Compiler.num_symbols(c)
       {c, instructions} = Compiler.leave_scope(c)
-      compiled_func = CompiledFunction.from(instructions, num_locals)
+      compiled_func = CompiledFunction.from(instructions, num_locals, length(params))
 
       {c, pointer} = Compiler.with_constant(c, compiled_func)
       {c, _} = Compiler.emit(c, :constant, [pointer])
