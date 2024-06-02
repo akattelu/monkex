@@ -6,7 +6,8 @@ defmodule Monkex.VM do
     Integer,
     Array,
     Null,
-    Dictionary
+    Dictionary,
+    CompiledFunction
   }
 
   alias Monkex.Object.String, as: StringObj
@@ -144,6 +145,7 @@ defmodule Monkex.VM do
   # Constant
   defp run_op(<<1::8>>, %VM{stack: stack, constants: constants} = vm) do
     iset = vm |> instructions
+
     <<int::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -240,6 +242,7 @@ defmodule Monkex.VM do
   # Jump unconditionally
   defp run_op(<<15::8>>, %VM{} = vm) do
     iset = vm |> instructions
+
     <<jump_pos::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -254,6 +257,7 @@ defmodule Monkex.VM do
   # Set global
   defp run_op(<<17::8>>, %VM{stack: stack, globals: globals} = vm) do
     iset = vm |> instructions
+
     <<global_idx::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -265,7 +269,8 @@ defmodule Monkex.VM do
   # Get global
   defp run_op(<<18::8>>, %VM{stack: stack, globals: globals} = vm) do
     iset = vm |> instructions
-     <<global_idx::big-integer-size(2)-unit(8), _::binary>> =
+
+    <<global_idx::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
     {:ok, obj} = ArrayList.at(globals, global_idx)
@@ -276,6 +281,7 @@ defmodule Monkex.VM do
   # Array
   defp run_op(<<19::8>>, %VM{stack: stack} = vm) do
     iset = vm |> instructions
+
     <<array_items::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -289,6 +295,7 @@ defmodule Monkex.VM do
   # Hash
   defp run_op(<<20::8>>, %VM{stack: stack} = vm) do
     iset = vm |> instructions
+
     <<hash_items::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.advance() |> InstructionSet.read(2)
 
@@ -326,6 +333,28 @@ defmodule Monkex.VM do
     s = Stack.push(s, obj)
 
     vm |> advance() |> with_stack(s) |> run
+  end
+
+  # Call
+  defp run_op(<<22::8>>, %VM{stack: stack, frames: frames} = vm) do
+    {s, %CompiledFunction{instructions: instructions}} = Stack.pop(stack)
+    frames = Stack.push(frames, InstructionSet.new(instructions))
+    vm |> with_stack(s) |> with_frames(frames) |> run
+  end
+
+  # Return value
+  defp run_op(<<23::8>>, %VM{stack: stack, frames: frames} = vm) do
+    {s, ret_val} = Stack.pop(stack)
+    {new_frames, _} = Stack.pop(frames)
+    new_stack = Stack.push(s, ret_val)
+    vm |> with_frames(new_frames) |> advance() |> with_stack(new_stack) |> run
+  end
+
+  # Return
+  defp run_op(<<24::8>>, %VM{frames: frames, stack: stack} = vm) do
+    {new_frames, _} = Stack.pop(frames)
+    new_stack = Stack.push(stack, Null.object())
+    vm |> with_frames(new_frames) |> advance() |> with_stack(new_stack) |> run
   end
 
   defp run_op(<<>>, vm), do: {:ok, vm}

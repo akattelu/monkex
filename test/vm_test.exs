@@ -173,4 +173,72 @@ defmodule VMTest do
     ]
     |> Enum.map(&vm_test/1)
   end
+
+  test "functions without arguments" do
+    [
+      {"let fivePlusTen = fn() { 5 + 10; }; fivePlusTen();", 15},
+      {
+        """
+          
+        let one = fn() { 1; };
+        let two = fn() { 2; };
+        one() + two()
+        """,
+        3
+      },
+      {
+        """
+        let a = fn() { 1 };
+        let b = fn() { a() + 1 };
+        let c = fn() { b() + 1 };
+        c();
+          
+        """,
+        3
+      },
+      {
+        """
+          let earlyExit = fn() { return 99; 100; };
+          earlyExit();
+          
+        """,
+        99
+      },
+      {
+        """
+          let earlyExit = fn() { return 99; return 100; };
+          earlyExit();
+          
+        """,
+        99
+      },
+      {
+        """
+        let noReturn = fn() { };
+        noReturn();
+          
+        """,
+        nil
+      },
+      {
+        """
+        let noReturn = fn() { };
+        let noReturnTwo = fn() { noReturn(); };
+        noReturn();
+        noReturnTwo();
+          
+        """,
+        nil
+      },
+      {
+        """
+           let returnsOne = fn() { 1; };
+        let returnsOneReturner = fn() { returnsOne; };
+        returnsOneReturner()();
+        """,
+        1
+      }
+    ]
+    |> Enum.map(&vm_test/1)
+  end
 end
