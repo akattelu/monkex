@@ -338,7 +338,22 @@ defmodule CompilerTest do
        [
          Opcode.make(:constant, [2]),
          Opcode.make(:pop, [])
-       ]}
+       ]},
+       {"fn() { 1; 2 }",
+       [
+         1,
+         2,
+         Instructions.merge([
+           Opcode.make(:constant, [0]),
+           Opcode.make(:pop, []),
+           Opcode.make(:constant, [1]),
+           Opcode.make(:return_value, [])
+         ])
+       ],
+       [
+         Opcode.make(:constant, [2]),
+         Opcode.make(:pop, [])
+       ]},
     ]
     |> Enum.map(&compiler_test/1)
   end

@@ -21,10 +21,15 @@ defmodule Monkex.Instructions do
 
   @doc "trim the trailing n bytes from the end of the instructions list"
   @spec trim(t(), integer()) :: t()
-  def trim(%Instructions{raw: raw}, n) do
+  def trim(%Instructions{raw: raw} = i, n) do
     binary_length = byte_size(raw)
-    new_length = binary_length - n
-    raw |> binary_part(0, new_length) |> from
+
+    if n > binary_length do
+      i
+    else
+      new_length = binary_length - n
+      raw |> binary_part(0, new_length) |> from
+    end
   end
 
   @doc "Replace the portion of the instruction at position, with the next instruction"

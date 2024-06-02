@@ -78,7 +78,8 @@ defmodule Monkex.Compiler do
   @spec with_instruction(t(), Instructions.t()) :: {t(), integer()}
   def with_instruction(%Compiler{scopes: scopes} = compiler, instruction) do
     instructions = current_instructions(compiler)
-    new_scopes = ArrayList.set_last(scopes, Instructions.concat(instruction, instructions))
+    new_instructions  = Instructions.concat(instruction, instructions)
+    new_scopes = ArrayList.set_last(scopes, new_instructions)
 
     {%Compiler{
        compiler
@@ -127,6 +128,13 @@ defmodule Monkex.Compiler do
     new_scopes = ArrayList.set_last(scopes, Instructions.replace_at(instructions, pos, sub))
 
     %Compiler{c | scopes: new_scopes}
+  end
+
+  @doc "Remove the last pop instruction in the current scope and add a return instruction instead"
+  @spec with_last_pop_as_return(t()) :: t()
+  def with_last_pop_as_return(c) do
+    {c, _} = c |> without_last_instruction(:pop) |> emit(:return_value, [])
+    c
   end
 
   @doc """

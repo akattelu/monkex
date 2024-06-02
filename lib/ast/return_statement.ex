@@ -6,6 +6,7 @@ defmodule Monkex.AST.ReturnStatement do
   alias Monkex.AST.Statement
   alias Monkex.Object.Node
   alias Monkex.Object.Error
+  alias Monkex.Compiler
 
   @enforce_keys [:token, :return_value]
   defstruct [:token, :return_value]
@@ -21,7 +22,12 @@ defmodule Monkex.AST.ReturnStatement do
 
   defimpl Node, for: ReturnStatement do
     alias Monkex.Object.ReturnValue
-    def compile(_node, compiler), do: compiler
+
+    def compile(%ReturnStatement{return_value: expr}, compiler) do
+      {:ok, c} = Node.compile(expr, compiler)
+      {c, _} = Compiler.emit(c, :return_value, [])
+      {:ok, c}
+    end
 
     def eval(%ReturnStatement{return_value: expr}, env) do
       {case Node.eval(expr, env) |> elem(0) do
