@@ -339,7 +339,7 @@ defmodule CompilerTest do
          Opcode.make(:constant, [2]),
          Opcode.make(:pop, [])
        ]},
-       {"fn() { 1; 2 }",
+      {"fn() { 1; 2 }",
        [
          1,
          2,
@@ -353,7 +353,7 @@ defmodule CompilerTest do
        [
          Opcode.make(:constant, [2]),
          Opcode.make(:pop, [])
-       ]},
+       ]}
     ]
     |> Enum.map(&compiler_test/1)
   end
@@ -366,14 +366,13 @@ defmodule CompilerTest do
     c = Compiler.enter_scope(c)
     assert ArrayList.size(c.scopes) == 2
 
-    {c, _ } = Compiler.emit(c, :sub, [])
-    {c, _ } = Compiler.emit(c, :div, [])
+    {c, _} = Compiler.emit(c, :sub, [])
+    {c, _} = Compiler.emit(c, :div, [])
     assert Compiler.instructions_length(c) == 2
 
     {c, _} = Compiler.leave_scope(c)
 
-    {c, _ } = Compiler.emit(c, :add, [])
+    {c, _} = Compiler.emit(c, :add, [])
     assert Compiler.instructions_length(c) == 2
-
   end
 end

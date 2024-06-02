@@ -278,4 +278,3 @@ defmodule Monkex.Object.CompiledFunction do
   @spec from(Instructions.t()) :: t()
   def from(instructions), do: %CompiledFunction{instructions: instructions}
 end
-

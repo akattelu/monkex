@@ -78,7 +78,7 @@ defmodule Monkex.Compiler do
   @spec with_instruction(t(), Instructions.t()) :: {t(), integer()}
   def with_instruction(%Compiler{scopes: scopes} = compiler, instruction) do
     instructions = current_instructions(compiler)
-    new_instructions  = Instructions.concat(instruction, instructions)
+    new_instructions = Instructions.concat(instruction, instructions)
     new_scopes = ArrayList.set_last(scopes, new_instructions)
 
     {%Compiler{
