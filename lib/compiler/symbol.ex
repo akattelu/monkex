@@ -20,30 +20,58 @@ defmodule Monkex.SymbolTable do
 
   @type t() :: %SymbolTable{}
 
-  @enforce_keys [:store, :num_defs]
-  defstruct store: %{}, num_defs: 0
+  @enforce_keys [:store, :num_defs, :outer]
+  defstruct store: %{}, num_defs: 0, outer: nil
 
   @doc "Create an empty symbol table"
   @spec new() :: t()
   def new() do
-    %SymbolTable{store: %{}, num_defs: 0}
+    %SymbolTable{store: %{}, num_defs: 0, outer: nil}
   end
 
   @doc "Return a new symbol table with the identifier name in the store"
   @spec with_definition(t(), String.t()) :: t()
-  def with_definition(%SymbolTable{store: store, num_defs: num_defs}, name) do
+  def with_definition(%SymbolTable{store: store, num_defs: num_defs, outer: outer} = table, name) do
     %SymbolTable{
-      num_defs: num_defs + 1,
-      store: Map.put(store, name, %Symbol{name: name, index: num_defs, scope: :global})
+      table
+      | num_defs: num_defs + 1,
+        store:
+          Map.put(store, name, %Symbol{
+            name: name,
+            index: num_defs,
+            scope:
+              if outer == nil do
+                :global
+              else
+                :local
+              end
+          })
     }
   end
 
   @doc "Return the symbol associated with the name from the symbol table"
   @spec resolve(t(), String.t()) :: {:ok, Symbol.t()} | :undefined
-  def resolve(%SymbolTable{store: store}, name) do
-    case Map.fetch(store, name) do
-      :error -> :undefined
-      item -> item
+  def resolve(%SymbolTable{store: store, outer: outer}, name) do
+    with :error <- Map.fetch(store, name),
+         %SymbolTable{} <- outer,
+         :undefined <- resolve(outer, name) do
+      :undefined
+    else
+      {:ok, sym} -> {:ok, sym}
+      nil -> :undefined
     end
   end
+
+  @doc "Create a new symbol table enclosing over a base table"
+  @spec enclose(t()) :: t()
+  def enclose(base) do
+    %SymbolTable{
+      new()
+      | outer: base
+    }
+  end
+
+  @doc "Return a symbol table's outer table reference"
+  @spec unwrap(t()) :: t() | nil
+  def unwrap(%SymbolTable{outer: outer}), do: outer
 end

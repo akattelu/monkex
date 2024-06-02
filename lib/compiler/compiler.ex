@@ -96,11 +96,9 @@ defmodule Monkex.Compiler do
     }
   end
 
-  @spec get_symbol_index(t(), String.t()) :: integer() | :undefined
-  def get_symbol_index(%Compiler{symbols: symbols}, name) do
-    with {:ok, %Symbol{index: idx}} <- SymbolTable.resolve(symbols, name) do
-      {:ok, idx}
-    end
+  @spec get_symbol(t(), String.t()) :: {:ok, Symbol.t()} | :undefined
+  def get_symbol(%Compiler{symbols: symbols}, name) do
+    SymbolTable.resolve(symbols, name)
   end
 
   @doc "Convert an opcode with operands into an instruction, add it to the Compiler, and return a new Compiler"
@@ -155,10 +153,11 @@ defmodule Monkex.Compiler do
   Use `leave_scope` to return to the prior scope
   """
   @spec enter_scope(t()) :: t()
-  def enter_scope(%Compiler{scopes: scopes} = c) do
+  def enter_scope(%Compiler{scopes: scopes, symbols: symbols} = c) do
     %Compiler{
       c
-      | scopes: ArrayList.push(scopes, Instructions.new())
+      | scopes: ArrayList.push(scopes, Instructions.new()),
+        symbols: SymbolTable.enclose(symbols)
     }
   end
 
@@ -167,13 +166,14 @@ defmodule Monkex.Compiler do
   Return the bytecode instructions from the ended scope
   """
   @spec leave_scope(t()) :: {t(), Instructions.t()}
-  def leave_scope(%Compiler{scopes: scopes} = c) do
+  def leave_scope(%Compiler{scopes: scopes, symbols: symbols} = c) do
     {new_scopes, instructions} = ArrayList.pop(scopes)
 
     {
       %Compiler{
         c
-        | scopes: new_scopes
+        | scopes: new_scopes,
+          symbols: SymbolTable.unwrap(symbols)
       },
       instructions
     }

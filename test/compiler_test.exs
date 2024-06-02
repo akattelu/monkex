@@ -53,6 +53,27 @@ defmodule CompilerTest do
     end)
   end
 
+  test "compiler scopes" do
+    c = Compiler.new()
+    assert ArrayList.size(c.scopes) == 1
+    global_table = c.symbols
+
+    {c, _} = Compiler.emit(c, :mul, [])
+    c = Compiler.enter_scope(c)
+    assert ArrayList.size(c.scopes) == 2
+    assert c.symbols.outer == global_table
+
+    {c, _} = Compiler.emit(c, :sub, [])
+    {c, _} = Compiler.emit(c, :div, [])
+    assert Compiler.instructions_length(c) == 2
+
+    {c, _} = Compiler.leave_scope(c)
+    assert c.symbols == global_table
+
+    {c, _} = Compiler.emit(c, :add, [])
+    assert Compiler.instructions_length(c) == 2
+  end
+
   test "integer arithmetic" do
     [
       {"1 + 2;", [1, 2],
@@ -413,21 +434,56 @@ defmodule CompilerTest do
     |> Enum.map(&compiler_test/1)
   end
 
-  test "compiler scopes" do
-    c = Compiler.new()
-    assert ArrayList.size(c.scopes) == 1
-
-    {c, _} = Compiler.emit(c, :mul, [])
-    c = Compiler.enter_scope(c)
-    assert ArrayList.size(c.scopes) == 2
-
-    {c, _} = Compiler.emit(c, :sub, [])
-    {c, _} = Compiler.emit(c, :div, [])
-    assert Compiler.instructions_length(c) == 2
-
-    {c, _} = Compiler.leave_scope(c)
-
-    {c, _} = Compiler.emit(c, :add, [])
-    assert Compiler.instructions_length(c) == 2
+  test "let statement scopes" do
+    [
+      {
+        "let num = 55; fn() { num }",
+        [55, Instructions.merge([Opcode.make(:get_global, [0]), Opcode.make(:return_value, [])])],
+        [
+          Opcode.make(:constant, [0]),
+          Opcode.make(:set_global, [0]),
+          Opcode.make(:constant, [1]),
+          Opcode.make(:pop, [])
+        ]
+      },
+      {
+        "fn () { let num = 55; num; }",
+        [
+          55,
+          Instructions.merge([
+            Opcode.make(:constant, [0]),
+            Opcode.make(:set_local, [0]),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:return_value, [])
+          ])
+        ],
+        [
+          Opcode.make(:constant, [1]),
+          Opcode.make(:pop, [])
+        ]
+      },
+      {
+        "fn () { let a = 55; let b = 77; a + b; }",
+        [
+          55,
+          77,
+          Instructions.merge([
+            Opcode.make(:constant, [0]),
+            Opcode.make(:set_local, [0]),
+            Opcode.make(:constant, [1]),
+            Opcode.make(:set_local, [1]),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:get_local, [1]),
+            Opcode.make(:add, []),
+            Opcode.make(:return_value, [])
+          ])
+        ],
+        [
+          Opcode.make(:constant, [2]),
+          Opcode.make(:pop, [])
+        ]
+      }
+    ]
+    |> Enum.map(&compiler_test/1)
   end
 end
