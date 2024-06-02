@@ -17,10 +17,10 @@ defmodule CompilerTest do
   def assert_constants([], []), do: nil
 
   def assert_constants(
-        [%CompiledFunction{instructions: %Instructions{raw: actual_raw}} | objects],
-        [%Instructions{raw: expect_raw} | rest]
+        [%CompiledFunction{instructions: %Instructions{raw: actual_raw} = ai} | objects],
+        [%Instructions{raw: expect_raw} = ei | rest]
       ) do
-    assert actual_raw == expect_raw
+    assert actual_raw == expect_raw, "expected:\n#{ei}\nactual:\n\n#{ai}"
     assert_constants(objects, rest)
   end
 
@@ -40,6 +40,17 @@ defmodule CompilerTest do
 
     assert_instructions(actual_instructions, expected_instructions)
     assert_constants(actual_constants, expected_constants)
+  end
+
+  test "last instruction check" do
+    [{"1 + 2;", :pop}, {"return 1 + 2;", :return_value}]
+    |> Enum.each(fn {input, opcode} ->
+      {parser, program} = input |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+      assert parser.errors == []
+
+      {:ok, compiler} = Compiler.new() |> Compiler.compile(program)
+      assert Compiler.last_instruction_is?(compiler, opcode) == true
+    end)
   end
 
   test "integer arithmetic" do
@@ -387,6 +398,16 @@ defmodule CompilerTest do
          Opcode.make(:get_global, [0]),
          Opcode.make(:call, []),
          Opcode.make(:pop, [])
+       ]},
+       {"fn() { }",
+       [
+         Instructions.merge([
+           Opcode.make(:return, [])
+         ])
+       ],
+       [
+         Opcode.make(:constant, [0]),
+         Opcode.make(:pop, []),
        ]}
     ]
     |> Enum.map(&compiler_test/1)

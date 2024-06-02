@@ -41,7 +41,11 @@ defmodule Monkex.AST.IfExpression do
       {:ok, then_c} = Node.compile(then_block, jump_not_truthy_c)
 
       then_c =
-        Compiler.without_last_instruction(then_c, :pop)
+        if Compiler.last_instruction_is?(then_c, :pop) do
+          Compiler.without_last_instruction(then_c, :pop)
+        else
+          then_c
+        end
 
       {jump_after_else_c, jump_pos} = Compiler.emit(then_c, :jump, [9999])
 
@@ -57,7 +61,12 @@ defmodule Monkex.AST.IfExpression do
       else_c =
         if else_block != nil do
           {:ok, else_c} = Node.compile(else_block, pre_else_c)
-          Compiler.without_last_instruction(else_c, :pop)
+
+          if Compiler.last_instruction_is?(else_c, :pop) do
+            Compiler.without_last_instruction(else_c, :pop)
+          else
+            else_c
+          end
         else
           {else_c, _} = Compiler.emit(pre_else_c, :null, [])
           else_c

@@ -28,6 +28,15 @@ defmodule Monkex.AST.FunctionLiteral do
       c = Compiler.enter_scope(compiler)
       {:ok, c} = Node.compile(body, c)
       c = Compiler.with_last_pop_as_return(c)
+
+      c =
+        if Compiler.last_instruction_is?(c, :return_value) do
+          c
+        else
+          {c, _} = Compiler.emit(c, :return, [])
+          c
+        end
+
       {c, instructions} = Compiler.leave_scope(c)
       compiled_func = CompiledFunction.from(instructions)
 

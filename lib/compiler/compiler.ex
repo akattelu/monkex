@@ -121,6 +121,15 @@ defmodule Monkex.Compiler do
     %Compiler{c | scopes: new_scopes}
   end
 
+  @doc "Check if the last emitted instruction is of the opcode type"
+  @spec last_instruction_is?(t(), atom()) :: boolean()
+  def last_instruction_is?(c, opcode) do
+    size = Opcode.Definition.oplength(opcode)
+    expected = Opcode.make(opcode, [])
+    actual = c |> current_instructions |> Instructions.take_last(size)
+    actual == expected
+  end
+
   @doc "Return a compiler with instructions subsituted at the specified position"
   @spec with_replaced_instruction(t(), integer(), Instructions.t()) :: t()
   def with_replaced_instruction(%Compiler{scopes: scopes} = c, pos, sub) do
@@ -133,8 +142,12 @@ defmodule Monkex.Compiler do
   @doc "Remove the last pop instruction in the current scope and add a return instruction instead"
   @spec with_last_pop_as_return(t()) :: t()
   def with_last_pop_as_return(c) do
-    {c, _} = c |> without_last_instruction(:pop) |> emit(:return_value, [])
-    c
+    if last_instruction_is?(c, :pop) do
+      {c, _} = c |> without_last_instruction(:pop) |> emit(:return_value, [])
+      c
+    else
+      c
+    end
   end
 
   @doc """

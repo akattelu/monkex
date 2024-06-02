@@ -32,6 +32,17 @@ defmodule Monkex.Instructions do
     end
   end
 
+  @doc "Take the last n bytes from the end of the instructions list"
+  def take_last(%Instructions{raw: raw}, n \\ 1) do
+    binary_length = byte_size(raw)
+
+    if n > binary_length do
+      nil
+    else
+      raw |> binary_part(binary_length - n, n) |> from
+    end
+  end
+
   @doc "Replace the portion of the instruction at position, with the next instruction"
   @spec replace_at(t(), integer(), t()) :: t()
   def replace_at(%Instructions{raw: base}, position, %Instructions{raw: sub}) do
