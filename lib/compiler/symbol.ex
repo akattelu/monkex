@@ -17,6 +17,7 @@ defmodule Monkex.SymbolTable do
 
   alias __MODULE__
   alias Monkex.Symbol
+  alias Monkex.Object.Builtin
 
   @type t() :: %SymbolTable{}
 
@@ -46,6 +47,28 @@ defmodule Monkex.SymbolTable do
                 :local
               end
           })
+    }
+  end
+
+  @doc "Return a symbol table with all the builtin functions"
+  @spec with_builtins() :: t()
+  def with_builtins() do
+    symbols =
+      Builtin.all()
+      |> Stream.with_index()
+      |> Enum.reduce(%{}, fn {{name, _}, idx}, acc ->
+        Map.put(acc, name, %Symbol{
+          index: idx,
+          name: name,
+          scope: :builtin
+        })
+      end)
+
+    %SymbolTable{
+      store: symbols,
+      outer: nil,
+      # keep a separate index of num_defs for globals
+      num_defs: 0
     }
   end
 

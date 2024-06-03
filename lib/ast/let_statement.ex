@@ -31,10 +31,10 @@ defmodule Monkex.AST.LetStatement do
         {c, _} =
           Compiler.emit(
             with_symbol,
-            if scope == :global do
-              :set_global
-            else
-              :set_local
+            case scope do
+              :global -> :set_global
+              :local -> :set_local
+              :builtin -> :get_builtin
             end,
             [idx]
           )

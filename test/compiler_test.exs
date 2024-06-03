@@ -526,4 +526,40 @@ defmodule CompilerTest do
     ]
     |> Enum.map(&compiler_test/1)
   end
+
+  test "compile builtins" do
+    [
+      {
+        "len([]); push([], 1)",
+        [1],
+        [
+          Opcode.make(:get_builtin, [0]),
+          Opcode.make(:array, [0]),
+          Opcode.make(:call, [1]),
+          Opcode.make(:pop, []),
+          Opcode.make(:get_builtin, [7]),
+          Opcode.make(:array, [0]),
+          Opcode.make(:constant, [0]),
+          Opcode.make(:call, [2]),
+          Opcode.make(:pop, [])
+        ]
+      },
+      {
+        "fn() { len([]) }",
+        [
+          Instructions.merge([
+            Opcode.make(:get_builtin, [0]),
+            Opcode.make(:array, [0]),
+            Opcode.make(:call, [1]),
+            Opcode.make(:return_value, [])
+          ])
+        ],
+        [
+          Opcode.make(:constant, [0]),
+          Opcode.make(:pop, [])
+        ]
+      }
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
 end

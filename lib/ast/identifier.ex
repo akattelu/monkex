@@ -33,6 +33,10 @@ defmodule Monkex.AST.Identifier do
           {c, _} = Compiler.emit(compiler, :get_local, [idx])
           {:ok, c}
 
+        {:ok, %Symbol{index: idx, scope: :builtin}} ->
+          {c, _} = Compiler.emit(compiler, :get_builtin, [idx])
+          {:ok, c}
+
         :undefined ->
           {:error, "undefined symbol #{symbol_name}"}
       end

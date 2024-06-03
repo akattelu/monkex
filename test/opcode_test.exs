@@ -131,7 +131,8 @@ defmodule OpcodeTest do
       {:return_value, [], <<23::8>>},
       {:return, [], <<24::8>>},
       {:set_local, [255], <<25::8, 255::8>>},
-      {:get_local, [255], <<26::8, 255::8>>}
+      {:get_local, [255], <<26::8, 255::8>>},
+      {:get_builtin, [255], <<27::8, 255::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)

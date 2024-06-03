@@ -87,7 +87,8 @@ defmodule Monkex.Opcode do
         :return_value => %Definition{name: "OpReturnValue", opcode: <<23::8>>, operand_widths: []},
         :return => %Definition{name: "OpReturn", opcode: <<24::8>>, operand_widths: []},
         :set_local => %Definition{name: "OpSetLocal", opcode: <<25::8>>, operand_widths: [1]},
-        :get_local => %Definition{name: "OpGetLocal", opcode: <<26::8>>, operand_widths: [1]}
+        :get_local => %Definition{name: "OpGetLocal", opcode: <<26::8>>, operand_widths: [1]},
+        :get_builtin => %Definition{name: "OpGetBuiltin", opcode: <<27::8>>, operand_widths: [1]}
       }
     end
   end

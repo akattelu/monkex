@@ -38,7 +38,7 @@ defmodule Monkex.Compiler do
   def new() do
     %Compiler{
       constants: [],
-      symbols: SymbolTable.new(),
+      symbols: SymbolTable.with_builtins(),
       scopes: ArrayList.new([Instructions.new()])
     }
   end
