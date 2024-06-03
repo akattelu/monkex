@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Repl do
         Monkex.REPL.start_parser()
 
       "--vm" in args ->
-        Monkex.REPL.start_compiler_and_vm(Monkex.Compiler.new())
+        Monkex.REPL.start_vm(Monkex.Compiler.new())
 
       true ->
         Monkex.REPL.start_evaluator(

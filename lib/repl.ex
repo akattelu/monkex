@@ -95,7 +95,7 @@ defmodule Monkex.REPL do
     end
   end
 
-  def start_compiler_and_vm(compiler) do
+  def start_vm(compiler) do
     with input <- IO.gets(">> "),
          {:ok, line} <- get_line(input) do
       # parse
@@ -112,19 +112,29 @@ defmodule Monkex.REPL do
         end)
 
         # loop with old env
-        start_compiler_and_vm(compiler)
+        start_vm(compiler)
       else
         # eval 
         {:ok, c} = Node.compile(program, compiler)
 
         vm = c |> Compiler.bytecode() |> VM.new()
 
-        {:ok, result} = VM.run(vm)
-        # print
-        result |> VM.stack_last_top() |> IO.puts()
+        case VM.run(vm) do
+          {:ok, result} ->
+            # print
+            result |> VM.stack_last_top() |> IO.puts()
 
-        # loop with new env
-        start_compiler_and_vm(c)
+            # loop with new env
+            start_vm(c)
+
+          {:error, msg} ->
+            IO.puts("\nWoops! We ran into some monkey business here!")
+            IO.puts(@monkey_face)
+            IO.puts("Here is the error:")
+            IO.puts(msg)
+            IO.puts("Restarting the VM...")
+            start_vm(Compiler.new())
+        end
       end
     else
       {:end} -> nil
