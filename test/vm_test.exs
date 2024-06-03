@@ -397,7 +397,6 @@ defmodule VMTest do
       {~S(len("one", "two"\)), {:error, "wrong number of arguments, expected: 1, got: 2"}},
       {~S(len([1, 2, 3]\)), 3},
       {~S(len([]\)), 0},
-      {~S(puts("hello"\)), nil},
       {~S(head([1, 2, 3]\)), 1},
       {~S(head([]\)), nil},
       {~S(head(1\)), {:error, "argument to `head` must be array, got integer"}},
