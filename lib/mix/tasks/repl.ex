@@ -27,6 +27,9 @@ defmodule Mix.Tasks.Repl do
       "--parse" in args ->
         Monkex.REPL.start_parser()
 
+      "--bytecode" in args ->
+        Monkex.REPL.start_bytecode_emitter(Monkex.Compiler.new())
+
       "--vm" in args ->
         Monkex.REPL.start_vm(Monkex.Compiler.new())
 

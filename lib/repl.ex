@@ -141,6 +141,39 @@ defmodule Monkex.REPL do
     end
   end
 
+  def start_bytecode_emitter(compiler) do
+    with input <- IO.gets(">> "),
+         {:ok, line} <- get_line(input) do
+      # parse
+      {parser, program} = line |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+
+      if parser.errors != [] do
+        IO.puts("\nWoops! We ran into some monkey business here!")
+        IO.puts(@monkey_face)
+        IO.puts("Here are the parser errors:")
+
+        parser.errors
+        |> Enum.each(fn err ->
+          IO.puts("\t - #{err}")
+        end)
+
+        # loop with old env
+        start_bytecode_emitter(compiler)
+      else
+        # eval 
+        {:ok, c} = Node.compile(program, compiler)
+
+        %Monkex.Compiler.Bytecode{instructions: instr} = c |> Compiler.bytecode()
+
+        IO.puts(instr)
+
+        start_bytecode_emitter(c)
+      end
+    else
+      {:end} -> nil
+    end
+  end
+
   def start_evaluator(env) do
     # read
     with input <- IO.gets(">> "),
