@@ -76,6 +76,7 @@ defmodule OpcodeTest do
           Code.make(:constant, [2]),
           Code.make(:constant, [255]),
           Code.make(:call, [3]),
+          Code.make(:closure, [65_534, 255]),
           Code.make(:add, [])
         ],
         """
@@ -84,7 +85,8 @@ defmodule OpcodeTest do
         0003 OpConstant 2
         0006 OpConstant 255
         0009 OpCall 3
-        0011 OpAdd
+        0011 OpClosure 65534 255
+        0015 OpAdd
         """
       }
     ]
@@ -132,7 +134,8 @@ defmodule OpcodeTest do
       {:return, [], <<24::8>>},
       {:set_local, [255], <<25::8, 255::8>>},
       {:get_local, [255], <<26::8, 255::8>>},
-      {:get_builtin, [255], <<27::8, 255::8>>}
+      {:get_builtin, [255], <<27::8, 255::8>>},
+      {:closure, [65_534, 255], <<28::8, 255::8, 254::8, 255::8>>},
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)
