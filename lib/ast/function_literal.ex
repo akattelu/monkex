@@ -49,7 +49,7 @@ defmodule Monkex.AST.FunctionLiteral do
       compiled_func = CompiledFunction.from(instructions, num_locals, length(params))
 
       {c, pointer} = Compiler.with_constant(c, compiled_func)
-      {c, _} = Compiler.emit(c, :constant, [pointer])
+      {c, _} = Compiler.emit(c, :closure, [pointer, 0])
 
       {:ok, c}
     end

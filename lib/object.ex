@@ -319,6 +319,10 @@ defmodule Monkex.Object.CompiledFunction do
       num_params: num_params
     }
 
+  defimpl Monkex.Object do
+    def type(_), do: :compiled_function
+  end
+
   defimpl String.Chars, for: CompiledFunction do
     def to_string(%CompiledFunction{
           num_locals: num_locals,
@@ -327,5 +331,33 @@ defmodule Monkex.Object.CompiledFunction do
         }),
         do:
           "Compiled Function (arity: #{num_params}) (locals: #{num_locals})\nInstructions:\n#{instructions}"
+  end
+end
+
+defmodule Monkex.Object.Closure do
+  @moduledoc "Object representation of a closure that captures free variables and a compiled function"
+  alias __MODULE__
+
+  @enforce_keys [:func, :free_objects]
+  defstruct [:func, :free_objects]
+
+  @type t() :: %Closure{}
+
+  @spec from(CompiledFunction.t()) :: t()
+  def from(func) do
+    %Closure{
+      func: func,
+      free_objects: []
+    }
+  end
+
+  defimpl Monkex.Object do
+    def type(_), do: :closure
+  end
+
+  defimpl String.Chars do
+    def to_string(%Closure{func: func, free_objects: free}) do
+      "Closure with #{length(free)} free variables over #{func}"
+    end
   end
 end

@@ -8,7 +8,8 @@ defmodule Monkex.VM do
     Null,
     Dictionary,
     CompiledFunction,
-    Builtin
+    Builtin,
+    Closure
   }
 
   alias Monkex.Object.String, as: StringObj
@@ -60,7 +61,7 @@ defmodule Monkex.VM do
   @doc "Retrieve the instructions associated with the top stack frame"
   @spec instructions(t()) :: InstructionSet.t()
   def instructions(%VM{frames: frames}) do
-    Stack.top(frames)
+    frames |> Stack.top()
   end
 
   @doc "Return the VM with instruction pointer incremented by n_bytes"
@@ -342,10 +343,12 @@ defmodule Monkex.VM do
       vm |> instructions |> InstructionSet.advance() |> InstructionSet.read(1)
 
     case Stack.at(stack, Stack.sp(stack) - num_args) do
-      %CompiledFunction{
-        instructions: instructions,
-        num_locals: num_locals,
-        num_params: num_params
+      %Closure{
+        func: %CompiledFunction{
+          instructions: instructions,
+          num_locals: num_locals,
+          num_params: num_params
+        }
       } ->
         call_function(vm, instructions, stack, num_args, num_params, num_locals)
 
@@ -413,6 +416,25 @@ defmodule Monkex.VM do
     with_builtin = Stack.push(stack, builtin)
 
     vm |> with_stack(with_builtin) |> advance(2) |> run
+  end
+
+  # Closure
+  defp run_op(<<28::8>>, %VM{stack: stack, constants: constants} = vm) do
+    iset = vm |> instructions |> InstructionSet.advance()
+
+    <<constant_idx::big-integer-size(2)-unit(8), _::binary>> =
+      iset |> InstructionSet.read(2)
+
+    <<_free_variables::big-integer-size(1)-unit(8), _::binary>> =
+      iset |> InstructionSet.advance(2) |> InstructionSet.read(1)
+
+    case ArrayList.at(constants, constant_idx) do
+      {:ok, %CompiledFunction{} = cf} ->
+        vm |> advance(4) |> with_stack(Stack.push(stack, Closure.from(cf))) |> run
+
+      _ ->
+        {:error, "not a function"}
+    end
   end
 
   defp run_op(<<>>, vm), do: {:ok, vm}

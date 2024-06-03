@@ -368,7 +368,7 @@ defmodule CompilerTest do
          ])
        ],
        [
-         Opcode.make(:constant, [2]),
+         Opcode.make(:closure, [2, 0]),
          Opcode.make(:pop, [])
        ]},
       {"fn() { 1; 2 }",
@@ -383,7 +383,7 @@ defmodule CompilerTest do
          ])
        ],
        [
-         Opcode.make(:constant, [2]),
+         Opcode.make(:closure, [2, 0]),
          Opcode.make(:pop, [])
        ]}
     ]
@@ -401,7 +401,7 @@ defmodule CompilerTest do
          ])
        ],
        [
-         Opcode.make(:constant, [1]),
+         Opcode.make(:closure, [1, 0]),
          Opcode.make(:call, [0]),
          Opcode.make(:pop, [])
        ]},
@@ -414,7 +414,7 @@ defmodule CompilerTest do
          ])
        ],
        [
-         Opcode.make(:constant, [1]),
+         Opcode.make(:closure, [1, 0]),
          Opcode.make(:set_global, [0]),
          Opcode.make(:get_global, [0]),
          Opcode.make(:call, [0]),
@@ -427,7 +427,7 @@ defmodule CompilerTest do
          ])
        ],
        [
-         Opcode.make(:constant, [0]),
+         Opcode.make(:closure, [0, 0]),
          Opcode.make(:pop, [])
        ]},
       {"let oneArg = fn(a) { a; }; oneArg(24);",
@@ -439,7 +439,7 @@ defmodule CompilerTest do
          24
        ],
        [
-         Opcode.make(:constant, [0]),
+         Opcode.make(:closure, [0, 0]),
          Opcode.make(:set_global, [0]),
          Opcode.make(:get_global, [0]),
          Opcode.make(:constant, [1]),
@@ -461,7 +461,7 @@ defmodule CompilerTest do
          27
        ],
        [
-         Opcode.make(:constant, [0]),
+         Opcode.make(:closure, [0, 0]),
          Opcode.make(:set_global, [0]),
          Opcode.make(:get_global, [0]),
          Opcode.make(:constant, [1]),
@@ -482,7 +482,7 @@ defmodule CompilerTest do
         [
           Opcode.make(:constant, [0]),
           Opcode.make(:set_global, [0]),
-          Opcode.make(:constant, [1]),
+          Opcode.make(:closure, [1, 0]),
           Opcode.make(:pop, [])
         ]
       },
@@ -498,7 +498,7 @@ defmodule CompilerTest do
           ])
         ],
         [
-          Opcode.make(:constant, [1]),
+          Opcode.make(:closure, [1, 0]),
           Opcode.make(:pop, [])
         ]
       },
@@ -519,7 +519,7 @@ defmodule CompilerTest do
           ])
         ],
         [
-          Opcode.make(:constant, [2]),
+          Opcode.make(:closure, [2, 0]),
           Opcode.make(:pop, [])
         ]
       }
@@ -555,7 +555,7 @@ defmodule CompilerTest do
           ])
         ],
         [
-          Opcode.make(:constant, [0]),
+          Opcode.make(:closure, [0, 0]),
           Opcode.make(:pop, [])
         ]
       }
