@@ -177,7 +177,10 @@ defmodule Monkex.Object.Array do
 
   def push(%Array{items: items}, obj), do: (items ++ [obj]) |> Array.from()
   def head(%Array{items: [h | _]}), do: h
+  def head(%Array{items: []}), do: Null.object()
+  def tail(%Array{items: []}), do: Null.object()
   def tail(%Array{items: [_ | t]}), do: Array.from(t)
+  def last(%Array{items: []}), do: Null.object()
   def last(%Array{items: items}), do: List.last(items)
   def cons(%Array{items: items}, item), do: [item | items] |> Array.from()
 
@@ -224,6 +227,7 @@ end
 defmodule Monkex.Object.Builtin do
   @moduledoc "Internal object representation for a builtin function implemented in elixir"
   alias __MODULE__
+  alias Monkex.Object
   alias Monkex.Object.Array
   alias Monkex.Object.Integer
   alias Monkex.Object.String, as: StringObj
@@ -275,16 +279,25 @@ defmodule Monkex.Object.Builtin do
   def parse_int([%StringObj{value: value} | _]),
     do: value |> String.to_integer() |> Integer.from()
 
-  def len([%StringObj{value: value} | _]), do: String.length(value) |> Integer.from()
-  def len([%Array{items: items} | _]), do: length(items) |> Integer.from()
+  def len([%StringObj{value: value} | []]), do: String.length(value) |> Integer.from()
+  def len([%Array{items: items} | []]), do: length(items) |> Integer.from()
+  def len([obj | []]), do: {:error, "argument to `len` not supported, got #{Object.type(obj)}"}
+  def len(arr), do: {:error, "wrong number of arguments, expected: 1, got: #{length(arr)}"}
 
   def char_at([%StringObj{value: str} | [%Integer{value: int} | _]]),
     do: str |> String.at(int) |> String.Chars.to_string() |> StringObj.from()
 
   def push([%Array{} = arr | [val | _]]), do: Array.push(arr, val)
+
+  def push([obj | [_ | _]]),
+    do: {:error, "argument to `push` must be array, got #{Object.type(obj)}"}
+
   def head([%Array{} = arr | _]), do: Array.head(arr)
+  def head([obj | _]), do: {:error, "argument to `head` must be array, got #{Object.type(obj)}"}
   def tail([%Array{} = arr | _]), do: Array.tail(arr)
+  def tail([obj | _]), do: {:error, "argument to `tail` must be array, got #{Object.type(obj)}"}
   def last([%Array{} = arr | _]), do: Array.last(arr)
+  def last([obj | _]), do: {:error, "argument to `last` must be array, got #{Object.type(obj)}"}
   def cons([%Array{} = arr | [obj | _]]), do: Array.cons(arr, obj)
 end
 

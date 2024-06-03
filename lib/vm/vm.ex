@@ -7,7 +7,8 @@ defmodule Monkex.VM do
     Array,
     Null,
     Dictionary,
-    CompiledFunction
+    CompiledFunction,
+    Builtin
   }
 
   alias Monkex.Object.String, as: StringObj
@@ -340,25 +341,22 @@ defmodule Monkex.VM do
     <<num_args::big-integer-size(1)-unit(8), _::binary>> =
       vm |> instructions |> InstructionSet.advance() |> InstructionSet.read(1)
 
-    s = stack
+    case Stack.at(stack, Stack.sp(stack) - num_args) do
+      %CompiledFunction{
+        instructions: instructions,
+        num_locals: num_locals,
+        num_params: num_params
+      } ->
+        call_function(vm, instructions, stack, num_args, num_params, num_locals)
 
-    %CompiledFunction{instructions: instructions, num_locals: num_locals, num_params: num_params} =
-      Stack.at(stack, Stack.sp(stack) - num_args)
+      %Builtin{
+        param_count: num_params,
+        handler: handler
+      } ->
+        call_builtin(vm, stack, handler, num_args, num_params)
 
-    if num_params != num_args do
-      {:error, "wrong number of arguments, expected: #{num_params}, got: #{num_args}"}
-    else
-      # advance past the num_args before pushing stack frame
-      %VM{frames: after_skip_arg_instr} = vm |> advance
-
-      frames =
-        Stack.push(
-          after_skip_arg_instr,
-          InstructionSet.new(instructions, Stack.sp(stack) - num_args)
-        )
-
-      next_stack = Stack.make_space(s, num_locals)
-      vm |> with_stack(next_stack) |> with_frames(frames) |> run
+      _ ->
+        {:error, "using call on a non-function or non-builtin"}
     end
   end
 
@@ -406,6 +404,52 @@ defmodule Monkex.VM do
     vm |> with_stack(s) |> advance(2) |> run
   end
 
+  # Get builtin
+  defp run_op(<<27::8>>, %VM{stack: stack} = vm) do
+    <<builtin_idx::big-integer-size(1)-unit(8), _::binary>> =
+      vm |> instructions |> InstructionSet.advance() |> InstructionSet.read(1)
+
+    {_, builtin} = Builtin.all() |> Enum.at(builtin_idx)
+    with_builtin = Stack.push(stack, builtin)
+
+    vm |> with_stack(with_builtin) |> advance(2) |> run
+  end
+
   defp run_op(<<>>, vm), do: {:ok, vm}
   defp run_op(_, _), do: {:error, "unknown opcode"}
+
+  defp call_function(vm, instructions, stack, num_args, num_params, num_locals) do
+    if num_params != num_args do
+      {:error, "wrong number of arguments, expected: #{num_params}, got: #{num_args}"}
+    else
+      # advance past the num_args before pushing stack frame
+      %VM{frames: after_skip_arg_instr} = vm |> advance
+
+      frames =
+        Stack.push(
+          after_skip_arg_instr,
+          InstructionSet.new(instructions, Stack.sp(stack) - num_args)
+        )
+
+      next_stack = Stack.make_space(stack, num_locals)
+      vm |> with_stack(next_stack) |> with_frames(frames) |> run
+    end
+  end
+
+  defp call_builtin(vm, stack, handler, num_args, num_params) do
+    if num_params != num_args do
+      {:error, "wrong number of arguments, expected: #{num_params}, got: #{num_args}"}
+    else
+      {s, args} = Stack.take(stack, num_args)
+
+      case handler.(args) do
+        {:error, msg} ->
+          {:error, msg}
+
+        result_obj ->
+          s = Stack.push(s, result_obj)
+          vm |> advance(2) |> with_stack(s) |> run()
+      end
+    end
+  end
 end

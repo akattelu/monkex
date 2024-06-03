@@ -387,4 +387,29 @@ defmodule VMTest do
     ]
     |> Enum.map(&vm_test/1)
   end
+
+  test "calling builtin functions" do
+    [
+      {~S(len(""\)), 0},
+      {~S(len("four"\)), 4},
+      {~S(len("hello world"\)), 11},
+      {~S(len(1\)), {:error, "argument to `len` not supported, got integer"}},
+      {~S(len("one", "two"\)), {:error, "wrong number of arguments, expected: 1, got: 2"}},
+      {~S(len([1, 2, 3]\)), 3},
+      {~S(len([]\)), 0},
+      {~S(puts("hello"\)), nil},
+      {~S(head([1, 2, 3]\)), 1},
+      {~S(head([]\)), nil},
+      {~S(head(1\)), {:error, "argument to `head` must be array, got integer"}},
+      {~S(last([1, 2, 3]\)), 3},
+      {~S(last([]\)), nil},
+      {~S(last(1\)), {:error, "argument to `last` must be array, got integer"}},
+      {~S(tail([1, 2, 3]\)), [2, 3]},
+      {~S(tail([]\)), nil},
+      {~S(tail([]\)), nil},
+      {~S(push([], 1\)), [1]},
+      {~S(push(1, 1\)), {:error, "argument to `push` must be array, got integer"}}
+    ]
+    |> Enum.map(&vm_test/1)
+  end
 end
