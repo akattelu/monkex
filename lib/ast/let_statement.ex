@@ -4,7 +4,7 @@ defmodule Monkex.AST.LetStatement do
   """
   alias __MODULE__
   alias Monkex.AST.Statement
-  alias Monkex.Object.{ Node, Error, Null}
+  alias Monkex.Object.{Node, Error, Null}
 
   alias Monkex.AST.Identifier
   alias Monkex.Environment
