@@ -74,6 +74,16 @@ defmodule CompilerTest do
     assert Compiler.instructions_length(c) == 2
   end
 
+  # test "compiler scopes and free variables" do 
+  #   c = Compiler.new()
+  #   first = c |> Compiler.enter_scope |> Compiler.with_symbol_definition("a")
+  #   second = first |> Compiler.enter_scope |> Compiler.with_symbol_definition("b")
+  #   third = second |> Compiler.enter_scope |> Compiler.with_symbol_definition("c")
+
+  #   assert Compiler.free_symbols(second) == [%Monkex.Symbol{name: "a", index: 0, scope: :local}]
+  #   assert Compiler.free_symbols(third) == [%Monkex.Symbol{name: "a", index: 0, scope: :free}, %Monkex.Symbol{name: "b", index: 0, scope: :local}]
+  # end
+
   test "integer arithmetic" do
     [
       {"1 + 2;", [1, 2],
@@ -556,6 +566,102 @@ defmodule CompilerTest do
         ],
         [
           Opcode.make(:closure, [0, 0]),
+          Opcode.make(:pop, [])
+        ]
+      }
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
+
+  test "closures" do
+    [
+      {
+        "fn(a) { fn(b) { a + b; } }",
+        [
+          Instructions.merge([
+            Opcode.make(:get_free, [0]),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:add, []),
+            Opcode.make(:return_value, [])
+          ]),
+          Instructions.merge([
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:closure, [0, 1]),
+            Opcode.make(:return_value, [])
+          ])
+        ],
+        [
+          Opcode.make(:closure, [1, 0]),
+          Opcode.make(:pop, [])
+        ]
+      },
+      {
+        "fn(a) { fn(b) { fn(c) { a + b + c; } } }",
+        [
+          Instructions.merge([
+            Opcode.make(:get_free, [0]),
+            Opcode.make(:get_free, [1]),
+            Opcode.make(:add, []),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:add, []),
+            Opcode.make(:return_value, [])
+          ]),
+          Instructions.merge([
+            Opcode.make(:get_free, [0]),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:closure, [0, 2]),
+            Opcode.make(:return_value, [])
+          ]),
+          Instructions.merge([
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:closure, [1, 1]),
+            Opcode.make(:return_value, [])
+          ])
+        ],
+        [
+          Opcode.make(:closure, [2, 0]),
+          Opcode.make(:pop, [])
+        ]
+      },
+      {
+        "let global = 55; fn() { let a = 66; fn() { let b = 77; fn() { let c = 88; global + a + b + c; } } }",
+        [
+          55,
+          66,
+          77,
+          88,
+          Instructions.merge([
+            Opcode.make(:constant, [3]),
+            Opcode.make(:set_local, [0]),
+            Opcode.make(:get_global, [0]),
+            Opcode.make(:get_free, [0]),
+            Opcode.make(:add, []),
+            Opcode.make(:get_free, [1]),
+            Opcode.make(:add, []),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:add, []),
+            Opcode.make(:return_value, [])
+          ]),
+          Instructions.merge([
+            Opcode.make(:constant, [2]),
+            Opcode.make(:set_local, [0]),
+            Opcode.make(:get_free, [0]),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:closure, [4, 2]),
+            Opcode.make(:return_value, [])
+          ]),
+          Instructions.merge([
+            Opcode.make(:constant, [1]),
+            Opcode.make(:set_local, [0]),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:closure, [5, 1]),
+            Opcode.make(:return_value, [])
+          ])
+        ],
+        [
+          Opcode.make(:constant, [0]),
+          Opcode.make(:set_global, [0]),
+          Opcode.make(:closure, [6, 0]),
           Opcode.make(:pop, [])
         ]
       }

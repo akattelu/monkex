@@ -2,11 +2,11 @@ defmodule Monkex.AST.FunctionLiteral do
   @moduledoc """
   AST Node for an function literal like `fn (x, y) { x + y }`
   """
+  alias __MODULE__
   alias Monkex.AST.Expression
   alias Monkex.AST.Identifier
   alias Monkex.Object.{Node, Function, CompiledFunction}
   alias Monkex.Compiler
-  alias __MODULE__
 
   @enforce_keys [:token, :params, :body]
   defstruct [:token, :params, :body]
@@ -45,11 +45,14 @@ defmodule Monkex.AST.FunctionLiteral do
         end
 
       num_locals = Compiler.num_symbols(c)
+      free_symbols = Compiler.free_symbols(c)
+
       {c, instructions} = Compiler.leave_scope(c)
+      c = Enum.reduce(free_symbols, c, fn sym, acc -> Compiler.load_symbol(acc, sym) end)
       compiled_func = CompiledFunction.from(instructions, num_locals, length(params))
 
       {c, pointer} = Compiler.with_constant(c, compiled_func)
-      {c, _} = Compiler.emit(c, :closure, [pointer, 0])
+      {c, _} = Compiler.emit(c, :closure, [pointer, length(free_symbols)])
 
       {:ok, c}
     end

@@ -89,7 +89,8 @@ defmodule Monkex.Opcode do
         :set_local => %Definition{name: "OpSetLocal", opcode: <<25::8>>, operand_widths: [1]},
         :get_local => %Definition{name: "OpGetLocal", opcode: <<26::8>>, operand_widths: [1]},
         :get_builtin => %Definition{name: "OpGetBuiltin", opcode: <<27::8>>, operand_widths: [1]},
-        :closure => %Definition{name: "OpClosure", opcode: <<28::8>>, operand_widths: [2, 1]}
+        :closure => %Definition{name: "OpClosure", opcode: <<28::8>>, operand_widths: [2, 1]},
+        :get_free => %Definition{name: "OpGetFree", opcode: <<29::8>>, operand_widths: [1]}
       }
     end
   end

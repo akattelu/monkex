@@ -96,9 +96,27 @@ defmodule Monkex.Compiler do
     }
   end
 
-  @spec get_symbol(t(), String.t()) :: {:ok, Symbol.t()} | :undefined
-  def get_symbol(%Compiler{symbols: symbols}, name) do
-    SymbolTable.resolve(symbols, name)
+  @doc "Add a symbol into the compiler's symbol table and return the new compiler"
+  @spec with_free_definition(t(), Symbol.t()) :: t()
+  def with_free_definition(%Compiler{symbols: symbols} = c, sym) do
+    %Compiler{
+      c
+      | symbols: symbols |> SymbolTable.with_free_definition(sym)
+    }
+  end
+
+  @doc "Return the free symbols of the current scoped symbol table"
+  @spec free_symbols(t()) :: [Symbol.t()]
+  def free_symbols(%Compiler{symbols: symbols}) do
+    symbols |> SymbolTable.get_free_symbols()
+  end
+
+  @spec get_symbol(t(), String.t()) :: {:ok, t(), Symbol.t()} | :undefined
+  def get_symbol(%Compiler{symbols: symbols} = compiler, name) do
+    case SymbolTable.resolve(symbols, name) do
+      {:ok, table, sym} -> {:ok, %Compiler{compiler | symbols: table}, sym}
+      :undefined -> :undefined
+    end
   end
 
   @doc "Convert an opcode with operands into an instruction, add it to the Compiler, and return a new Compiler"
@@ -187,4 +205,26 @@ defmodule Monkex.Compiler do
   @doc "Return the number of symbols tracked by the most recently enclosed symbol table"
   @spec num_symbols(t()) :: integer()
   def num_symbols(%Compiler{symbols: symbols}), do: SymbolTable.size(symbols)
+
+  @doc "Emit the corresponding opcode for retrieving the symbol and return new the compiler"
+  @spec load_symbol(t(), Symbol.t()) :: t()
+  def load_symbol(compiler, symbol) do
+    case symbol do
+      %Symbol{index: idx, scope: :global} ->
+        {c, _} = Compiler.emit(compiler, :get_global, [idx])
+        c
+
+      %Symbol{index: idx, scope: :local} ->
+        {c, _} = Compiler.emit(compiler, :get_local, [idx])
+        c
+
+      %Symbol{index: idx, scope: :free} ->
+        {c, _} = Compiler.emit(compiler, :get_free, [idx])
+        c
+
+      %Symbol{index: idx, scope: :builtin} ->
+        {c, _} = Compiler.emit(compiler, :get_builtin, [idx])
+        c
+    end
+  end
 end

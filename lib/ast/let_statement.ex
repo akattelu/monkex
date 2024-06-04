@@ -27,14 +27,21 @@ defmodule Monkex.AST.LetStatement do
     def compile(%LetStatement{name: %Identifier{symbol_name: name}, value: value}, compiler) do
       with {:ok, value_c} <- Node.compile(value, compiler),
            with_symbol = Compiler.with_symbol_definition(value_c, name),
-           {:ok, %Symbol{index: idx, scope: scope}} <- Compiler.get_symbol(with_symbol, name) do
+           {:ok, c, %Symbol{index: idx, scope: scope}} <-
+             Compiler.get_symbol(with_symbol, name) do
         {c, _} =
           Compiler.emit(
-            with_symbol,
+            c,
             case scope do
-              :global -> :set_global
-              :local -> :set_local
-              :builtin -> :get_builtin
+              :global ->
+                :set_global
+
+              :local ->
+                :set_local
+
+              :builtin ->
+                :get_builtin
+                # :free -> :get_free
             end,
             [idx]
           )
