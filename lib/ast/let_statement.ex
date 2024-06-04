@@ -4,8 +4,7 @@ defmodule Monkex.AST.LetStatement do
   """
   alias __MODULE__
   alias Monkex.AST.Statement
-  alias Monkex.Object.Node
-  alias Monkex.Object.Error
+  alias Monkex.Object.{ Node, Error, Null}
 
   alias Monkex.AST.Identifier
   alias Monkex.Environment
@@ -52,7 +51,7 @@ defmodule Monkex.AST.LetStatement do
     def eval(%LetStatement{name: %Identifier{symbol_name: name}, value: value}, env) do
       case Node.eval(value, env) do
         {%Error{}, _} = result -> result
-        {obj, e} -> {obj, e |> Environment.set(name, obj)}
+        {obj, e} -> {Null.object(), e |> Environment.set(name, obj)}
       end
     end
 
