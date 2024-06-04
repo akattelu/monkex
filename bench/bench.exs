@@ -35,8 +35,7 @@ defmodule Bench do
   def eval_vm(program) do
     {_, ast} = program |> Lexer.new() |> Parser.new() |> Parser.parse_program()
     {:ok, c} = Node.compile(ast, Compiler.new())
-    {:ok, _} = Compiler.bytecode(c) |> VM.new() |> VM.run
-
+    {:ok, _} = Compiler.bytecode(c) |> VM.new() |> VM.run()
   end
 end
 
@@ -58,7 +57,7 @@ Benchee.run(
     # "parse" => fn input -> Bench.parse(input) end,
     # "evaluate with interpreter" => fn input -> Bench.eval_program_string(input, env) end,
     # "compile" => fn input -> Bench.compile(input) end,
-    "evaluate with vm" => fn input -> Bench.eval_vm(input) end,
+    "evaluate with vm" => fn input -> Bench.eval_vm(input) end
   },
   inputs: inputs,
   parallel: 3,

@@ -380,7 +380,6 @@ defmodule VMTest do
         """,
         "a"
       }
-
     ]
     |> Enum.map(&vm_test/1)
   end
