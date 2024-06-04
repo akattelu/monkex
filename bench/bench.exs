@@ -53,13 +53,13 @@ inputs = %{
 
 Benchee.run(
   %{
-    # "tokenize" => fn input -> Bench.tokenize(input) end,
-    # "parse" => fn input -> Bench.parse(input) end,
-    # "evaluate with interpreter" => fn input -> Bench.eval_program_string(input, env) end,
-    # "compile" => fn input -> Bench.compile(input) end,
+    "tokenize" => fn input -> Bench.tokenize(input) end,
+    "parse" => fn input -> Bench.parse(input) end,
+    "evaluate with interpreter" => fn input -> Bench.eval_program_string(input, env) end,
+    "compile" => fn input -> Bench.compile(input) end,
     "evaluate with vm" => fn input -> Bench.eval_vm(input) end
   },
   inputs: inputs,
-  parallel: 3,
+  parallel: 10,
   formatters: [{Benchee.Formatters.Console, extended_statistics: false, comparison: false}]
 )
