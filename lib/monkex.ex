@@ -53,6 +53,12 @@ defmodule Monkex.CLI do
     System.halt(0)
   end
 
+  def main(["--bytecode" | _]) do
+    # Start REPL in lexing mode
+    Monkex.REPL.start_bytecode_emitter(Monkex.Compiler.new())
+    System.halt(0)
+  end
+
   def main(["--help" | _]) do
     IO.puts("Usage: monkex [--lex|--parse|<filename>]")
     System.halt(0)
