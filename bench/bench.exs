@@ -3,6 +3,8 @@ defmodule Bench do
   alias Monkex.Parser
   alias Monkex.Token
   alias Monkex.Object.Node
+  alias Monkex.Compiler
+  alias Monkex.VM
 
   def tokenize(program) do
     lexer = Lexer.new(program)
@@ -20,45 +22,45 @@ defmodule Bench do
     {_p, _ast} = program |> Lexer.new() |> Parser.new() |> Parser.parse_program()
   end
 
-  def eval(parsed_program, env) do
-    {_result, _env} = Node.eval(parsed_program, env)
-  end
-
-  def parse_and_eval(program, env) do
+  def eval_program_string(program, env) do
     {_, ast} = program |> Lexer.new() |> Parser.new() |> Parser.parse_program()
     {_result, _} = Node.eval(ast, env)
+  end
+
+  def compile(program) do
+    {_, ast} = program |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+    {:ok, _} = Node.compile(ast, Compiler.new())
+  end
+
+  def eval_vm(program) do
+    {_, ast} = program |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+    {:ok, c} = Node.compile(ast, Compiler.new())
+    {:ok, _} = Compiler.bytecode(c) |> VM.new() |> VM.run
+
   end
 end
 
 env = Monkex.Environment.new() |> Monkex.Environment.with_builtins()
 
 {:ok, fib_string} = File.read("./examples/fib.mx")
-{:ok, split_string} = File.read("./examples/string_split.mx")
 {:ok, cube_string} = File.read("./examples/cube.mx")
+{:ok, hof_string} = File.read("./examples/hof.mx")
 
-{_, parsed_fib} =
-  File.read("./examples/fib.mx")
-  |> elem(1)
-  |> Monkex.Lexer.new()
-  |> Monkex.Parser.new()
-  |> Monkex.Parser.parse_program()
-
-{_, parsed_string_split} =
-  File.read("./examples/string_split.mx")
-  |> elem(1)
-  |> Monkex.Lexer.new()
-  |> Monkex.Parser.new()
-  |> Monkex.Parser.parse_program()
+inputs = %{
+  "fib" => fib_string,
+  "cube" => cube_string,
+  "hof" => hof_string
+}
 
 Benchee.run(
   %{
-    "tokenize" => fn -> Bench.tokenize(split_string) end,
-    "parse" => fn -> Bench.parse(split_string) end,
-    "evaluate.string_split" => fn -> Bench.eval(parsed_string_split, env) end,
-    "evaluate.fib10" => fn -> Bench.eval(parsed_fib, env) end,
-    "parse_and_evaluate.string_split" => fn -> Bench.parse_and_eval(split_string, env) end,
-    "parse_and_evaluate.fib10" => fn -> Bench.parse_and_eval(fib_string, env) end,
-    "parse_and_evaluate.cube" => fn -> Bench.parse_and_eval(cube_string, env) end
+    # "tokenize" => fn input -> Bench.tokenize(input) end,
+    # "parse" => fn input -> Bench.parse(input) end,
+    # "evaluate with interpreter" => fn input -> Bench.eval_program_string(input, env) end,
+    # "compile" => fn input -> Bench.compile(input) end,
+    "evaluate with vm" => fn input -> Bench.eval_vm(input) end,
   },
+  inputs: inputs,
+  parallel: 3,
   formatters: [{Benchee.Formatters.Console, extended_statistics: false, comparison: false}]
 )

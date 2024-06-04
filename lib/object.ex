@@ -292,9 +292,13 @@ defmodule Monkex.Object.Builtin do
   def push([obj | [_ | _]]),
     do: {:error, "argument to `push` must be array, got #{Object.type(obj)}"}
 
-  def head([%Array{} = arr | _]), do: Array.head(arr)
+  def head([%Array{} = arr | _]) do
+    Array.head(arr)
+  end
+
   def head([obj | _]), do: {:error, "argument to `head` must be array, got #{Object.type(obj)}"}
   def tail([%Array{} = arr | _]), do: Array.tail(arr)
+  def tail([%StringObj{value: <<_::utf8, rest::utf8>>} | _]), do: rest |> StringObj.from()
   def tail([obj | _]), do: {:error, "argument to `tail` must be array, got #{Object.type(obj)}"}
   def last([%Array{} = arr | _]), do: Array.last(arr)
   def last([obj | _]), do: {:error, "argument to `last` must be array, got #{Object.type(obj)}"}

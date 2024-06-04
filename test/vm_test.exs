@@ -364,6 +364,27 @@ defmodule VMTest do
     |> Enum.map(&vm_test/1)
   end
 
+  test "calling functions in sequence" do
+    [
+      {
+        """
+        let x = fn (a) { a + 1 };
+        let y = fn (a) { a * 2 };
+        y(x(1));
+        """,
+        4
+      },
+      {
+        """
+        charAt(head(["abc", "def"]), 0);
+        """,
+        "a"
+      }
+
+    ]
+    |> Enum.map(&vm_test/1)
+  end
+
   test "calling functions with wrong arguments" do
     [
       {
@@ -495,39 +516,39 @@ defmodule VMTest do
           countDown(1);
         """,
         0
+      },
+      {
+        """
+          let countDown = fn(x) {
+            if (x == 0) {
+              return 0;
+            } else {
+              return countDown(x - 1);
+            }
+          };
+          let wrapper = fn() {
+            countDown(1);
+          };
+          wrapper();
+        """,
+        0
+      },
+      {
+        """
+        let wrapper = fn() {
+          let countDown = fn(x) {
+            if (x == 0) {
+              return 0;
+            } else {
+              return countDown(x - 1);
+            }
+          };
+          countDown(1);
+        }
+        wrapper();
+        """,
+        0
       }
-      # {
-      #   """
-      #     let countDown = fn(x) {
-      #       if (x == 0) {
-      #         return 0;
-      #       } else {
-      #         return countDown(x - 1);
-      #       }
-      #     };
-      #     let wrapper = fn() {
-      #       countDown(1);
-      #     };
-      #     wrapper();
-      #   """,
-      #   0
-      # },
-      # {
-      #   """
-      #   let wrapper = fn() {
-      #     let countDown = fn(x) {
-      #       if (x == 0) {
-      #         return 0;
-      #       } else {
-      #         return countDown(x - 1);
-      #       }
-      #     };
-      #     countDown(1);
-      #   }
-      #   wrapper();
-      #   """,
-      #   0
-      # }
     ]
     |> Enum.map(&vm_test/1)
   end

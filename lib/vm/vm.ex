@@ -493,12 +493,12 @@ defmodule Monkex.VM do
       {:error, "wrong number of arguments, expected: #{num_params}, got: #{num_args}"}
     else
       {s, args} = Stack.take(stack, num_args)
-
       case handler.(args) do
         {:error, msg} ->
           {:error, msg}
 
         result_obj ->
+          {s, _ } = Stack.pop(s)
           s = Stack.push(s, result_obj)
           vm |> advance(2) |> with_stack(s) |> run()
       end

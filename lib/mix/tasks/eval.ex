@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Mx do
-  @moduledoc "Run the interpreter against a file\r\n "
-  @shortdoc "Run the interpreter against a file"
+  @moduledoc "Run the bytecode VM against a file\r\n "
+  @shortdoc "Run the bytecode VM against a file"
   @requirements ["app.config"]
 
   use Mix.Task

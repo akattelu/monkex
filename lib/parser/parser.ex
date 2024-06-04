@@ -240,7 +240,6 @@ defmodule Monkex.Parser do
 
   def parse_infix_expression(parser, left) do
     prec = current_precedence(parser)
-    # IO.inspect("Calling infix expression with precedence: #{inspect(prec)}")
     {next, right} = parser |> next_token |> parse_expression(prec)
 
     {
