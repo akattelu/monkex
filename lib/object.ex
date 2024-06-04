@@ -344,10 +344,10 @@ defmodule Monkex.Object.Closure do
   @type t() :: %Closure{}
 
   @spec from(CompiledFunction.t()) :: t()
-  def from(func) do
+  def from(func, free_objects \\ []) do
     %Closure{
       func: func,
-      free_objects: []
+      free_objects: free_objects
     }
   end
 

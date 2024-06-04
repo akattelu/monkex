@@ -348,9 +348,10 @@ defmodule Monkex.VM do
           instructions: instructions,
           num_locals: num_locals,
           num_params: num_params
-        }
+        },
+        free_objects: objects
       } ->
-        call_function(vm, instructions, stack, num_args, num_params, num_locals)
+        call_function(vm, instructions, stack, num_args, num_params, num_locals, objects)
 
       %Builtin{
         param_count: num_params,
@@ -425,22 +426,38 @@ defmodule Monkex.VM do
     <<constant_idx::big-integer-size(2)-unit(8), _::binary>> =
       iset |> InstructionSet.read(2)
 
-    <<_free_variables::big-integer-size(1)-unit(8), _::binary>> =
+    <<free_variables::big-integer-size(1)-unit(8), _::binary>> =
       iset |> InstructionSet.advance(2) |> InstructionSet.read(1)
+
+    {stack, objs} = Stack.take(stack, free_variables)
 
     case ArrayList.at(constants, constant_idx) do
       {:ok, %CompiledFunction{} = cf} ->
-        vm |> advance(4) |> with_stack(Stack.push(stack, Closure.from(cf))) |> run
+        vm |> advance(4) |> with_stack(Stack.push(stack, Closure.from(cf, objs))) |> run
 
       _ ->
         {:error, "not a function"}
     end
   end
 
+  # Get free 
+  defp run_op(<<29::8>>, %VM{stack: stack, frames: frames} = vm) do
+    <<free_idx::big-integer-size(1)-unit(8), _::binary>> =
+      vm |> instructions |> InstructionSet.advance() |> InstructionSet.read(1)
+
+    %InstructionSet{closure: %Closure{free_objects: objects}} = Stack.top(frames)
+
+    obj = Enum.at(objects, free_idx)
+
+    stack = Stack.push(stack, obj)
+
+    vm |> advance(2) |> with_stack(stack) |> run
+  end
+
   defp run_op(<<>>, vm), do: {:ok, vm}
   defp run_op(_, _), do: {:error, "unknown opcode"}
 
-  defp call_function(vm, instructions, stack, num_args, num_params, num_locals) do
+  defp call_function(vm, instructions, stack, num_args, num_params, num_locals, objects) do
     if num_params != num_args do
       {:error, "wrong number of arguments, expected: #{num_params}, got: #{num_args}"}
     else
@@ -450,7 +467,7 @@ defmodule Monkex.VM do
       frames =
         Stack.push(
           after_skip_arg_instr,
-          InstructionSet.new(instructions, Stack.sp(stack) - num_args)
+          InstructionSet.new(instructions, Stack.sp(stack) - num_args, objects)
         )
 
       next_stack = Stack.make_space(stack, num_locals)

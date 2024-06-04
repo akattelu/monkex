@@ -18,9 +18,9 @@ defmodule Monkex.VM.InstructionSet do
 
   @doc "Create a new instruction set from instructions"
   @spec new(Instructions.t(), integer()) :: t()
-  def new(%Instructions{} = i, bp \\ 0) do
+  def new(%Instructions{} = i, bp \\ 0, objects \\ []) do
     func = CompiledFunction.from(i, 0, 0)
-    closure = Closure.from(func)
+    closure = Closure.from(func, objects)
 
     %InstructionSet{
       closure: closure,
