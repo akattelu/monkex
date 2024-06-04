@@ -78,6 +78,7 @@ let colorReduce = fn (arr) {
 let parseGame = fn(game) {
 	let parts = tail(stringSplit(game, " "));
 	let dict = colorReduce(map(parts, trimComma));
+	dict;
 }
 
 let parseGames = fn (line) {
