@@ -454,6 +454,13 @@ defmodule Monkex.VM do
     vm |> advance(2) |> with_stack(stack) |> run
   end
 
+  # Current closure
+  defp run_op(<<30::8>>, %VM{stack: stack, frames: frames} = vm) do
+    %InstructionSet{closure: closure} = Stack.top(frames)
+    stack = Stack.push(stack, closure)
+    vm |> advance() |> with_stack(stack) |> run
+  end
+
   defp run_op(<<>>, vm), do: {:ok, vm}
   defp run_op(_, _), do: {:error, "unknown opcode"}
 
@@ -467,7 +474,13 @@ defmodule Monkex.VM do
       frames =
         Stack.push(
           after_skip_arg_instr,
-          InstructionSet.new(instructions, Stack.sp(stack) - num_args, objects)
+          InstructionSet.new(
+            instructions,
+            Stack.sp(stack) - num_args,
+            objects,
+            num_locals,
+            num_params
+          )
         )
 
       next_stack = Stack.make_space(stack, num_locals)

@@ -136,7 +136,8 @@ defmodule OpcodeTest do
       {:get_local, [255], <<26::8, 255::8>>},
       {:get_builtin, [255], <<27::8, 255::8>>},
       {:closure, [65_534, 255], <<28::8, 255::8, 254::8, 255::8>>},
-      {:get_free, [255], <<29::8, 255::8>>}
+      {:get_free, [255], <<29::8, 255::8>>},
+      {:current_closure, [], <<30::8>>}
     ]
     |> Enum.map(fn {opcode, operands, expected} ->
       %Instructions{raw: instr} = Code.make(opcode, operands)

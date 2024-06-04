@@ -8,8 +8,8 @@ defmodule Monkex.AST.FunctionLiteral do
   alias Monkex.Object.{Node, Function, CompiledFunction}
   alias Monkex.Compiler
 
-  @enforce_keys [:token, :params, :body]
-  defstruct [:token, :params, :body]
+  @enforce_keys [:token, :params, :body, :name]
+  defstruct [:token, :params, :body, :name]
 
   defimpl Expression, for: FunctionLiteral do
     def token_literal(%FunctionLiteral{token: token}), do: token.literal
@@ -19,14 +19,22 @@ defmodule Monkex.AST.FunctionLiteral do
     def to_string(%FunctionLiteral{
           token: token,
           params: params,
-          body: body
+          body: body,
+          name: name
         }),
-        do: "#{token.literal} (#{Enum.join(params, ", ")}) #{body}"
+        do: "#{token.literal} #{name}(#{Enum.join(params, ", ")}) #{body}"
   end
 
   defimpl Node, for: FunctionLiteral do
-    def compile(%FunctionLiteral{params: params, body: body}, compiler) do
+    def compile(%FunctionLiteral{params: params, body: body, name: name}, compiler) do
       c = Compiler.enter_scope(compiler)
+
+      c =
+        if name != "" do
+          Compiler.with_function_definition(c, name)
+        else
+          c
+        end
 
       c =
         Enum.reduce(params, c, fn %Identifier{symbol_name: param}, acc ->

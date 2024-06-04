@@ -136,4 +136,13 @@ defmodule Monkex.SymbolTable do
       sym
     }
   end
+
+  @doc "Return a new symbol table with the symbol added as a function self-reference definition"
+  @spec with_function_definition(t(), String.t()) :: t()
+  def with_function_definition(%SymbolTable{store: store} = table, name) do
+    %SymbolTable{
+      table
+      | store: Map.put(store, name, %Symbol{scope: :function, name: name, index: 0})
+    }
+  end
 end

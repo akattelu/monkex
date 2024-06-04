@@ -49,4 +49,12 @@ defmodule SymbolTest do
 
     assert third |> resolve("g") == :undefined
   end
+
+  test "function name" do
+    {:ok, table, sym} = new() |> with_function_definition("a") |> resolve("a")
+    assert sym == %Symbol{name: "a", index: 0, scope: :function}
+
+    {:ok, _, sym} = table |> with_definition("a") |> resolve("a")
+    assert sym == %Symbol{name: "a", index: 0, scope: :global}
+  end
 end

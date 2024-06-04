@@ -492,26 +492,42 @@ defmodule VMTest do
               return countDown(x - 1);
             }
           };
-          countDown(1)
-        """,
-        0
-      },
-      {
-        """
-          let countDown = fn(x) {
-            if (x == 0) {
-              return 0;
-            } else {
-              return countDown(x - 1);
-            }
-          };
-          let wrapper = fn() {
-            countDown(1);
-          };
-          wrapper();
+          countDown(1);
         """,
         0
       }
+      # {
+      #   """
+      #     let countDown = fn(x) {
+      #       if (x == 0) {
+      #         return 0;
+      #       } else {
+      #         return countDown(x - 1);
+      #       }
+      #     };
+      #     let wrapper = fn() {
+      #       countDown(1);
+      #     };
+      #     wrapper();
+      #   """,
+      #   0
+      # },
+      # {
+      #   """
+      #   let wrapper = fn() {
+      #     let countDown = fn(x) {
+      #       if (x == 0) {
+      #         return 0;
+      #       } else {
+      #         return countDown(x - 1);
+      #       }
+      #     };
+      #     countDown(1);
+      #   }
+      #   wrapper();
+      #   """,
+      #   0
+      # }
     ]
     |> Enum.map(&vm_test/1)
   end

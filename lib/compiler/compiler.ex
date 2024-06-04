@@ -97,11 +97,11 @@ defmodule Monkex.Compiler do
   end
 
   @doc "Add a symbol into the compiler's symbol table and return the new compiler"
-  @spec with_free_definition(t(), Symbol.t()) :: t()
-  def with_free_definition(%Compiler{symbols: symbols} = c, sym) do
+  @spec with_function_definition(t(), String.t()) :: t()
+  def with_function_definition(%Compiler{symbols: symbols} = c, name) do
     %Compiler{
       c
-      | symbols: symbols |> SymbolTable.with_free_definition(sym)
+      | symbols: symbols |> SymbolTable.with_function_definition(name)
     }
   end
 
@@ -224,6 +224,10 @@ defmodule Monkex.Compiler do
 
       %Symbol{index: idx, scope: :builtin} ->
         {c, _} = Compiler.emit(compiler, :get_builtin, [idx])
+        c
+
+      %Symbol{scope: :function} ->
+        {c, _} = Compiler.emit(compiler, :current_closure, [])
         c
     end
   end

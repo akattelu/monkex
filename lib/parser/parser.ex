@@ -190,6 +190,15 @@ defmodule Monkex.Parser do
          {:ok, assign_parser} <- expect_and_peek(ident_parser, :assign) do
       {final, expr} = assign_parser |> next_token |> parse_expression(:lowest)
 
+      expr_with_name =
+        case expr do
+          %AST.FunctionLiteral{} = func ->
+            %AST.FunctionLiteral{func | name: ident_parser.current_token.literal}
+
+          other ->
+            other
+        end
+
       {final |> skip_optional_semicolon,
        %AST.LetStatement{
          # first parser token
@@ -198,7 +207,7 @@ defmodule Monkex.Parser do
            token: ident_parser.current_token,
            symbol_name: ident_parser.current_token.literal
          },
-         value: expr
+         value: expr_with_name
        }}
     else
       {:error, p, err} -> {p |> with_error(err), nil}
@@ -456,7 +465,8 @@ defmodule Monkex.Parser do
        %AST.FunctionLiteral{
          token: parser.current_token,
          params: params,
-         body: block
+         body: block,
+         name: ""
        }}
     else
       {:error, p, err} -> {p |> with_error(err), nil}

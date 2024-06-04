@@ -428,6 +428,19 @@ defmodule ParserTest do
     end)
   end
 
+  test "function literals with names" do
+    {parser, program} =
+      "let myFunc = fn () { };" |> Lexer.new() |> Parser.new() |> Parser.parse_program()
+
+    assert parser.errors == []
+
+    assert length(program.statements) == 1
+
+    first_statement = program.statements |> hd()
+    expression = first_statement.value
+    assert("#{expression.name}" == "myFunc")
+  end
+
   test "function literal parsing params" do
     tests = [
       {"fn () { };", []},

@@ -668,4 +668,63 @@ defmodule CompilerTest do
     ]
     |> Enum.map(&compiler_test/1)
   end
+
+  test "recursive closures" do
+    [
+      {
+        "let countDown = fn(x) { countDown(x - 1) }; countDown(1)",
+        [
+          1,
+          Instructions.merge([
+            Opcode.make(:current_closure, []),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:constant, [0]),
+            Opcode.make(:sub, []),
+            Opcode.make(:call, [1]),
+            Opcode.make(:return_value, [])
+          ]),
+          1
+        ],
+        [
+          Opcode.make(:closure, [1, 0]),
+          Opcode.make(:set_global, [0]),
+          Opcode.make(:get_global, [0]),
+          Opcode.make(:constant, [2]),
+          Opcode.make(:call, [1]),
+          Opcode.make(:pop, [])
+        ]
+      },
+      {
+        "let wrapper = fn() { let countDown = fn(x) { countDown(x - 1) }; countDown(1); }; wrapper();",
+        [
+          1,
+          Instructions.merge([
+            Opcode.make(:current_closure, []),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:constant, [0]),
+            Opcode.make(:sub, []),
+            Opcode.make(:call, [1]),
+            Opcode.make(:return_value, [])
+          ]),
+          1,
+          Instructions.merge([
+            Opcode.make(:closure, [1, 0]),
+            Opcode.make(:set_local, [0]),
+            Opcode.make(:get_local, [0]),
+            Opcode.make(:constant, [2]),
+            Opcode.make(:call, [1]),
+            Opcode.make(:return_value, [])
+          ])
+        ],
+        [
+          Opcode.make(:closure, [3, 0]),
+          Opcode.make(:set_global, [0]),
+          Opcode.make(:get_global, [0]),
+          Opcode.make(:call, [0]),
+          Opcode.make(:pop, [])
+        ]
+      }
+    ]
+    |> Enum.map(&compiler_test/1)
+  end
 end
